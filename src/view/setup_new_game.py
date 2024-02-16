@@ -3,12 +3,11 @@ import os
 from tkinter import *
 from PIL import Image, ImageTk
 
-
-
 class SetupNewGame():
     def __init__(self, master, controller):
         self.board_size = 0
         self.image_labels = []
+        self.image_clicked = False
         self.controller = controller
         self.master = master
         self.frame = ctk.CTkFrame(master=master, border_width=2)
@@ -73,7 +72,7 @@ class SetupNewGame():
             self.figure_options_frame.destroy()
 
         self.figure_options_frame = ctk.CTkFrame(self.options2,border_width=2)
-        self.figure_options_frame.pack(expand=False)
+        self.figure_options_frame.pack(expand=True)
 
         self.king_var = ctk.StringVar(value="off")
         self.king_switch = ctk.CTkSwitch(self.figure_options_frame, text="King", command=self.king_switches,
@@ -104,7 +103,10 @@ class SetupNewGame():
 
 
     def on_image_click(self, event, image_path):
-    
+        self.update_board_colors()
+
+        self.image_clicked = True
+
         row = self.board_size // 2
         col = self.board_size // 2
 
@@ -114,14 +116,29 @@ class SetupNewGame():
         img = ctk.CTkImage(light_image=Image.open((image_path)).convert("RGBA"),
                             dark_image=Image.open((image_path)).convert("RGBA"),
                             size=(label_width, label_width))
-        
-        
 
         label = ctk.CTkLabel(position, text="", image=img)
         label.place(relx=0.5, rely=0.5, anchor="center")
 
         self.add_figure_options()
-    
+
+    def update_board_colors(self):
+        for position, canvas_obj in self.rectangles.items():
+            i, j = position
+            if (i + j) % 2 == 1:
+                canvas_obj.configure(bg="black")
+            else:
+                canvas_obj.configure(bg="white")
+
+    def feld_clickt(self, x, y):
+        
+        if self.image_clicked:
+            color = self.rectangles[(x, y)].cget("bg")
+            if color == "white":
+                self.rectangles[(x, y)].configure(bg="lightgreen")
+            elif color == "black":
+                self.rectangles[(x, y)].configure(bg="darkgreen")
+
 
     def draw_board(self, value):
         if int(value) != self.board_size:
@@ -147,9 +164,13 @@ class SetupNewGame():
                     if (i + j) % 2 == 1:
                         #print("Hea", cell_size)
                         canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="black")
+                        canvas_obj.bind("<Button-1>", lambda event, x=i, y=j: self.feld_clickt(x, y))
+                        self.rectangles[(i, j)] = canvas_obj
                         canvas_obj.place(x=x1, y=y1)
                     else:
                         canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="white")
+                        canvas_obj.bind("<Button-1>", lambda event, x=i, y=j: self.feld_clickt(x, y))
+                        self.rectangles[(i, j)] = canvas_obj
                         canvas_obj.place(x=x1, y=y1)
                         
-                    self.rectangles[(i, j)] = canvas_obj
+                    

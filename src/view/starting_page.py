@@ -2,7 +2,7 @@ import customtkinter as ctk
 import os
 from tkinter import *
 from PIL import Image, ImageTk
-from setup_new_game import SetupNewGame
+from view.setup_new_game import SetupNewGame
 
 class MainMenu():
     def __init__(self, master, controller):
