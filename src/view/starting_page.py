@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import os
 from tkinter import *
-from PIL import Image
+from PIL import Image, ImageTk
 
 
 class MainMenu():
@@ -63,7 +63,7 @@ class SetupNewGame():
 
         self.add_figure_button = ctk.CTkButton(master=self.options, text="Add figure", command=self.load_images)
         self.add_figure_button.pack(expand=False, padx=20, pady=5)
-
+        
     
         
     def load_images(self):
@@ -94,34 +94,35 @@ class SetupNewGame():
         col = self.board_size // 2
 
         position = self.rectangles[(row, col)]
-        
+        label_width = 0.48 * position.winfo_width()
+
         img = ctk.CTkImage(light_image=Image.open((image_path)).convert("RGBA"),
                             dark_image=Image.open((image_path)).convert("RGBA"),
-                            size=(30, 30))
+                            size=(label_width, label_width))
         
-        label = ctk.CTkLabel(self.canvas, text="", image=img)
-        label.place(x=(position[0]+position[2])//4, y=(position[1]+position[2])//4, anchor="center")
+        
+
+        label = ctk.CTkLabel(position, text="", image=img)
+        label.place(relx=0.5, rely=0.5, anchor="center")
+        
 
 
     
 
     def draw_board(self, value):
         if int(value) != self.board_size:
+
             self.board_size = int(value)
-            print("Boardgröße:", self.board_size)
 
             if hasattr(self, "canvas"):
                 self.canvas.destroy()
-
-            canvas_width = self.board.winfo_width() - 50  # Abstand vom Rand
-            canvas_height = self.board.winfo_height() - 50  # Abstand vom Rand
-            min_canvas_size = min(canvas_width, canvas_height)
+ 
+            min_canvas_size = self.board.winfo_height() - 100  
 
             self.canvas = ctk.CTkCanvas(master=self.board, width=min_canvas_size, height=min_canvas_size)
             self.canvas.pack(expand=True)
 
             cell_size = min_canvas_size / self.board_size
-            print("Zellengröße:", cell_size)
 
             self.rectangles = {}
 
@@ -129,11 +130,12 @@ class SetupNewGame():
                 for j in range(self.board_size):
                     x1 = i * cell_size
                     y1 = j * cell_size
-                    x2 = x1 + cell_size
-                    y2 = y1 + cell_size
                     if (i + j) % 2 == 1:
-                        rectangle = self.canvas.create_rectangle(x1, y1, x2, y2, fill="black")
-                        self.rectangles[(i, j)] = [x1, y1, x2, y2]
+                        #print("Hea", cell_size)
+                        canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="black")
+                        canvas_obj.place(x=x1, y=y1)
                     else:
-                        rectangle = self.canvas.create_rectangle(x1, y1, x2, y2, fill="white")
-                        self.rectangles[(i, j)] = [x1, y1, x2, y2]
+                        canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="white")
+                        canvas_obj.place(x=x1, y=y1)
+                        
+                    self.rectangles[(i, j)] = canvas_obj
