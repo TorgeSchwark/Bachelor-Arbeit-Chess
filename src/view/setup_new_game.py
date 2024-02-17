@@ -85,22 +85,43 @@ class SetupNewGame():
         self.rochade_var = ctk.StringVar(value="off")
         self.rochade_switch = ctk.CTkSwitch(self.figure_options_frame, text="Rochade",command=self.rochade_switches,
                                 variable=self.rochade_var , onvalue="on", offvalue="off")
+        
+        self.boarderx_var = ctk.StringVar(value="off")
+        self.boarderx_switch = ctk.CTkSwitch(self.figure_options_frame, text="Boarder",command=self.boarder_switches,
+                                variable=self.boarderx_var , onvalue="on", offvalue="off")
+
+        self.boardery_var = ctk.StringVar(value="off")
+        self.boardery_switch = ctk.CTkSwitch(self.figure_options_frame, text="Boarder",command=self.boarder_switches,
+                                variable=self.boardery_var , onvalue="on", offvalue="off")
 
         self.king_switch.pack(expand=False, padx=20,pady=10)
         self.pawn_switch.pack(expand=False, padx=20,pady=10)
         self.rochade_switch.pack(expand=False, padx=20,pady=10)
+        self.boarderx_switch.pack(expand=False, padx=20,pady=10)
+        self.boardery_switch.pack(expand=False, padx=20,pady=10)
+
 
     def king_switches(self):
         self.rochade_var.set("on")
         self.pawn_var.set("off")
+        self.boarderx_var.set("off")
+        self.boardery_var.set("off")
 
     def pawn_switches(self):
         self.rochade_var.set("off")
         self.king_var.set("off")
-    
+        self.boarderx_var.set("off")
+        self.boardery_var.set("off")
+
     def rochade_switches(self):
         self.pawn_var.set("off")
+        self.boarderx_var.set("off")
+        self.boardery_var.set("off")
 
+    def boarder_switches(self):
+        self.pawn_var.set("off")
+        self.king_var.set("off")
+        self.rochade_var.set("off")
 
     def on_image_click(self, event, image_path):
         self.update_board_colors()
@@ -109,6 +130,9 @@ class SetupNewGame():
 
         row = self.board_size // 2
         col = self.board_size // 2
+
+        self.figure_row = row
+        self.figure_col = col
 
         position = self.rectangles[(row, col)]
         label_width = 0.48 * position.winfo_width()
@@ -123,27 +147,67 @@ class SetupNewGame():
         self.add_figure_options()
 
     def update_board_colors(self):
+        value = self.board_value
         for position, canvas_obj in self.rectangles.items():
             i, j = position
             if (i + j) % 2 == 1:
-                canvas_obj.configure(bg="black")
+                if (i < int(value)//2) or j < int(value)//2 or i >= int(value)//2+int(value) or j >= int(value)//2+int(value):
+                    canvas_obj.configure(bg="darkgrey")
+                else:
+                    canvas_obj.configure(bg="black")
             else:
-                canvas_obj.configure(bg="white")
+                if (i < int(value)//2) or j < int(value)//2 or i >= int(value)//2+int(value) or j >= int(value)//2+int(value):
+                    canvas_obj.configure(bg="lightgrey")
+                else:
+                    canvas_obj.configure(bg="white")
 
-    def feld_clickt(self, x, y):
+    def field_clicked(self, x, y):
         
         if self.image_clicked:
             color = self.rectangles[(x, y)].cget("bg")
-            if color == "white":
-                self.rectangles[(x, y)].configure(bg="lightgreen")
-            elif color == "black":
-                self.rectangles[(x, y)].configure(bg="darkgreen")
+            if color == "white" or color == "lightgrey":
+                self.rectangles[(x, y)].configure(bg="#90EE90")
+            elif color == "black" or color == "darkgrey":
+                self.rectangles[(x, y)].configure(bg="#006400")
+            elif color == "#90EE90":
+                if self.correct_direction(x,y):
+                    self.rectangles[(x, y)].configure(bg="#ADD8E6")
+            elif color == "#006400":
+                if self.correct_direction(x,y):
+                    self.rectangles[(x, y)].configure(bg="#00008B")
+            elif color == "#006401":
+                print("h")
+            elif color == "90EE91":
+                print("h")
 
+    def correct_direction(self,x,y):
+        if self.figure_col-x != 0:
+            direction_x = (self.figure_col-x) / abs(self.figure_col-x)
+        else: 
+            direction_x = 0
+        if self.figure_row-y != 0:
+            direction_y = (self.figure_row-y) / abs(self.figure_row-y) #TODO: Division by zero problem
+        else:
+            direction_y = 0
+
+
+        if (abs(self.figure_col-x) == 1 and abs(self.figure_row-y)) == 1 or (abs(self.figure_row-y) == 0 and abs(self.figure_col-x)) == 1 or (abs(self.figure_row-y) == 1 and abs(self.figure_col-x) == 0): #next to the figure
+            return True
+        elif (abs(self.figure_col-x) == abs(self.figure_row-y) and abs(self.figure_col-x) != 0 ) or  (self.figure_row-y == 0 and self.figure_col-x != 0) or (self.figure_col-x == 0 and self.figure_row-y): # straight or diag move others are no directions
+            if self.rectangles[(x+direction_x,y+direction_y)].cget("bg") == "#ADD8E6" or self.rectangles[(x+direction_x,y+direction_y)].cget("bg") == "#00008B":  # field in direction of the pice is added as well
+                print((x+direction_x,y+direction_y), x,y ,self.figure_row-x, self.figure_col-y)
+                return True 
+        else:
+            return False
+
+    def draw_direction(self,x,y):
+        width = len(self.rectangles)
 
     def draw_board(self, value):
         if int(value) != self.board_size:
 
-            self.board_size = int(value)
+            self.board_size = int(value) * 2 - (int(value) %2 == 1)
+            self.board_value = value
 
             if hasattr(self, "canvas"):
                 self.canvas.destroy()
@@ -162,15 +226,18 @@ class SetupNewGame():
                     x1 = i * cell_size
                     y1 = j * cell_size
                     if (i + j) % 2 == 1:
-                        #print("Hea", cell_size)
-                        canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="black")
-                        canvas_obj.bind("<Button-1>", lambda event, x=i, y=j: self.feld_clickt(x, y))
-                        self.rectangles[(i, j)] = canvas_obj
-                        canvas_obj.place(x=x1, y=y1)
+                        if (i < int(value)//2) or j < int(value)//2 or i >= int(value)//2+int(value) or j >= int(value)//2+int(value):
+                            canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="darkgrey")
+                        else:
+                            canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="black")
                     else:
-                        canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="white")
-                        canvas_obj.bind("<Button-1>", lambda event, x=i, y=j: self.feld_clickt(x, y))
-                        self.rectangles[(i, j)] = canvas_obj
-                        canvas_obj.place(x=x1, y=y1)
+                        if (i < int(value)//2) or j < int(value)//2 or i >= int(value)//2+int(value) or j >= int(value)//2+int(value):
+                            canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="lightgrey")
+                        else:
+                            canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size, bg="white")
+
+                    canvas_obj.bind("<Button-1>", lambda event, x=i, y=j: self.field_clicked(x, y))
+                    self.rectangles[(i, j)] = canvas_obj
+                    canvas_obj.place(x=x1, y=y1)
                         
                     
