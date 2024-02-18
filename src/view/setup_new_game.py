@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 from view.view_variables import *
 from chess_implementation.piece import Piece
 from chess_implementation.chess_board import ChessBoard
+import copy
 
 class SetupNewGame():
 
@@ -46,7 +47,7 @@ class SetupNewGame():
             
     def load_images(self):
         if not hasattr(self, "image_frame"):
-            folder_path = "src/view/images/Chess_pieces/"
+            folder_path = "src/view/images/Chess_pieces/White_pieces/"
             num_columns = 4
             row = 0
             col = 0
@@ -111,46 +112,59 @@ class SetupNewGame():
         self.save_figure_button.pack_propagate(False)
 
     def save_figure(self):
-        piece = Piece()
-        piece.set_boarder_x(self.boarderx_var.get() == "on")
-        piece.set_boarder_y = (self.boardery_var.get() == "on")
-        piece.set_king(self.king_var.get() == "on")
-        piece.set_pawn(self.pawn_var.get() == "on")
-        piece.set_castling(self.castling_switch.get() == "on")
-        
-        directions = {}
-        for x in range(self.board_size):
-            for y in (self.board_size):
-                y_vec = (y-self.figure_row)
-                x_vec = (x-self.figure_col)
-                if self.figure_col-x != 0:
-                    direction_x = y_vec / abs(y_vec)
-                else: 
-                    direction_x = 0
-                if self.figure_row-y != 0:
-                    direction_y = (x_vec) / abs(x_vec) #TODO: Division by zero problem
-                else:
-                    direction_y = 0
-
-                if self.rectangles[(x,y)].cget("bg") == LIGHTGREEN or self.rectangles[(x,y)].cget("bg") == DARKGREEN:
-                    piece.add_jump_move((x_vec,y_vec))
-                elif self.rectangles[(x,y)].cget("bg") == DARKRED or self.rectangles[(x,y)].cget("bg") == LIGHTRED:
-                    piece.add_direction((direction_x,direction_y,0))
-                elif self.rectangles[(x,y)].cget("bg") == DARKBLUE or self.rectangles[(x,y)].cget("bg") == LIGHTBLUE:
-                    if direction_y != 0:
-                        if (direction_x,direction_y) in directions:
-                            directions[(direction_x,direction_y)] = max(abs(y_vec),directions[(direction_x,direction_y)])
-                        else: 
-                            directions[(direction_x,direction_y)] = abs(y_vec)
+        if len(self.figure_start_pos) >= 0:
+            piece = Piece()
+            piece.set_boarder_x(self.boarderx_var.get() == "on")
+            piece.set_boarder_y = (self.boardery_var.get() == "on")
+            piece.set_king(self.king_var.get() == "on")
+            piece.set_pawn(self.pawn_var.get() == "on")
+            piece.set_castling(self.castling_switch.get() == "on")
+            
+            directions = {}
+            for x in range(self.board_size):
+                for y in range(self.board_size):
+                    y_vec = (y-self.figure_row)
+                    x_vec = (x-self.figure_col)
+                    if self.figure_col-x != 0:
+                        direction_x = x_vec / abs(x_vec)
+                    else: 
+                        direction_x = 0
+                    if self.figure_row-y != 0:
+                        direction_y = (y_vec) / abs(y_vec) #TODO: Division by zero problem
                     else:
-                        if (direction_x,direction_y) in directions:
-                            directions[(direction_x,direction_y)] = max(abs(x_vec),directions[(direction_x,direction_y)])
-                        else: 
-                            directions[(direction_x,direction_y)] = abs(x_vec)
+                        direction_y = 0
 
-        for key in directions:
-            piece.add_direction((key[0],key[1],directions[key]))
-        
+                    if self.rectangles[(x,y)].cget("bg") == LIGHTGREEN or self.rectangles[(x,y)].cget("bg") == DARKGREEN:
+                        piece.add_jump_move((x_vec,y_vec))
+                    elif self.rectangles[(x,y)].cget("bg") == DARKRED or self.rectangles[(x,y)].cget("bg") == LIGHTRED:
+                        piece.add_direction((direction_x,direction_y,0))
+                    elif self.rectangles[(x,y)].cget("bg") == DARKBLUE or self.rectangles[(x,y)].cget("bg") == LIGHTBLUE:
+                        if direction_y != 0:
+                            if (direction_x,direction_y) in directions:
+                                directions[(direction_x,direction_y)] = max(abs(y_vec),directions[(direction_x,direction_y)])
+                            else: 
+                                directions[(direction_x,direction_y)] = abs(y_vec)
+                        else:
+                            if (direction_x,direction_y) in directions:
+                                directions[(direction_x,direction_y)] = max(abs(x_vec),directions[(direction_x,direction_y)])
+                            else: 
+                                directions[(direction_x,direction_y)] = abs(x_vec)
+
+            for key in directions:
+                piece.add_direction((key[0],key[1],directions[key]))
+
+            if self.slider.cget("state") == "normal":
+                self.slider.configure(state="disabled") #board size cant be switched now
+                self.chess_board_obj.set_size(self.board_size//2)
+
+            self.chess_board_obj.add_figure(piece,self.real_board_x_min, start_pos = self.figure_start_pos , color=False) #pos muss umgerechnet werden
+            
+            self.chess_board_obj.show_board()
+            
+        else:
+            print("figure needs start pos")
+    
+    
 
     def king_switches(self):
         self.castling_var.set("on")
@@ -177,6 +191,7 @@ class SetupNewGame():
     def on_image_click(self, event, image_path):
 
         self.update_board_colors()
+        self.figure_start_pos = []
 
         self.image_clicked = True
 
@@ -261,6 +276,25 @@ class SetupNewGame():
             elif color == LIGHTRED and self.is_next_to_figure(x,y):
                 self.draw_direction(x, y, False)
 
+    def field_clicked_r(self, x, y):
+        color = self.rectangles[(x, y)].cget("bg")
+        if y < (self.board_size//2) and self.image_clicked:
+            if (x + y) % 2 == 1:
+                if color == BLACK or color == DARKGREY:
+                    self.figure_start_pos += [[x,y]]
+                    self.rectangles[(x,y)].configure(bg=DARKYELLOW)
+                if color == DARKYELLOW:
+                    self.change_to_normal_color(x,y)
+                    self.figure_start_pos.remove([x,y])
+            else:
+                if color == WHITE or color == LIGHTGREY:
+                    self.figure_start_pos += [[x,y]]
+                    self.rectangles[(x,y)].configure(bg=LIGHTYELLOW)
+                if color == LIGHTYELLOW:
+                    self.change_to_normal_color(x,y)
+                    self.figure_start_pos.remove([x,y])
+        
+
     def is_next_to_figure(self,x,y):
         return (abs(self.figure_col-x) == 1 and abs(self.figure_row-y)) == 1 or (abs(self.figure_row-y) == 0 and abs(self.figure_col-x)) == 1 or (abs(self.figure_row-y) == 1 and abs(self.figure_col-x) == 0)
 
@@ -308,7 +342,7 @@ class SetupNewGame():
 
     def draw_board(self, value):
         if int(value) != self.board_size:
-
+            self.image_clicked = False
             self.board_size = int(value) * 2 - (int(value) %2 == 1)
             self.board_value = value
             self.real_board_x_min = int(value)//2
@@ -335,7 +369,7 @@ class SetupNewGame():
                     canvas_obj = ctk.CTkCanvas(self.canvas, width=cell_size, height=cell_size)
         
                     canvas_obj.bind("<Button-1>", lambda event, x=i, y=j: self.field_clicked(x, y))
-                    canvas_obj.bind("<Button-2>", lambda event, x=i, y=j: self.field_clicked_r(x, y))
+                    canvas_obj.bind("<Button-3>", lambda event, x=i, y=j: self.field_clicked_r(x, y))
                     self.rectangles[(i, j)] = canvas_obj
                     canvas_obj.place(x=x1, y=y1)
 
