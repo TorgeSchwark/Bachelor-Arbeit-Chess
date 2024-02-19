@@ -10,7 +10,7 @@ class Piece:
         self.king = False 
         self.pawn = False 
         self.castling = False
-        self.ing_path = ""
+        self.img_name = ""
 
     #recommended to use set_functions for inserting
     def set_boarder_x(self, value):
@@ -47,10 +47,24 @@ class Piece:
             raise Exception("Pieces that can castle cant walk over edges pawns cant castle ether")
         
     def add_direction(self,tupel):
-        print(self.move_directions)
-        self.move_directions = np.append(self.move_directions,tupel)
+        add = True
+        for ind in range(0,int(len(self.move_directions)/3)):
+            if self.move_directions[ind*3] == tupel[0] and self.move_directions[ind*3+1] == tupel[1] and self.move_directions[ind*3+2] == tupel[2]:
+                if add == False:
+                    raise Exception("duplicate found")
+                add = False
+        if add:
+            self.move_directions = np.append(self.move_directions,tupel)
 
     def add_jump_move(self, tupel):
-        print(self.jump_moves)
         self.jump_moves = np.append(self.jump_moves, tupel)
+
+    def set_image_path(self, image_path):
+        self.img_name = image_path
+
+    def show_piece(self):
+        print("\n Move directions: ", self.move_directions)
+        print("\n Jump Moves: ", self.jump_moves)
+        print("\n Boarder_x, Boarder_y, King, Pawn, castling, img_path", self.boarder_x, self.boarder_y, self.king, self.pawn, self.castling, self.img_name)
+    
 

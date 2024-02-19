@@ -16,7 +16,7 @@ class MainMenu():
         self.headline = ctk.CTkLabel(master=self.frame, text="Main Menu", font=("Arial", 25))
         self.headline.pack(pady=15)
 
-        self.button = ctk.CTkButton(master=self.frame, text="Create New Game", command=self.delete_stuff)
+        self.button = ctk.CTkButton(master=self.frame, text="Create New Game", command=self.create_new_game)
         self.button.pack(padx=20, pady=10)
 
         self.button1 = ctk.CTkButton(master=self.frame, text="Load Game")
@@ -25,7 +25,7 @@ class MainMenu():
         self.button2 = ctk.CTkButton(master=self.frame, text="Play Game")
         self.button2.pack(padx=20, pady=10)
 
-    def delete_stuff(self):
+    def create_new_game(self):
         self.frame.destroy()
         SetupNewGame(self.master, self.controller)
 
