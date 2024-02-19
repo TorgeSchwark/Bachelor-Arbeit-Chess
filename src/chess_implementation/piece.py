@@ -16,26 +16,21 @@ class Piece:
     def set_boarder_x(self, value):
         if not (self.king or self.pawn or self.castling):
             self.boarder_x = value
-        else: 
-            raise Exception("King and Pawn cant move over Edges")
     
     def set_boarder_y(self, value):
         if not (self.king or self.pawn or self.castling):
             self.boarder_y = value
-        else: 
-            raise Exception("King and Pawn cant move over Edges")
+
 
     def set_king(self, value):
         if not (self.pawn or self.boarder_x or self.boarder_y):
             self.king = value
-        else: 
-            raise Exception("King cant move over edges nor be a pawn")
+    
 
     def set_pawn(self, value):
         if not (self.king or self.boarder_x or self.boarder_y):
             self.pawn = value
-        else: 
-            raise Exception("Pawns cant walk over edges nor be a king")
+
         
     def set_start_pos(self, list):
         self.start_pos = list
@@ -43,8 +38,7 @@ class Piece:
     def set_castling(self, value):
         if not (self.boarder_x or self.boarder_y or self.pawn):
             self.castling = value
-        else:
-            raise Exception("Pieces that can castle cant walk over edges pawns cant castle ether")
+
         
     def add_direction(self,tupel):
         add = True
@@ -67,4 +61,11 @@ class Piece:
         print("\n Jump Moves: ", self.jump_moves)
         print("\n Boarder_x, Boarder_y, King, Pawn, castling, img_path", self.boarder_x, self.boarder_y, self.king, self.pawn, self.castling, self.img_name)
     
+    def turn_black(self):
+        for i in range(len(self.move_directions)//3):
+            self.move_directions[i*3] = -self.move_directions[i*3]
+            self.move_directions[i*3+1] = -self.move_directions[i*3+1]
+        for i in range(len(self.jump_moves)):
+            self.jump_moves[i] = -self.jump_moves[i]
+
 

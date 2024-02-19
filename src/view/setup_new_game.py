@@ -8,6 +8,8 @@ from chess_implementation.chess_board import ChessBoard
 import copy
 import numpy as np
 
+#TODO: Comments and better code
+
 class SetupNewGame():
 
     def __init__(self, master, controller):
@@ -49,54 +51,61 @@ class SetupNewGame():
         self.show_board_button = ctk.CTkButton(master=self.options, text="Show current board", command=self.show_current_board)
         self.show_board_button.pack(expand=False, padx=20, pady=5)
 
+
     def show_current_board(self): #size doesnt work !
 
         if self.slider.cget("state") == "disabled":
+
+            children = self.options2.winfo_children()
+            for child in children:
+                child.destroy()
             
-            self.draw_board(self.board_size//2)
+            self.draw_normal_board(self.board_size//2)
 
             for ind in range(len(self.chess_board_obj.white_pieces)):
                 path = WHITE_PIECES_PATH+ self.chess_board_obj.white_pieces[ind].img_name
                 pos = self.chess_board_obj.white_pieces_pos[ind*2],self.chess_board_obj.white_pieces_pos[ind*2+1]
                 position = self.rectangles[pos]
-                label_width = 0.48 * position.winfo_width()
-                print(pos, label_width)
+                label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
                 img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
                                 dark_image=Image.open((path)).convert("RGBA"),
-                                size=(50, 50))
+                                size=(label_width, label_width))
                 label = ctk.CTkLabel(position, text="", image=img)
                 label.place(relx=0.5, rely=0.5, anchor="center")
         else:
             raise Exception("please configure one Piece first")
 
-        
     def load_images(self):
-        if not hasattr(self, "image_frame"):
-            folder_path = "src/view/images/Chess_pieces/White_pieces/"
-            num_columns = 4
-            row = 0
-            col = 0
-            
-            # Erstelle den Frame für die Bilder
-            self.image_frame = ctk.CTkScrollableFrame(self.options2, border_width=2)
-            self.image_frame.pack(expand=True, padx=20)
+        self.draw_board(self.slider.get())
 
-            for file in os.listdir(folder_path):
-                img = ctk.CTkImage(light_image=Image.open((folder_path + file)).convert("RGBA"),
+        if hasattr(self, "image_frame"):
+            self.image_frame.destroy()
+        
+        folder_path = "src/view/images/Chess_pieces/White_pieces/"
+        num_columns = 4
+        row = 0
+        col = 0
+            
+        # Erstelle den Frame für die Bilder
+        self.image_frame = ctk.CTkScrollableFrame(self.options2, border_width=2)
+        self.image_frame.pack(expand=True, padx=20)
+
+        for file in os.listdir(folder_path):
+            img = ctk.CTkImage(light_image=Image.open((folder_path + file)).convert("RGBA"),
                                 dark_image=Image.open((folder_path + file)).convert("RGBA"),
                                 size=(30, 30))
 
-                my_label = ctk.CTkLabel(self.image_frame, text="", image=img)
-                my_label.grid(row=row, column=col, padx=5, pady=5)
+            my_label = ctk.CTkLabel(self.image_frame, text="", image=img)
+            my_label.grid(row=row, column=col, padx=5, pady=5)
 
-                self.image_labels[file] = my_label
+            self.image_labels[file] = my_label
 
-                my_label.bind("<Button-1>", lambda event, image_path=(folder_path + file): self.on_image_click(event, image_path))
+            my_label.bind("<Button-1>", lambda event, image_path=(folder_path + file): self.on_image_click(event, image_path))
 
-                col += 1
-                if col == num_columns:
-                    col = 0
-                    row += 1
+            col += 1
+            if col == num_columns:
+                col = 0
+                row += 1
 
     def add_piece_options(self):
 
@@ -138,6 +147,7 @@ class SetupNewGame():
 
     def save_piece(self):
         if len(self.piece_start_pos) > 0:
+            self.piece_start_pos = []
             piece = Piece()
             piece.set_boarder_x(self.boarderx_var.get() == "on")
             piece.set_boarder_y = (self.boardery_var.get() == "on")
@@ -164,6 +174,8 @@ class SetupNewGame():
                         piece.add_jump_move((x_vec,y_vec))
                     elif self.rectangles[(x,y)].cget("bg") == DARKRED or self.rectangles[(x,y)].cget("bg") == LIGHTRED:
                         piece.add_direction((direction_x,direction_y,0)) #only once
+                    elif self.rectangles[(x,y)].cget("bg") == LIGHTYELLOW or self.rectangles[(x,y)].cget("bg") == DARKYELLOW:
+                        self.piece_start_pos += [[x,y]]
                     elif self.rectangles[(x,y)].cget("bg") == DARKBLUE or self.rectangles[(x,y)].cget("bg") == LIGHTBLUE:
                         if direction_y != 0:
                             if (direction_x,direction_y) in directions:
@@ -175,6 +187,7 @@ class SetupNewGame():
                                 directions[(direction_x,direction_y)] = max(abs(x_vec),directions[(direction_x,direction_y)])
                             else: 
                                 directions[(direction_x,direction_y)] = abs(x_vec)
+                        
 
             for key in directions:
                 piece.add_direction((key[0],key[1],directions[key]))
@@ -251,10 +264,16 @@ class SetupNewGame():
 
     def update_board_colors(self):
         self.image_clicked = False
-        value = self.board_value
         for position, canvas_obj in self.rectangles.items():
             i, j = position
-            self.change_to_normal_color(i,j)
+            if self.rectangles[(i,j)].cget("bg") != "black":
+                self.change_to_normal_color(i,j)
+        
+        for pos in range(len(self.chess_board_obj.white_pieces_pos)//2):
+                self.rectangles[(self.chess_board_obj.white_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.white_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(bg="black")
+        for pos in range(len(self.chess_board_obj.black_pieces_pos)//2):
+            self.rectangles[(self.chess_board_obj.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(bg="black")
+
 
     def change_to_normal_color(self, x, y):
         value = self.board_value
@@ -282,9 +301,9 @@ class SetupNewGame():
         
         if self.image_clicked and not (x == self.piece_col and y == self.piece_row):
             color = self.rectangles[(x, y)].cget("bg")
-            if color == WHITE or color == LIGHTGREY:
+            if color == WHITE or color == LIGHTGREY or color == "black":
                 self.rectangles[(x, y)].configure(bg=LIGHTGREEN)
-            elif color == BLACK or color == DARKGREY:
+            elif color == BLACK or color == DARKGREY or color == "black":
                 self.rectangles[(x, y)].configure(bg=DARKGREEN)
 
             elif color == LIGHTGREEN:
@@ -317,14 +336,14 @@ class SetupNewGame():
         color = self.rectangles[(x, y)].cget("bg")
         if y < (self.board_size//2) and self.image_clicked and y >= self.real_board_y_min and x >= self.real_board_x_min and x < self.real_board_x_max:
             if (x + y) % 2 == 1:
-                if color == BLACK or color == DARKGREY:
+                if color == BLACK or color == DARKRED or color == DARKBLUE or color == DARKGREEN:
                     self.piece_start_pos += [[x,y]]
                     self.rectangles[(x,y)].configure(bg=DARKYELLOW)
                 if color == DARKYELLOW:
                     self.change_to_normal_color(x,y)
                     self.piece_start_pos.remove([x,y])
             else:
-                if color == WHITE or color == LIGHTGREY:
+                if color == WHITE or color == LIGHTRED or color == LIGHTBLUE or color == LIGHTGREEN:             
                     self.piece_start_pos += [[x,y]]
                     self.rectangles[(x,y)].configure(bg=LIGHTYELLOW)
                 if color == LIGHTYELLOW:
@@ -410,4 +429,35 @@ class SetupNewGame():
                     canvas_obj.place(x=x1, y=y1)
 
                     self.change_to_normal_color(i, j)
+        
+            for pos in range(len(self.chess_board_obj.white_pieces_pos)//2):
+                self.rectangles[(self.chess_board_obj.white_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.white_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(bg="black")
+            for pos in range(len(self.chess_board_obj.black_pieces_pos)//2):
+                self.rectangles[(self.chess_board_obj.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(bg="black")
+
+
                         
+    def draw_normal_board(self, size):
+        if hasattr(self, "canvas"):
+            self.canvas.destroy()
+
+        min_canvas_size = self.board.winfo_height() - 100  
+        cell_size = min_canvas_size / size
+
+        self.canvas = ctk.CTkCanvas(master=self.board, width=min_canvas_size, height=min_canvas_size)
+        self.canvas.pack(expand=True)
+
+        self.rectangles = {}
+
+        for i in range(size):
+            for j in range(size):
+                x1 = i*cell_size
+                y1 = j*cell_size 
+                canvas_obj = ctk.CTkCanvas(self.canvas,width=cell_size,height=cell_size)
+                self.rectangles[(i, j)] = canvas_obj
+                canvas_obj.place(x=x1, y=y1)
+                if (j + i) % 2 == 1:
+                    self.rectangles[(i,j)].configure(bg=BLACK)
+                else:
+                    self.rectangles[(i,j)].configure(bg=WHITE)
+

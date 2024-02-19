@@ -1,5 +1,5 @@
 import numpy as np
-
+import copy
 class ChessBoard:
 
     def __init__(self):
@@ -25,7 +25,7 @@ class ChessBoard:
         for pos in start_pos:
             x = pos[0] - offset
             y = pos[1] - offset
-            print(x,y,offset)
+            
             if y > self.size//2:
                 raise Exception("White pieces are on the lower side!")
             
@@ -34,15 +34,18 @@ class ChessBoard:
             self.white_pieces_pos = np.append(self.white_pieces_pos,[x,y]) 
             self.white_pieces_state = np.append(self.white_pieces_state, True)
 
-            self.black_pieces = np.append(self.black_pieces, piece)
+            black_piece = copy.deepcopy(piece)
+            black_piece.turn_black()
+            self.black_pieces = np.append(self.black_pieces, black_piece)
             self.board[x][self.size-1-y] = -(len(self.black_pieces))  #negative position in piece list -1
             self.black_pieces_pos = np.append(self.black_pieces_pos,[x,self.size-1-y])
             self.black_pieces_state = np.append(self.black_pieces_state, True)
+            
 
             if new_piece:
                 new_piece = False
                 self.all_non_pawn_pieces = np.append(self.all_non_pawn_pieces, len(self.white_pieces)-1) #for each unique piece save one index in piece list
-                #when promoting later a move can be represented as (from,to,piece_ind)
+
 
 
 
