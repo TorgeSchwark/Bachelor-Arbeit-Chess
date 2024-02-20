@@ -10,10 +10,11 @@ import copy
 import numpy as np
 import pickle
 import re
-#TODO: Comments and better code
+
 
 class SetupNewGame():
 
+    #Setup main settings(main elements) 
     def __init__(self, master, controller):
         
         self.chess_board_obj = ChessBoard()
@@ -64,20 +65,21 @@ class SetupNewGame():
         self.main_menu_button = ctk.CTkButton(master=self.options, text="Back to Menu", command=self.main_menu)
         self.main_menu_button.pack(expand=False, padx=20, pady=5)
 
+    #call the DB to save the Game
     def save_game(self):
         if (self.model.save_game(self.chess_board_obj, self.game_name.get())):
             print("Saved Game successful")
             self.main_menu()
         else:
             self.game_name = "Save wasnt successful"
-
+    
+    #go back to main menu
     def main_menu(self):
         from view.starting_page import MainMenu
         self.frame.destroy()
         MainMenu(self.master, self.controller)
-
-
-
+    
+    #shows how the current configuration would look like
     def show_current_board(self):
 
         if self.slider.cget("state") == "disabled":
@@ -87,7 +89,7 @@ class SetupNewGame():
                 child.destroy()
             
             self.draw_normal_board(self.board_size//2)
-
+            #show all white pieces
             for ind in range(len(self.chess_board_obj.white_pieces)):
                 path = WHITE_PIECES_PATH+ self.chess_board_obj.white_pieces[ind].img_name
                 pos = self.chess_board_obj.white_pieces_pos[ind*2],self.chess_board_obj.white_pieces_pos[ind*2+1]
@@ -98,7 +100,7 @@ class SetupNewGame():
                                 size=(label_width, label_width))
                 label = ctk.CTkLabel(position, text="", image=img)
                 label.place(relx=0.5, rely=0.5, anchor="center")
-
+            #show all black pieces
             for ind in range(len(self.chess_board_obj.black_pieces)):
                 path = BLACK_PIECES_PATH+ self.chess_board_obj.black_pieces[ind].img_name
                 pos = self.chess_board_obj.black_pieces_pos[ind*2],self.chess_board_obj.black_pieces_pos[ind*2+1]
@@ -113,6 +115,7 @@ class SetupNewGame():
         else:
             raise Exception("please configure one Piece first")
 
+    #loads images to chose from for the pieces
     def load_images(self):
         self.draw_board(self.slider.get())
 
@@ -123,14 +126,11 @@ class SetupNewGame():
 
         self.image_frame = 0
 
-        
-        
         folder_path = "src/view/images/Chess_pieces/White_pieces/"
         num_columns = 4
         row = 0
         col = 0
             
-        # Erstelle den Frame für die Bilder
         self.image_frame = ctk.CTkScrollableFrame(self.options2, border_width=2)
         self.image_frame.pack(expand=True, padx=20)
 
@@ -151,6 +151,7 @@ class SetupNewGame():
                 col = 0
                 row += 1
 
+    #adds the options for the pieces(Pawn, King, ...)
     def add_piece_options(self):
 
         if hasattr(self, "piece_options_frame"):
@@ -189,6 +190,7 @@ class SetupNewGame():
         self.save_piece_button.pack(expand=True, padx=20, pady=5)
         self.save_piece_button.pack_propagate(False)
 
+    #searches the board to detect the settings for the piece by looking for rect colors
     def save_piece(self):
         if len(self.piece_start_pos) > 0:
             self.piece_start_pos = []
@@ -257,6 +259,7 @@ class SetupNewGame():
         else:
             print("piece needs start pos")
     
+    #ensures that only valid options can be made
     def king_switches(self):
         self.castling_var.set("on")
         self.pawn_var.set("off")
@@ -279,6 +282,7 @@ class SetupNewGame():
         self.king_var.set("off")
         self.castling_var.set("off")
 
+    #if a picture is chosen for the piece loads image in the center
     def on_image_click(self, event, image_path):
 
         self.update_board_colors()  # hier muss auf das rendern gewartet werden!
@@ -307,6 +311,7 @@ class SetupNewGame():
 
         self.add_piece_options()
 
+    #sets board colors back to default
     def update_board_colors(self):
         self.image_clicked = False
         for position, canvas_obj in self.rectangles.items():
@@ -318,9 +323,10 @@ class SetupNewGame():
         for pos in range(len(self.chess_board_obj.black_pieces_pos)//2):
             self.rectangles[(self.chess_board_obj.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
 
-
+    #changes one field back to original color
     def change_to_normal_color(self, x, y):
         value = self.board_value
+        # of a rect has a black thickness it should stay since this is not optional and should stop one of chosing taken positions as starting position
         if self.rectangles[(x,y)].cget("highlightbackground") != REAL_BLACK:
             self.rectangles[(x,y)].configure(highlightthickness=1, highlightbackground="White")
         if (x + y) % 2 == 1:
@@ -334,6 +340,7 @@ class SetupNewGame():
             else:
                 self.rectangles[(x,y)].configure(bg=WHITE)
 
+    #detect choices made (controlled by rect colors not by states) left klicks
     def field_clicked(self, x, y): 
 
         if self.piece_col-x != 0:
@@ -378,7 +385,7 @@ class SetupNewGame():
             elif color == LIGHTRED and self.is_next_to_piece(x,y):
                 self.draw_direction(x, y, False)
 
-
+    #detect choices made (controlled by rect colors not by states) right klicks
     def field_clicked_r(self, x, y):
         color = self.rectangles[(x, y)].cget("bg")
         bg_color = self.rectangles[(x, y)].cget("highlightbackground")
@@ -397,10 +404,12 @@ class SetupNewGame():
                 if bg_color == LIGHTYELLOW:
                     self.rectangles[(x,y)].configure(highlightthickness=1, highlightbackground="White")
                     self.piece_start_pos.remove([x,y])
-        
+
+    #checks if a field is next to the piece    
     def is_next_to_piece(self,x,y):
         return (abs(self.piece_col-x) == 1 and abs(self.piece_row-y)) == 1 or (abs(self.piece_row-y) == 0 and abs(self.piece_col-x)) == 1 or (abs(self.piece_row-y) == 1 and abs(self.piece_col-x) == 0)
 
+    #makes sure walking directions stay connected
     def correct_direction(self,x,y):
         if self.piece_col-x != 0:
             direction_x = (self.piece_col-x) / abs(self.piece_col-x)
@@ -420,7 +429,8 @@ class SetupNewGame():
         else:
             return False
 
-    def draw_direction(self,x,y, set):  # piece needs to be updated
+    #changes colors to red for one direction
+    def draw_direction(self,x,y, set): 
         if self.piece_col-x != 0:
             direction_x = (x-self.piece_col) / abs(self.piece_col-x)
         else: 
@@ -443,6 +453,7 @@ class SetupNewGame():
                 x += direction_x
                 y += direction_y
 
+    #draws the initial board with a frame to chose further jump moves
     def draw_board(self, value):
         if int(value) != self.board_size:
             self.image_clicked = False
@@ -483,10 +494,9 @@ class SetupNewGame():
                 self.rectangles[(self.chess_board_obj.white_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.white_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
             for pos in range(len(self.chess_board_obj.black_pieces_pos)//2):
                 self.rectangles[(self.chess_board_obj.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-
-
-                        
-    def draw_normal_board(self, size):
+                  
+    #draws the normal board no frame              
+    def draw_normal_board(self, size): 
         if hasattr(self, "canvas"):
             self.canvas.destroy()
 
