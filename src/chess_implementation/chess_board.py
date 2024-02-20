@@ -4,7 +4,7 @@ class ChessBoard:
 
     def __init__(self):
         self.size = 0 #board >= 0 to < size
-        self.in_setup_stage = True
+        self.has_king = False
         self.setup_board()
 
     def setup_board(self): #the boards are [[colo][col][col]]
@@ -20,7 +20,9 @@ class ChessBoard:
 
         self.all_non_pawn_pieces = np.empty(0,dtype=int)
 
-    def add_piece(self, piece, offset, start_pos, color):  #adds a piece for white and blacks side
+    def add_piece(self, piece, offset, start_pos):  #adds a piece for white and blacks side
+        if piece.king:
+            self.has_king = True
         new_piece = True
         for pos in start_pos:
             x = pos[0] - offset

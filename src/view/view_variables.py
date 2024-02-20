@@ -16,6 +16,7 @@ DARKRED = "#990000"
 
 WHITE = "#F5F5F5"
 BLACK = "#555555"
+REAL_BLACK = "black"
 
 BLACK_PIECES_PATH = "src/view/images/Chess_pieces/Black_pieces/"
 WHITE_PIECES_PATH = "src/view/images/Chess_pieces/White_pieces/"
