@@ -12,8 +12,8 @@ class ChessBoard:
         self.all_non_pawn_pieces = np.empty(0,dtype=int)
         self.past_moves = np.empty(1000)
         self.board = np.zeros((self.size, self.size),dtype=int)
-      
-
+        self.white_pieces = np.zeros(0)
+        self.black_pieces = np.zeros(0)
 
     def add_piece(self, piece_rule, offset, start_pos):  #adds a piece for white and blacks side
         if piece_rule.king:
@@ -26,8 +26,7 @@ class ChessBoard:
             if y > self.size//2:
                 raise Exception("White pieces are on the lower side!")
             
-            white_piece = Piece()
-            white_piece.rules = piece_rule
+            white_piece = Piece(piece_rule)
             white_piece.position[0] = x 
             white_piece.position[1] = y 
             
@@ -38,12 +37,11 @@ class ChessBoard:
             black_piece_rules = copy.deepcopy(piece_rule)
             black_piece_rules.turn_black()
 
-            black_piece = Piece()
-            black_piece.rules = black_piece_rules
+            black_piece = Piece(black_piece_rules)
             black_piece.position[0] = x
             black_piece.position[1] = self.size-1-y
 
-            self.black_pieces = np.append(self.black_pieces, black_piece_rules)
+            self.black_pieces = np.append(self.black_pieces, black_piece)
             self.board[x][self.size-1-y] = -(len(self.black_pieces))  #negative position in piece list -1
     
 
@@ -61,13 +59,9 @@ class ChessBoard:
         print("\n")
 
         print("\n piece list white: ", self.white_pieces)
-        print("\n piece_state white: ", self.white_pieces_state)
-        print("\n piece_pos white: ", self.white_pieces_pos)
         print("\n")
 
         print("\n piece list black: ", self.black_pieces)
-        print("\n piece_state black: ", self.black_pieces_state)
-        print("\n piece_pos black: ", self.black_pieces_pos)
         print("\n ")
 
         print("\n all different pieces: ", self.all_non_pawn_pieces)

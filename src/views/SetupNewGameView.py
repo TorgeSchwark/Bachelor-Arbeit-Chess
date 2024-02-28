@@ -4,7 +4,7 @@ from tkinter import *
 from PIL import Image
 from views.view_variables import *
 from chess_implementation.chess_board import ChessBoard
-from chess_implementation.piecerules import Piece
+from chess_implementation.piece_rules import PieceRules
 from views.View import View
 
 class SetupNewGameView(View):
@@ -161,10 +161,17 @@ class SetupNewGameView(View):
             i, j = position
             self.change_to_normal_color(i,j)
         
-        for pos in range(len(self.chess_board_instance.white_pieces_pos)//2):
-                self.rectangles[(self.chess_board_instance.white_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_instance.white_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-        for pos in range(len(self.chess_board_instance.black_pieces_pos)//2):
-            self.rectangles[(self.chess_board_instance.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_instance.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
+        for pos in range(len(self.chess_board_instance.white_pieces)):
+            piece = self.chess_board_instance.white_pieces[pos]
+            start_pos_x = piece.position[0]
+            start_pos_y = piece.position[1]
+            self.rectangles[(start_pos_x + self.real_board_x_min, start_pos_y +self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
+        for pos in range(len(self.chess_board_instance.black_pieces)):
+            piece = self.chess_board_instance.black_pieces[pos]
+            start_pos_x = piece.position[0]
+            start_pos_y = piece.position[1]
+            self.rectangles[(start_pos_x + self.real_board_x_min, start_pos_y+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
+                  
 
     #changes colors to red for one direction
     def draw_direction(self,x,y, set): 
@@ -244,7 +251,7 @@ class SetupNewGameView(View):
     def save_piece(self):
         if len(self.piece_start_pos) > 0:
             self.piece_start_pos = []
-            piece = Piece()
+            piece = PieceRules()
             piece.set_boarder_x(self.boarderx_var.get() == "on")
             piece.set_boarder_y = (self.boardery_var.get() == "on")
             piece.set_king(self.king_var.get() == "on")
@@ -476,10 +483,17 @@ class SetupNewGameView(View):
 
                     self.change_to_normal_color(i, j)
         
-            for pos in range(len(self.chess_board_instance.white_pieces_pos)//2):
-                self.rectangles[(self.chess_board_instance.white_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_instance.white_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-            for pos in range(len(self.chess_board_instance.black_pieces_pos)//2):
-                self.rectangles[(self.chess_board_instance.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_instance.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-                  
+            for pos in range(len(self.chess_board_instance.white_pieces)):
+                piece = self.chess_board_instance.white_pieces[pos]
+                start_pos_x = piece.position[0]
+                start_pos_y = piece.position[1]
+                self.rectangles[(start_pos_x + self.real_board_x_min, start_pos_y +self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
+            for pos in range(len(self.chess_board_instance.black_pieces)):
+                piece = self.chess_board_instance.black_pieces[pos]
+                start_pos_x = piece.position[0]
+                start_pos_y = piece.position[1]
+                self.rectangles[(start_pos_x + self.real_board_x_min, start_pos_y+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
+                    
+
     def destroy(self):
         self.main_frame.destroy()
