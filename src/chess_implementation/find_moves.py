@@ -153,7 +153,8 @@ def add_move(move_list, move_ind, from_x, from_y, go_to_x, go_to_y, move_type, c
 
             move_ind += 5
 
-def add_castling(piece: Piece, piece):
+def add_castling(piece: Piece, ):
+
 
 def on_board(x,size):
     return (x >= 0 and x < size)

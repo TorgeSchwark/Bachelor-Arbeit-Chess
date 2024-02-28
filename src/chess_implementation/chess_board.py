@@ -16,12 +16,12 @@ class ChessBoard:
         self.white_pieces = np.empty(0,dtype=object)  # [pawn_rules,bishop_rules, ...]
         self.white_pieces_pos = np.empty(0,dtype=int) # [2,1,3,1,...] 2coordinates for each piece
         self.white_pieces_state = np.empty(0, dtype=bool)
-        self.white_pieces_start_pos = np.empty(0)
+        self.white_pieces_first_move = np.empty(0) # for every piece we save when the first move was made
 
         self.black_pieces = np.empty(0,dtype=object)
         self.black_pieces_pos = np.empty(0,dtype=int)
         self.black_pieces_state = np.empty(0,dtype=bool)
-        self.black_pieces_start_pos = np.empty(0)
+        self.black_pieces_first_move = np.empty(0)
 
         self.all_non_pawn_pieces = np.empty(0,dtype=int)
 
