@@ -1,5 +1,5 @@
 from chess_implementation.chess_board import ChessBoard
-from chess_implementation.piece import Piece
+from chess_implementation.piecerules import Piece
 import numpy as np
 from chess_implementation.chess_variables import *
 

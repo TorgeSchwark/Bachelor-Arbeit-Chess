@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+from chess_implementation.piece import Piece
 class ChessBoard:
 
     def __init__(self):
@@ -8,28 +9,14 @@ class ChessBoard:
         self.color_to_move = 1
         self.move_count = 0
         self.fifty_move_rule = 0
-        self.setup_board()
-
-    def setup_board(self): #the boards are [[colo][col][col]]
-        self.board = np.zeros((self.size, self.size),dtype=int) # board contains black piece_list_pos in negative numbers -1 and white piece pos in pos numbers +1
-
-        self.white_pieces = np.empty(0,dtype=object)  # [pawn_rules,bishop_rules, ...]
-        self.white_pieces_pos = np.empty(0,dtype=int) # [2,1,3,1,...] 2coordinates for each piece
-        self.white_pieces_state = np.empty(0, dtype=bool)
-        self.white_pieces_first_move = np.empty(0) # for every piece we save when the first move was made
-
-        self.black_pieces = np.empty(0,dtype=object)
-        self.black_pieces_pos = np.empty(0,dtype=int)
-        self.black_pieces_state = np.empty(0,dtype=bool)
-        self.black_pieces_first_move = np.empty(0)
-
         self.all_non_pawn_pieces = np.empty(0,dtype=int)
-
         self.past_moves = np.empty(1000)
+        self.board = np.zeros((self.size, self.size),dtype=int)
+      
 
 
-    def add_piece(self, piece, offset, start_pos):  #adds a piece for white and blacks side
-        if piece.king:
+    def add_piece(self, piece_rule, offset, start_pos):  #adds a piece for white and blacks side
+        if piece_rule.king:
             self.has_king = True
         new_piece = True
         for pos in start_pos:
@@ -39,22 +26,28 @@ class ChessBoard:
             if y > self.size//2:
                 raise Exception("White pieces are on the lower side!")
             
-            self.white_pieces = np.append(self.white_pieces, piece)
-            self.board[x][y] = len(self.white_pieces)  #position in piece list +1
-            self.white_pieces_pos = np.append(self.white_pieces_pos,[x,y]) 
-            self.white_pieces_start_pos = np.append(self.white_pieces_start_pos,[x,y])
-            self.white_pieces_state = np.append(self.white_pieces_state, True)
-
-            black_piece = copy.deepcopy(piece)
-            black_piece.turn_black()
-            self.black_pieces = np.append(self.black_pieces, black_piece)
-            self.board[x][self.size-1-y] = -(len(self.black_pieces))  #negative position in piece list -1
-            self.black_pieces_pos = np.append(self.black_pieces_pos,[x,self.size-1-y])
-            self.black_pieces_start_pos = np.append(self.black_pieces_start_pos,[x,self.size-1-y])
-            self.black_pieces_state = np.append(self.black_pieces_state, True)
+            white_piece = Piece()
+            white_piece.rules = piece_rule
+            white_piece.position[0] = x 
+            white_piece.position[1] = y 
             
+            self.white_pieces = np.append(self.white_pieces, white_piece)
+            self.board[x][y] = len(self.white_pieces)  #position in piece list +1
+        
 
-            if new_piece and not (piece.king and piece.pawn):
+            black_piece_rules = copy.deepcopy(piece_rule)
+            black_piece_rules.turn_black()
+
+            black_piece = Piece()
+            black_piece.rules = black_piece_rules
+            black_piece.position[0] = x
+            black_piece.position[1] = self.size-1-y
+
+            self.black_pieces = np.append(self.black_pieces, black_piece_rules)
+            self.board[x][self.size-1-y] = -(len(self.black_pieces))  #negative position in piece list -1
+    
+
+            if new_piece and not (piece_rule.king or piece_rule.pawn):
                 new_piece = False
                 self.all_non_pawn_pieces = np.append(self.all_non_pawn_pieces, len(self.white_pieces)-1) #for each unique piece save one index in piece list
 

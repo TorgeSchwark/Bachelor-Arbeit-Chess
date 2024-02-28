@@ -4,7 +4,7 @@ from tkinter import *
 from PIL import Image
 from views.view_variables import *
 from chess_implementation.chess_board import ChessBoard
-from chess_implementation.piece import Piece
+from chess_implementation.piecerules import Piece
 from views.View import View
 
 class SetupNewGameView(View):
