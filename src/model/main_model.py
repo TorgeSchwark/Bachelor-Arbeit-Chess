@@ -43,12 +43,34 @@ class Model():
         games_dict = {}
         for file_name in os.listdir(DATA_PATH):
             if file_name.endswith(".pickle"):
-                game_name = os.path.splitext(file_name)[0]  # Entferne die Erweiterung
+                game_name = os.path.splitext(file_name)[0]  #cut of ending for dict key
                 file_path = os.path.join(DATA_PATH, file_name)
-                print(file_path)
                 with open(file_path, "rb") as f:
                     game_instance = pickle.load(f)
                 games_dict[game_name] = game_instance
         return games_dict
+
+    #gets Game name and loads it
+    def load_game(self, game_name):
+        game_name += ".pickle"
+        file_path = os.path.join(DATA_PATH, game_name)
+        if self.is_valid_filename(game_name) and os.path.exists(file_path):
+            with open(file_path, "r") as f:
+                game_instance = pickle.load(f)
+            return game_instance
+        else:
+            print(f"Error: File '{file_path}' does not exist.")
+            return None
+
+    #deletes file with certain file_name
+    def delete_file(self, game_name):
+        game_name += ".pickle"
+        file_path = os.path.join(DATA_PATH, game_name)
+        print(file_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"File '{game_name}' has been deleted.")
+        else:
+            print(f"Error: File '{game_name}' does not exist.")
 
     
