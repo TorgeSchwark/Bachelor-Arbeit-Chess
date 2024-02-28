@@ -12,7 +12,8 @@ class LoadGameController(Controller):
     
     def select_game(self, game_name):
         print(f"Das ausgewählte Spiel ist: ", game_name)
-        return self.model.load_game(game_name)
+        self.load_game_view.destroy()
+        Core.openController("PlayGame", self.master, True , game_name= game_name)
 
     def delete_game(self, game_name):
         self.model.delete_file(game_name)

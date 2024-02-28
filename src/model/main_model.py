@@ -55,7 +55,8 @@ class Model():
         game_name += ".pickle"
         file_path = os.path.join(DATA_PATH, game_name)
         if self.is_valid_filename(game_name) and os.path.exists(file_path):
-            with open(file_path, "r") as f:
+            with open(file_path, "rb") as f:
+                print(file_path)
                 game_instance = pickle.load(f)
             return game_instance
         else:

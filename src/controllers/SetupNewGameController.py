@@ -17,7 +17,7 @@ class SetupNewGameController(Controller):
 
     #call the DB to save the Game
     def save_game(self):
-        if (self.model.save_game(self.setup_new_game_view.chess_board_obj, self.setup_new_game_view.game_name_var.get())):
+        if (self.model.save_game(self.setup_new_game_view.chess_board_instance, self.setup_new_game_view.game_name_var.get())):
             print("Saved Game successful")
             self.main_menu()
         else:

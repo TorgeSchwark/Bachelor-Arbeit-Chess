@@ -1,19 +1,20 @@
 import customtkinter as ctk
 import os
 from tkinter import *
-from PIL import Image, ImageTk
+from PIL import Image
 from views.view_variables import *
 from chess_implementation.chess_board import ChessBoard
 from chess_implementation.piece import Piece
+from views.View import View
 
-class SetupNewGameView():
+class SetupNewGameView(View):
 
     def __init__(self, master, controller):
         
         self.controller = controller
         self.master = master
         
-        self.chess_board_obj = ChessBoard()
+        self.chess_board_instance = ChessBoard()
 
         self.board_size = 0
         self.image_labels = {} 
@@ -57,11 +58,14 @@ class SetupNewGameView():
         self.show_board_button = ctk.CTkButton(master=self.settings_frame, text="Show current board", command=self.show_current_board)
         self.show_board_button.pack(expand=False, padx=20, pady=5)
 
+        self.main_menu_button = ctk.CTkButton(master=self.settings_frame, text="Back to Menu", command=self.controller.main_menu)
+        self.main_menu_button.pack(expand=False, padx=20, pady=5)
+
         self.save_game_button = ctk.CTkButton(master=self.settings_frame, text="Save game", command=self.controller.save_game)
         self.save_game_button.pack(expand=False, padx=20, pady=5)
 
-        self.main_menu_button = ctk.CTkButton(master=self.settings_frame, text="Back to Menu", command=self.controller.main_menu)
-        self.main_menu_button.pack(expand=False, padx=20, pady=5)
+        self.resize_board_button = ctk.CTkButton(master=self.settings_frame, text="resize board", command=lambda: self.draw_board(self.board_value, resize = True))
+        self.resize_board_button.pack(expand=False, padx=20, pady=5)
 
     #detect choices made (controlled by rect colors not by states) left klicks
     def field_clicked(self, x, y): 
@@ -158,10 +162,10 @@ class SetupNewGameView():
             i, j = position
             self.change_to_normal_color(i,j)
         
-        for pos in range(len(self.chess_board_obj.white_pieces_pos)//2):
-                self.rectangles[(self.chess_board_obj.white_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.white_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-        for pos in range(len(self.chess_board_obj.black_pieces_pos)//2):
-            self.rectangles[(self.chess_board_obj.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
+        for pos in range(len(self.chess_board_instance.white_pieces_pos)//2):
+                self.rectangles[(self.chess_board_instance.white_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_instance.white_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
+        for pos in range(len(self.chess_board_instance.black_pieces_pos)//2):
+            self.rectangles[(self.chess_board_instance.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_instance.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
 
     #changes colors to red for one direction
     def draw_direction(self,x,y, set): 
@@ -285,11 +289,11 @@ class SetupNewGameView():
 
             if self.board_size_slider.cget("state") == "normal":
                 self.board_size_slider.configure(state="disabled") #board size cant be switched now
-                self.chess_board_obj.set_size(self.board_size//2)
+                self.chess_board_instance.set_size(self.board_size//2)
 
-            self.chess_board_obj.add_piece(piece,self.real_board_x_min, start_pos = self.piece_start_pos ) #pos muss umgerechnet werden
+            self.chess_board_instance.add_piece(piece,self.real_board_x_min, start_pos = self.piece_start_pos ) #pos muss umgerechnet werden
             
-            self.chess_board_obj.show_board()
+            self.chess_board_instance.show_board()
 
             self.update_board_colors()
             self.piece_lable.destroy()
@@ -353,9 +357,9 @@ class SetupNewGameView():
             
             self.draw_normal_board(self.board_size//2)
             #show all white pieces
-            for ind in range(len(self.chess_board_obj.white_pieces)):
-                path = WHITE_PIECES_PATH+ self.chess_board_obj.white_pieces[ind].img_name
-                pos = self.chess_board_obj.white_pieces_pos[ind*2],self.chess_board_obj.white_pieces_pos[ind*2+1]
+            for ind in range(len(self.chess_board_instance.white_pieces)):
+                path = WHITE_PIECES_PATH+ self.chess_board_instance.white_pieces[ind].img_name
+                pos = self.chess_board_instance.white_pieces_pos[ind*2],self.chess_board_instance.white_pieces_pos[ind*2+1]
                 position = self.rectangles[pos]
                 label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
                 img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
@@ -364,9 +368,9 @@ class SetupNewGameView():
                 label = ctk.CTkLabel(position, text="", image=img)
                 label.place(relx=0.5, rely=0.5, anchor="center")
             #show all black pieces
-            for ind in range(len(self.chess_board_obj.black_pieces)):
-                path = BLACK_PIECES_PATH+ self.chess_board_obj.black_pieces[ind].img_name
-                pos = self.chess_board_obj.black_pieces_pos[ind*2],self.chess_board_obj.black_pieces_pos[ind*2+1]
+            for ind in range(len(self.chess_board_instance.black_pieces)):
+                path = BLACK_PIECES_PATH+ self.chess_board_instance.black_pieces[ind].img_name
+                pos = self.chess_board_instance.black_pieces_pos[ind*2],self.chess_board_instance.black_pieces_pos[ind*2+1]
                 position = self.rectangles[pos]
                 label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
                 img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
@@ -440,8 +444,8 @@ class SetupNewGameView():
                     self.rectangles[(i,j)].configure(bg=WHITE)
 
     #draws the initial board with a frame to chose further jump moves
-    def draw_board(self, value):
-        if int(value) != self.board_size:
+    def draw_board(self, value, resize=False):
+        if int(value) != self.board_size or resize:
             self.image_clicked = False
             self.board_size = int(value) * 2 - (int(value) %2 == 1)
             self.board_value = value
@@ -476,10 +480,10 @@ class SetupNewGameView():
 
                     self.change_to_normal_color(i, j)
         
-            for pos in range(len(self.chess_board_obj.white_pieces_pos)//2):
-                self.rectangles[(self.chess_board_obj.white_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.white_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-            for pos in range(len(self.chess_board_obj.black_pieces_pos)//2):
-                self.rectangles[(self.chess_board_obj.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_obj.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
+            for pos in range(len(self.chess_board_instance.white_pieces_pos)//2):
+                self.rectangles[(self.chess_board_instance.white_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_instance.white_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
+            for pos in range(len(self.chess_board_instance.black_pieces_pos)//2):
+                self.rectangles[(self.chess_board_instance.black_pieces_pos[pos*2]+self.real_board_x_min,self.chess_board_instance.black_pieces_pos[pos*2+1]+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
                   
     def destroy(self):
         self.main_frame.destroy()
