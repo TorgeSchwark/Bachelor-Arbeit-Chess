@@ -154,7 +154,6 @@ class SetupNewGameView(View):
                     self.rectangles[(x,y)].configure(highlightthickness=1, highlightbackground="White")
                     self.piece_start_pos.remove([x,y])
 
-
     #sets board colors back to default
     def update_board_colors(self):
         self.image_clicked = False
@@ -213,6 +212,9 @@ class SetupNewGameView(View):
     def on_image_click(self, event, image_path):
 
         self.update_board_colors()  # hier muss auf das rendern gewartet werden!
+
+        if   hasattr(self, "piece_lable") and self.piece_lable != None:
+            self.piece_lable.destroy()
         self.piece_start_pos = []
 
         self.image_clicked = True
@@ -357,27 +359,21 @@ class SetupNewGameView(View):
             
             self.draw_normal_board(self.board_size//2)
             #show all white pieces
-            for ind in range(len(self.chess_board_instance.white_pieces)):
-                path = WHITE_PIECES_PATH+ self.chess_board_instance.white_pieces[ind].img_name
-                pos = self.chess_board_instance.white_pieces_pos[ind*2],self.chess_board_instance.white_pieces_pos[ind*2+1]
-                position = self.rectangles[pos]
-                label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
-                img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
-                                dark_image=Image.open((path)).convert("RGBA"),
-                                size=(label_width, label_width))
-                label = ctk.CTkLabel(position, text="", image=img)
-                label.place(relx=0.5, rely=0.5, anchor="center")
-            #show all black pieces
-            for ind in range(len(self.chess_board_instance.black_pieces)):
-                path = BLACK_PIECES_PATH+ self.chess_board_instance.black_pieces[ind].img_name
-                pos = self.chess_board_instance.black_pieces_pos[ind*2],self.chess_board_instance.black_pieces_pos[ind*2+1]
-                position = self.rectangles[pos]
-                label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
-                img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
-                                dark_image=Image.open((path)).convert("RGBA"),
-                                size=(label_width, label_width))
-                label = ctk.CTkLabel(position, text="", image=img)
-                label.place(relx=0.5, rely=0.5, anchor="center")
+            for color in range(0,2):
+                for ind in range(len(self.chess_board_instance.white_pieces)):
+                    if color == 0:
+                        path = WHITE_PIECES_PATH + self.chess_board_instance.white_pieces[ind].img_name
+                        pos = self.chess_board_instance.white_pieces_pos[ind*2], self.chess_board_instance.white_pieces_pos[ind*2+1]
+                    else:
+                        path = BLACK_PIECES_PATH + self.chess_board_instance.black_pieces[ind].img_name
+                        pos = self.chess_board_instance.black_pieces_pos[ind*2], self.chess_board_instance.black_pieces_pos[ind*2+1]
+                    rect_of_position = self.rectangles[pos]
+                    label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
+                    img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
+                                    dark_image=Image.open((path)).convert("RGBA"),
+                                    size=(label_width, label_width))
+                    label = ctk.CTkLabel(rect_of_position, text="", image=img)
+                    label.place(relx=0.5, rely=0.5, anchor="center")
 
         else:
             raise Exception("please configure one Piece first")
