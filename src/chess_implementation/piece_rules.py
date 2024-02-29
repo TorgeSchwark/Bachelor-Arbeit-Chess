@@ -5,8 +5,8 @@ import numpy as np
 class PieceRules:
 
     def __init__(self):
-        self.move_directions = np.empty(0)  #Triplets (x_direction,y_direction,how_far) how_far = 0 if no limits
-        self.jump_moves = np.empty(0)
+        self.move_directions = np.empty(0, dtype=int)  #Triplets (x_direction,y_direction,how_far) how_far = 0 if no limits
+        self.jump_moves = np.empty(0, dtype=int)
         self.boarder_x = False
         self.boarder_y = False 
         self.king = False 
@@ -32,6 +32,7 @@ class PieceRules:
     def set_pawn(self, value):
         if not (self.king or self.boarder_x or self.boarder_y):
             self.pawn = value
+            print("pawn")
 
         
     def set_start_pos(self, list):

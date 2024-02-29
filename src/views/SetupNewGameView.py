@@ -256,6 +256,7 @@ class SetupNewGameView(View):
             piece.set_boarder_y = (self.boardery_var.get() == "on")
             piece.set_king(self.king_var.get() == "on")
             piece.set_pawn(self.pawn_var.get() == "on")
+            print(self.pawn_var.get() == "on")
             piece.set_castling(self.castling_switch.get() == "on")
             piece.set_image_path(self.piece_image_path)
             

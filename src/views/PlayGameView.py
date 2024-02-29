@@ -1,6 +1,7 @@
 from chess_implementation.chess_board import ChessBoard
 from chess_implementation.piece_rules import PieceRules
 from chess_implementation.piece import Piece
+from chess_implementation.find_moves import find_all_moves
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
@@ -82,6 +83,21 @@ class PlayGameView(View):
                 label.bind("<Button-3>", lambda event, pos=pos: self.defocus_piece(pos))
                 label.place(relx=0.5, rely=0.5, anchor="center")
                 self.piece_images[pos] = label
+
+        self.draw_moves()
+    
+    def draw_moves(self):
+        (all_moves, move_ind) = find_all_moves(self.chess_board_instance)
+        print(all_moves)
+
+        for ind in range(move_ind//5):
+            to_x = all_moves[ind*5+2]
+            to_y = all_moves[ind*5+3]
+            if to_x+to_y % 2 == 1:
+                self.rectangles[(to_x,to_y)].configure(bg=DARKBLUE)
+            else:
+                self.rectangles[(to_x,to_y)].configure(bg=LIGHTBLUE)
+
 
     def on_piece_click(self, position):
         if not self.piece_clicked:

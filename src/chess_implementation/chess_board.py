@@ -12,8 +12,8 @@ class ChessBoard:
         self.all_non_pawn_pieces = np.empty(0,dtype=int)
         self.past_moves = np.empty(1000)
         self.board = np.zeros((self.size, self.size),dtype=int)
-        self.white_pieces = np.zeros(0)
-        self.black_pieces = np.zeros(0)
+        self.white_pieces = np.zeros(0,dtype=object)
+        self.black_pieces = np.zeros(0,dtype=object)
 
     def add_piece(self, piece_rule, offset, start_pos):  #adds a piece for white and blacks side
         if piece_rule.king:
