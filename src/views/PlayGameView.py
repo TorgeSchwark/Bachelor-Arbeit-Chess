@@ -1,5 +1,6 @@
 from chess_implementation.chess_board import ChessBoard
-from chess_implementation.piecerules import Piece
+from chess_implementation.piece_rules import PieceRules
+from chess_implementation.piece import Piece
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
@@ -35,7 +36,6 @@ class PlayGameView(View):
     def draw_board(self):
         
         cell_size = self.min_canvas_size / self.chess_board_instance.size 
-        print(cell_size)
 
         self.canvas = ctk.CTkCanvas(master=self.board_frame, width=self.min_canvas_size, height=self.min_canvas_size)
         self.canvas.pack(expand=True)
@@ -65,11 +65,13 @@ class PlayGameView(View):
         for color in range(0,2):
             for ind in range(len(self.chess_board_instance.white_pieces)):
                 if color == 0:
-                    path = WHITE_PIECES_PATH + self.chess_board_instance.white_pieces[ind].img_name
-                    pos = self.chess_board_instance.white_pieces_pos[ind*2], self.chess_board_instance.white_pieces_pos[ind*2+1]
+                    piece: Piece = self.chess_board_instance.white_pieces[ind]
+                    path = WHITE_PIECES_PATH + piece.rules.img_name
+                    pos = piece.position[0], piece.position[1]
                 else:
-                    path = BLACK_PIECES_PATH + self.chess_board_instance.black_pieces[ind].img_name
-                    pos = self.chess_board_instance.black_pieces_pos[ind*2], self.chess_board_instance.black_pieces_pos[ind*2+1]
+                    piece: Piece = self.chess_board_instance.black_pieces[ind]
+                    path = BLACK_PIECES_PATH + piece.rules.img_name
+                    pos = piece.position[0], piece.position[1]
                 rect_of_position = self.rectangles[pos]
                 label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
                 img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
