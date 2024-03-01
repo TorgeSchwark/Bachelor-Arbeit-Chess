@@ -2,6 +2,7 @@ from chess_implementation.chess_board import ChessBoard
 from chess_implementation.piece_rules import PieceRules
 from chess_implementation.piece import Piece
 from chess_implementation.find_moves import find_all_moves
+from chess_implementation.move_stack import MoveStack
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
@@ -15,6 +16,8 @@ class PlayGameView(View):
         self.master = master
         
         self.chess_board_instance: ChessBoard = controller.board_instance
+
+        self.chess_board_instance.show_board()
 
         self.place_main_objects()
 
@@ -87,13 +90,13 @@ class PlayGameView(View):
         self.draw_moves()
     
     def draw_moves(self):
-        (all_moves, move_ind) = find_all_moves(self.chess_board_instance)
-        print(all_moves)
+        moves: MoveStack = find_all_moves(self.chess_board_instance)
+        print(moves.stack)
 
-        for ind in range(move_ind//5):
-            to_x = all_moves[ind*5+2]
-            to_y = all_moves[ind*5+3]
-            if to_x+to_y % 2 == 1:
+        for ind in range(moves.head):
+            to_x = moves.stack[ind*5+2]
+            to_y = moves.stack[ind*5+3]
+            if (to_x+to_y) % 2 == 1:
                 self.rectangles[(to_x,to_y)].configure(bg=DARKBLUE)
             else:
                 self.rectangles[(to_x,to_y)].configure(bg=LIGHTBLUE)
@@ -103,9 +106,9 @@ class PlayGameView(View):
         if not self.piece_clicked:
             self.piece_clicked = position
             if self.is_black_field(position):
-                self.piece_images[position].configure(fg_color = DARKBLUE)
+                self.piece_images[position].configure(fg_color = DARKGREEN)
             else: 
-                self.piece_images[position].configure(fg_color = LIGHTBLUE)
+                self.piece_images[position].configure(fg_color = LIGHTGREEN)
         else:
             pass
 

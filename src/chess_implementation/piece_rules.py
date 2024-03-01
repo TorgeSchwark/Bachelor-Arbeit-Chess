@@ -5,8 +5,8 @@ import numpy as np
 class PieceRules:
 
     def __init__(self):
-        self.move_directions = np.empty(0, dtype=int)  #Triplets (x_direction,y_direction,how_far) how_far = 0 if no limits
-        self.jump_moves = np.empty(0, dtype=int)
+        self.move_directions = np.zeros(0, dtype=int)  #Triplets (x_direction,y_direction,how_far) how_far = 0 if no limits
+        self.jump_moves = np.zeros(0, dtype=int)
         self.boarder_x = False
         self.boarder_y = False 
         self.king = False 
@@ -52,9 +52,11 @@ class PieceRules:
                 add = False
         if add:
             self.move_directions = np.append(self.move_directions,tupel)
+            print(self.move_directions, "direciton!", tupel)
 
     def add_jump_move(self, tupel):
         self.jump_moves = np.append(self.jump_moves, tupel)
+        print(self.jump_moves)
 
     def set_image_path(self, image_path):
         self.img_name = image_path

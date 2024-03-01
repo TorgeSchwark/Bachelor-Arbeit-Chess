@@ -9,8 +9,8 @@ class ChessBoard:
         self.color_to_move = 1
         self.move_count = 0
         self.fifty_move_rule = 0
-        self.all_non_pawn_pieces = np.empty(0,dtype=int)
-        self.past_moves = np.empty(1000)
+        self.all_non_pawn_pieces = np.zeros(0,dtype=int)
+        self.past_moves = np.zeros(1000, dtype= int)
         self.board = np.zeros((self.size, self.size),dtype=int)
         self.white_pieces = np.zeros(0,dtype=object)
         self.black_pieces = np.zeros(0,dtype=object)
@@ -51,8 +51,7 @@ class ChessBoard:
 
     def set_size(self, size):
         self.size = size
-        self.board = np.zeros((size, size))
-        self.piece_board = np.zeros((size, size))
+        self.board = np.zeros((size, size), dtype=int)
 
     def show_board(self):
         print("\n Board looks like this: " , self.board)

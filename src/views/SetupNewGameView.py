@@ -266,11 +266,11 @@ class SetupNewGameView(View):
                     y_vec = (y-self.piece_row)
                     x_vec = (x-self.piece_col)
                     if self.piece_col-x != 0:
-                        direction_x = x_vec / abs(x_vec)
+                        direction_x = x_vec // abs(x_vec)
                     else: 
                         direction_x = 0
                     if self.piece_row-y != 0:
-                        direction_y = (y_vec) / abs(y_vec) #TODO: Division by zero problem
+                        direction_y = (y_vec) // abs(y_vec) #TODO: Division by zero problem
                     else:
                         direction_y = 0
 

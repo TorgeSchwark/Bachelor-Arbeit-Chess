@@ -1,7 +1,12 @@
 import numpy as np
+from move_stack import MoveStack
 
-halo = np.zeros(2)
-halo[0] = 2
-halo[1] = 3
+stack = MoveStack()
 
-print(halo)
+def test(num: MoveStack):
+  num.head += 5
+  #print(num)
+
+test(stack)
+
+print(stack.head)

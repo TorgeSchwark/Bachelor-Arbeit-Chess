@@ -7,7 +7,7 @@ class Piece:
 
         self.rules = piece_rules
         self.is_alive = True
-        self.position =  np.empty(2, dtype=int)
+        self.position =  np.zeros(2, dtype=int)
         self.first_move = -1
         
     def show_piece(self):
