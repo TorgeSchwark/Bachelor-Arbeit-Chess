@@ -6,6 +6,7 @@ from views.view_variables import *
 from chess_implementation.chess_board import ChessBoard
 from chess_implementation.piece_rules import PieceRules
 from views.View import View
+import math
 
 class SetupNewGameView(View):
 
@@ -299,7 +300,7 @@ class SetupNewGameView(View):
 
             if self.board_size_slider.cget("state") == "normal":
                 self.board_size_slider.configure(state="disabled") #board size cant be switched now
-                self.chess_board_instance.set_size(self.board_size//2)
+                self.chess_board_instance.set_size(math.ceil(self.board_size / 2))
 
             self.chess_board_instance.add_piece(piece,self.real_board_x_min, start_pos = self.piece_start_pos ) #pos muss umgerechnet werden
             
@@ -370,12 +371,12 @@ class SetupNewGameView(View):
             for color in range(0,2):
                 for ind in range(len(self.chess_board_instance.white_pieces)):
                     if color == 0:
-                        path = WHITE_PIECES_PATH + self.chess_board_instance.white_pieces[ind].img_name
-                        pos = self.chess_board_instance.white_pieces_pos[ind*2], self.chess_board_instance.white_pieces_pos[ind*2+1]
+                        path = WHITE_PIECES_PATH + self.chess_board_instance.white_pieces[ind].rules.img_name
+                        pos = self.chess_board_instance.white_pieces[ind].position
                     else:
-                        path = BLACK_PIECES_PATH + self.chess_board_instance.black_pieces[ind].img_name
-                        pos = self.chess_board_instance.black_pieces_pos[ind*2], self.chess_board_instance.black_pieces_pos[ind*2+1]
-                    rect_of_position = self.rectangles[pos]
+                        path = BLACK_PIECES_PATH + self.chess_board_instance.black_pieces[ind].rules.img_name
+                        pos = self.chess_board_instance.black_pieces[ind].position
+                    rect_of_position = self.rectangles[pos[0],pos[1]]
                     label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
                     img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
                                     dark_image=Image.open((path)).convert("RGBA"),

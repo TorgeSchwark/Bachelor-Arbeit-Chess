@@ -55,8 +55,11 @@ class PieceRules:
             print(self.move_directions, "direciton!", tupel)
 
     def add_jump_move(self, tupel):
-        self.jump_moves = np.append(self.jump_moves, tupel)
-        print(self.jump_moves)
+        if self.pawn:
+            print("Pawns cant jump!")
+        else:
+            self.jump_moves = np.append(self.jump_moves, tupel)
+            print(self.jump_moves)
 
     def set_image_path(self, image_path):
         self.img_name = image_path

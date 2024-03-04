@@ -20,9 +20,17 @@ def find_all_moves(chess_board: ChessBoard):
     return moves
 
 
-def find_piece_moves(chess_board, piece, moves):
+def find_piece_moves(chess_board, piece: Piece, moves):
     if piece.rules.pawn:
         find_pawn_moves(chess_board, piece, moves)
+    elif piece.rules.king:
+        pass
+    elif piece.rules.castling:
+        pass
+    else:
+        print("nomal piece")
+        find_jump_moves(chess_board, piece, moves)
+        find_move_directions(chess_board, piece, moves)
 
 def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     
@@ -99,18 +107,27 @@ def find_move_directions(chess_board: ChessBoard, piece: Piece, moves):
         direction_x = move_directions[ind*3]
         direction_y = move_directions[ind*3+1]
         rangee = move_directions[ind*3+2]
+        
 
+        if rangee == 0:
+            rangee = 99999
+
+            
         dist = 1
         field_x  = pos_x + direction_x
         field_y  = pos_y + direction_y
-        while dist <= rangee and on_board(field_x, size) and on_board(field_y, size): 
+        while dist <= rangee and (on_board(field_x, size) or piece.rules.boarder_x) and (on_board(field_y, size) or piece.rules.boarder_y): 
             
+            field_x %= size
+            field_y %= size
+
             if board[field_x][field_y] == 0:
                 add_move(pos_x, pos_y, field_x, field_y, moves, NORMAL_MOVE)
             elif board[field_x][field_y] * board[pos_x][pos_y] > 0:
                 break
             elif board[field_x][field_y] * board[pos_x][pos_y] < 0:
                 add_move(pos_x, pos_y, field_x, field_y, moves, NORMAL_MOVE)
+                break
 
             field_x += direction_x
             field_y += direction_y
@@ -129,13 +146,15 @@ def find_jump_moves(chess_board: ChessBoard, piece: Piece, moves):
     for ind in range(len(jump_moves)//2):
         field_x = pos_x + jump_moves[ind*2]
         field_y = pos_y + jump_moves[ind*2+1]
+
+        if (on_board(field_y, size) or piece.rules.boarder_y) and (on_board(field_x, size) or piece.rules.boarder_x):
+            field_x %= size 
+            field_y %= size
+        else:
+            continue
         
-        if on_board(field_y, size) and on_board(field_x, size) and board[field_x][field_y] <= 0 :
+        if board[field_x][field_y] <= 0 :
             add_move(pos_x, pos_y, field_x, field_y, moves, NORMAL_MOVE)
-
-
-
-
 
 def add_move(from_x, from_y, to_x, to_y, moves: MoveStack, move_type):
     move_ind = moves.head
