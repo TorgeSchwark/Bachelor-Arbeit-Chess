@@ -6,6 +6,7 @@ from core.Core import Core
     Main class. Responsible for running the application.
 """
 class Main:
+
     @staticmethod
     def run():
         try:

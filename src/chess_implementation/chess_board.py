@@ -1,14 +1,20 @@
-import numpy as np
 import copy
+
+import numpy as np
+
 from chess_implementation.piece import Piece
 from chess_implementation.piece_rules import PieceRules
+
+
 class ChessBoard:
 
     def __init__(self):
         self.size = 0 #board >= 0 to < size
         self.has_king = False
-        self.white_king_pos = np.empty(2, dtype=int)
-        self.black_king_pos = np.empty(2, dtype=int)
+        self.white_king_pos = np.empty(3, dtype=int)
+        self.white_king_pos[2] = -1
+        self.black_king_pos = np.empty(3, dtype=int)
+        self.white_king_pos[2] = -1
         self.color_to_move = 1
         self.move_count = 0
         self.fifty_move_rule = 0
@@ -17,6 +23,7 @@ class ChessBoard:
         self.board = np.zeros((self.size, self.size),dtype=int)
         self.white_pieces = np.zeros(0,dtype=object)
         self.black_pieces = np.zeros(0,dtype=object)
+
 
     def add_piece(self, piece_rule: PieceRules, offset, start_pos):  #adds a piece for white and blacks side
         if (piece_rule.king and self.has_king) or (piece_rule.king and len(start_pos) > 1) :
@@ -71,9 +78,11 @@ class ChessBoard:
                     new_piece = False
                     self.all_non_pawn_pieces = np.append(self.all_non_pawn_pieces, len(self.white_pieces)-1) #for each unique piece save one index in piece list
 
+
     def set_size(self, size):
         self.size = size
         self.board = np.zeros((size, size), dtype=int)
+
 
     def show_board(self):
         print("\n Board looks like this: " , self.board)

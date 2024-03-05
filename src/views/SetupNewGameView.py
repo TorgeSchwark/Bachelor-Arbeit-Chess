@@ -1,12 +1,16 @@
-import customtkinter as ctk
 import os
+import math
+
+import customtkinter as ctk
 from tkinter import *
 from PIL import Image
+
 from views.view_variables import *
 from chess_implementation.chess_board import ChessBoard
 from chess_implementation.piece_rules import PieceRules
 from views.View import View
-import math
+
+
 
 class SetupNewGameView(View):
 
@@ -68,6 +72,7 @@ class SetupNewGameView(View):
         self.resize_board_button = ctk.CTkButton(master=self.settings_frame, text="resize board", command=lambda: self.draw_board(self.board_value, resize = True))
         self.resize_board_button.pack(expand=False, padx=20, pady=5)
 
+
     #detect choices made (controlled by rect colors not by states) left klicks
     def field_clicked(self, x, y): 
 
@@ -113,8 +118,10 @@ class SetupNewGameView(View):
             elif color == LIGHTRED and self.is_next_to_piece(x,y):
                 self.draw_direction(x, y, False)
 
+
     def is_next_to_piece(self,x,y):
             return (abs(self.piece_col-x) == 1 and abs(self.piece_row-y)) == 1 or (abs(self.piece_row-y) == 0 and abs(self.piece_col-x)) == 1 or (abs(self.piece_row-y) == 1 and abs(self.piece_col-x) == 0)
+
 
     def correct_direction(self,x,y):
         if self.piece_col-x != 0:
@@ -135,6 +142,7 @@ class SetupNewGameView(View):
         else:
             return False      
 
+
     #detect choices made (controlled by rect colors not by states) right klicks
     def field_clicked_r(self, x, y):
         color = self.rectangles[(x, y)].cget("bg")
@@ -154,6 +162,7 @@ class SetupNewGameView(View):
                 if bg_color == LIGHTYELLOW:
                     self.rectangles[(x,y)].configure(highlightthickness=1, highlightbackground="White")
                     self.piece_start_pos.remove([x,y])
+
 
     #sets board colors back to default
     def update_board_colors(self):
@@ -216,6 +225,7 @@ class SetupNewGameView(View):
             else:
                 self.rectangles[(x,y)].configure(bg=WHITE)
 
+
     #if a picture is chosen for the piece loads image in the center
     def on_image_click(self, event, image_path):
 
@@ -247,6 +257,7 @@ class SetupNewGameView(View):
         self.piece_image_path = os.path.basename(image_path)
 
         self.add_piece_options()
+
 
     #searches the board to detect the settings for the piece by looking for rect colors
     def save_piece(self):
@@ -318,6 +329,7 @@ class SetupNewGameView(View):
         else:
             print("piece needs start pos")
 
+
     #adds the options for the pieces(Pawn, King, ...)
     def add_piece_options(self):
 
@@ -357,6 +369,7 @@ class SetupNewGameView(View):
         self.save_piece_button.pack(expand=True, padx=20, pady=5)
         self.save_piece_button.pack_propagate(False)
 
+
     #shows how the current configuration would look like
     def show_current_board(self):
 
@@ -386,6 +399,7 @@ class SetupNewGameView(View):
 
         else:
             raise Exception("please configure one Piece first")
+
 
     #loads images to chose from for the pieces
     def load_piece_images(self):
@@ -423,6 +437,7 @@ class SetupNewGameView(View):
                 col = 0
                 row += 1
 
+
     #draws the normal board no frame  
     def draw_normal_board(self, size): 
         if hasattr(self, "canvas"):
@@ -447,6 +462,7 @@ class SetupNewGameView(View):
                     self.rectangles[(i,j)].configure(bg=BLACK)
                 else:
                     self.rectangles[(i,j)].configure(bg=WHITE)
+
 
     #draws the initial board with a frame to chose further jump moves
     def draw_board(self, value, resize=False):

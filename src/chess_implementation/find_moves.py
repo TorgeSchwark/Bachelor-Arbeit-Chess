@@ -5,6 +5,7 @@ from chess_implementation.move_stack import MoveStack
 import numpy as np
 from chess_implementation.chess_variables import *
 
+
 def find_all_moves(chess_board: ChessBoard):
     print("1")
     if chess_board.color_to_move == 1:
@@ -25,12 +26,37 @@ def find_piece_moves(chess_board, piece: Piece, moves):
         find_pawn_moves(chess_board, piece, moves)
     elif piece.rules.king:
         pass
-    elif piece.rules.castling:
-        pass
     else:
-        print("nomal piece")
+        if piece.rules.castling:
+            add_castling(chess_board, piece, moves)
+        print("normal piece")
         find_jump_moves(chess_board, piece, moves)
         find_move_directions(chess_board, piece, moves)
+
+
+#do this next
+def add_castling(chess_board: ChessBoard, piece: Piece, moves):
+    color = chess_board.color_to_move
+    if color == 1:
+        king_pos = chess_board.white_king_pos
+    else:
+        king_pos = chess_board.black_king_pos
+
+    if king_pos[2] != -1 or piece.first_move != -1:
+        print("Piece or King has already moved")
+    else:
+        #from king to piece
+        is_free = True
+        direction = (piece.position[0]-king_pos[0]) / abs(piece.position[0]-king_pos[0])
+        field_x = king_pos[0] + direction
+        field_y = king_pos[1]
+        while  field_x != piece.position[0]:
+            if chess_board.board[field_x][field_y] != 0:
+                is_free = False 
+            field_x += direction
+        if is_free:
+            add_move(piece.position[0], piece.position[1], king_pos[0] + direction, king_pos[1], moves, CASTLING)
+
 
 def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     
@@ -63,7 +89,6 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
         field_x  = pos_x+direction_x
         field_y  = pos_y+direction_y
         while dist <= rangee and on_board(field_x, size) and on_board(field_y,size):
-            #promotion need extra case !!!!
             if board[field_x][field_y] == 0:
                 if dist <= real_range and (not promotion(field_y, size, color)):
                     add_move(pos_x, pos_y, field_x, field_y, moves, NORMAL_MOVE)
@@ -90,8 +115,17 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     elif on_board(pos_x-1, size) and on_board(pos_y+direction_y, size) and (board[pos_x-1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and promotion(pos_y +direction_y,size,color):
         add_promotions(pos_x,pos_y, pos_x+1,pos_y+direction_y, moves, chess_board)
     
-    #jump moves on a pawn dont make sense but any ways 
-    find_jump_moves(chess_board, piece, moves)
+    add_en_passant(chess_board, piece, moves)
+
+def add_en_passant(chess_board : ChessBoard, piece: Piece, moves):
+    if chess_board.past_moves[chess_board.move_count*5+4] == DOUBLE_PAWN:
+        color = chess_board.color_to_move
+        last_move_to_x = chess_board.past_moves[chess_board.move_count*5+2]
+        last_move_to_y = chess_board.past_moves[chess_board.move_count*5+3]
+        if (piece.position[0] == last_move_to_x + 1 or piece.position[0]  == last_move_to_x - 1) and piece.position[1] == last_move_to_y:
+            add_move(piece.position[0], piece.position[1], last_move_to_x, last_move_to_y + color, moves, EN_PASSEN)
+
+
 
 def find_move_directions(chess_board: ChessBoard, piece: Piece, moves):
 
@@ -156,6 +190,7 @@ def find_jump_moves(chess_board: ChessBoard, piece: Piece, moves):
         if board[field_x][field_y] <= 0 :
             add_move(pos_x, pos_y, field_x, field_y, moves, NORMAL_MOVE)
 
+
 def add_move(from_x, from_y, to_x, to_y, moves: MoveStack, move_type):
     move_ind = moves.head
     moves.stack[move_ind*5] = from_x
@@ -165,7 +200,6 @@ def add_move(from_x, from_y, to_x, to_y, moves: MoveStack, move_type):
     moves.stack[move_ind*5+4] = move_type
     moves.head += 1
 
-    
 
 def add_promotions(from_x,from_y, to_x, to_y, moves: MoveStack, chess_board: ChessBoard):
     for ind in range(len(chess_board.all_non_pawn_pieces)):
@@ -177,10 +211,12 @@ def add_promotions(from_x,from_y, to_x, to_y, moves: MoveStack, chess_board: Che
         moves.stack[move_ind*5+4] = ind
         moves.head += 1
 
+
 def promotion(y, color, size):
     if (color == 1 and y == size-1) or (color == -1 and y == 0):
         return True
     return False
+
 
 def on_board(x,size):
     return (x >= 0 and x < size)
