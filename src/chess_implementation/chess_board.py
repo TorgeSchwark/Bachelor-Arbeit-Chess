@@ -11,15 +11,16 @@ class ChessBoard:
     def __init__(self):
         self.size = 0 #board >= 0 to < size
         self.has_king = False
-        self.white_king_pos = np.empty(3, dtype=int)
+        self.white_king_pos = np.zeros(3, dtype=int)
         self.white_king_pos[2] = -1
-        self.black_king_pos = np.empty(3, dtype=int)
+        self.black_king_pos = np.zeros(3, dtype=int)
         self.white_king_pos[2] = -1
         self.color_to_move = 1
         self.move_count = 0
         self.fifty_move_rule = 0
         self.all_non_pawn_pieces = np.zeros(0,dtype=int)
         self.past_moves = np.zeros(1000, dtype= int)
+        self.captured_pieces = np.zeros(1000, dtype= int)
         self.board = np.zeros((self.size, self.size),dtype=int)
         self.white_pieces = np.zeros(0,dtype=object)
         self.black_pieces = np.zeros(0,dtype=object)
@@ -85,7 +86,7 @@ class ChessBoard:
 
 
     def show_board(self):
-        print("\n Board looks like this: " , self.board)
+        print("\n Board looks like this: \n" , self.board)
         print("\n")
 
         print("\n piece list white: ", self.white_pieces)

@@ -2,11 +2,13 @@ from chess_implementation.chess_board import ChessBoard
 from chess_implementation.piece_rules import PieceRules
 from chess_implementation.piece import Piece
 from chess_implementation.find_moves import find_all_moves
+from chess_implementation.make_moves import make_move
 from chess_implementation.move_stack import MoveStack
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
 from PIL import Image
+import random
 
 class PlayGameView(View):
     
@@ -14,6 +16,7 @@ class PlayGameView(View):
         
         self.controller = controller
         self.master = master
+        self.moves = MoveStack()
         
         self.chess_board_instance: ChessBoard = controller.board_instance
 
@@ -34,6 +37,9 @@ class PlayGameView(View):
         self.board_frame = ctk.CTkFrame(master=self.main_frame, border_width=2)
         self.board_frame.pack(side="left", expand=True, fill="both")
 
+        self.board_make_random_move_button = ctk.CTkButton(master=self.settings_frame, text="make a move", command=self.make_random_move)
+        self.board_make_random_move_button.pack(expand=False, padx=20, pady=5)
+
         self.draw_board()
         self.draw_pieces_on_position()
 
@@ -45,6 +51,7 @@ class PlayGameView(View):
         self.canvas.pack(expand=True)
         self.board_cell_size = cell_size
         self.rectangles = {}
+
 
         for i in range(self.chess_board_instance.size):
             for j in range(self.chess_board_instance.size):
@@ -59,9 +66,10 @@ class PlayGameView(View):
                     self.rectangles[(i,j)].configure(bg=WHITE)
 
     def draw_pieces_on_position(self):
-        if hasattr(self, "piece_labels"):
-            for piece_label in self.pice_labels:
-                piece_label.destroy()
+        if hasattr(self, "piece_images"):
+            for key in self.piece_images:
+                self.piece_images[key].destroy()
+
         
         self.piece_images = {}
         self.piece_clicked = False
@@ -76,22 +84,32 @@ class PlayGameView(View):
                     piece: Piece = self.chess_board_instance.black_pieces[ind]
                     path = BLACK_PIECES_PATH + piece.rules.img_name
                     pos = piece.position[0], piece.position[1]
-                rect_of_position = self.rectangles[pos]
-                label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
-                img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
-                                dark_image=Image.open((path)).convert("RGBA"),
-                                size=(label_width, label_width))
-                label = ctk.CTkLabel(rect_of_position, text="", image=img)
-                label.bind("<Button-1>", lambda event, pos=pos: self.on_piece_click(pos))
-                label.bind("<Button-3>", lambda event, pos=pos: self.defocus_piece(pos))
-                label.place(relx=0.5, rely=0.5, anchor="center")
-                self.piece_images[pos] = label
+                if piece.is_alive:
+                    rect_of_position = self.rectangles[pos]
+                    label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
+                    img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
+                                    dark_image=Image.open((path)).convert("RGBA"),
+                                    size=(label_width, label_width))
+                    label = ctk.CTkLabel(rect_of_position, text="", image=img)
+                    label.bind("<Button-1>", lambda event, pos=pos: self.on_piece_click(pos))
+                    label.bind("<Button-3>", lambda event, pos=pos: self.defocus_piece(pos))
+                    label.place(relx=0.5, rely=0.5, anchor="center")
+                    self.piece_images[pos] = label
 
         self.draw_moves()
     
+    def make_random_move(self):
+        move_ind = random.randint(0, self.moves.head//5)
+        make_move(self.chess_board_instance, self.moves.stack[move_ind*5],self.moves.stack[move_ind*5+1], self.moves.stack[move_ind*5+2], self.moves.stack[move_ind*5+3], self.moves.stack[move_ind*5+4])
+        self.reset_color()
+        self.draw_moves()
+        self.draw_pieces_on_position()
+        self.chess_board_instance.show_board()
+
     def draw_moves(self):
         moves: MoveStack = find_all_moves(self.chess_board_instance)
-        print(moves.stack)
+        self.moves = moves
+        moves.show()
 
         for ind in range(moves.head):
             to_x = moves.stack[ind*5+2]
@@ -101,6 +119,12 @@ class PlayGameView(View):
             else:
                 self.rectangles[(to_x,to_y)].configure(bg=LIGHTBLUE)
 
+    def reset_color(self):
+        for key in self.rectangles:
+            if sum(key) % 2 == 1:
+                self.rectangles[key].configure(bg=BLACK)
+            else:
+                self.rectangles[key].configure(bg=WHITE)
 
     def on_piece_click(self, position):
         if not self.piece_clicked:

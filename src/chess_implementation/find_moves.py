@@ -47,7 +47,7 @@ def add_castling(chess_board: ChessBoard, piece: Piece, moves):
     else:
         #from king to piece
         is_free = True
-        direction = (piece.position[0]-king_pos[0]) / abs(piece.position[0]-king_pos[0])
+        direction = (piece.position[0]-king_pos[0]) // abs(piece.position[0]-king_pos[0])
         field_x = king_pos[0] + direction
         field_y = king_pos[1]
         while  field_x != piece.position[0]:
@@ -71,7 +71,7 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
         move_directions[2::3] *= 2
         double_move = True
     else: 
-        double_move == False
+        double_move = False
         move_directions = piece.rules.move_directions
     
     #could also chose to make a backwards running pawn!
@@ -111,7 +111,7 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     elif on_board(pos_x+1, size) and on_board(pos_y+direction_y, size) and (board[pos_x+1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and promotion(pos_y +direction_y,size,color):
         add_promotions(pos_x, pos_y, pos_x+1,pos_y+direction_y, moves, chess_board)
     if on_board(pos_x-1, size) and on_board(pos_y+direction_y, size) and (board[pos_x-1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and (not promotion(pos_y +direction_y,size,color)):
-        add_move(pos_x,pos_y, pos_x+1,pos_y+direction_y, moves, NORMAL_MOVE)
+        add_move(pos_x,pos_y, pos_x-1,pos_y+direction_y, moves, NORMAL_MOVE)
     elif on_board(pos_x-1, size) and on_board(pos_y+direction_y, size) and (board[pos_x-1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and promotion(pos_y +direction_y,size,color):
         add_promotions(pos_x,pos_y, pos_x+1,pos_y+direction_y, moves, chess_board)
     
@@ -187,7 +187,7 @@ def find_jump_moves(chess_board: ChessBoard, piece: Piece, moves):
         else:
             continue
         
-        if board[field_x][field_y] <= 0 :
+        if board[field_x][field_y] * board[pos_x][pos_y] <= 0 :
             add_move(pos_x, pos_y, field_x, field_y, moves, NORMAL_MOVE)
 
 
