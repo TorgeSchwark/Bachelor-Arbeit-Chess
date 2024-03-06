@@ -15,6 +15,7 @@ class PlayGameView(View):
     def __init__(self, master, controller):
         
         self.controller = controller
+        self.position = (0,0)
         self.master = master
         self.moves = MoveStack()
         
@@ -64,6 +65,8 @@ class PlayGameView(View):
                     self.rectangles[(i,j)].configure(bg=BLACK)
                 else:
                     self.rectangles[(i,j)].configure(bg=WHITE)
+                canvas_obj.bind("<Button-3>", lambda event, pos=(i,j): self.unfocus_piece())
+                canvas_obj.bind("<Button-1>", lambda event, pos=(i,j): self.field_click(pos))
 
     def draw_pieces_on_position(self):
         if hasattr(self, "piece_images"):
@@ -92,7 +95,7 @@ class PlayGameView(View):
                                     size=(label_width, label_width))
                     label = ctk.CTkLabel(rect_of_position, text="", image=img)
                     label.bind("<Button-1>", lambda event, pos=pos: self.on_piece_click(pos))
-                    label.bind("<Button-3>", lambda event, pos=pos: self.defocus_piece(pos))
+                    label.bind("<Button-3>", lambda event, pos=pos: self.unfocus_piece())
                     label.place(relx=0.5, rely=0.5, anchor="center")
                     self.piece_images[pos] = label
 
@@ -134,20 +137,51 @@ class PlayGameView(View):
             else: 
                 self.piece_images[position].configure(fg_color = LIGHTGREEN)
         else:
-            pass
+            move = self.is_move(self.piece_clicked[0], self.piece_clicked[1], position[0], position[1])
+            if move:
+                make_move(self.chess_board_instance, *move)
+                self.reset_color()
+                self.draw_moves()
+                self.draw_pieces_on_position()
+                self.chess_board_instance.show_board()
+            else:
+                self.unfocus_piece()
 
             # self.piece_clicked = [-1,-1] nichts geklicked
             # wenn irgendwo linksklick -> [-1,-1]
             # wenn rechts klick und figur -> [posx, posy]
             # wenn rechts klick und feld in legal_moves der figur -> mache zug 
+    
+    def field_click(self, position):
+        move = self.is_move(self.piece_clicked[0], self.piece_clicked[1], position[0], position[1])
+        if move:
+            
+            make_move(self.chess_board_instance, *move)
+            self.reset_color()
+            self.draw_moves()
+            self.draw_pieces_on_position()
+            self.chess_board_instance.show_board()
+        else:
+            self.unfocus_piece()
 
-    def defocus_piece(self, position):
+
+
+
+
+    def is_move(self, from_x, from_y, to_x, to_y):
+        for ind in range(self.moves.head):
+            if self.moves.stack[ind*5] == from_x and self.moves.stack[ind*5+1] == from_y and self.moves.stack[ind*5+2] == to_x and self.moves.stack[ind*5+3] == to_y:
+                return (self.moves.stack[ind*5],self.moves.stack[ind*5+1],self.moves.stack[ind*5+2], self.moves.stack[ind*5+3], self.moves.stack[ind*5+4])
+        return False
+
+    def unfocus_piece(self):
         if self.is_black_field(self.piece_clicked):
             self.piece_images[self.piece_clicked].configure(fg_color = BLACK)
         else: 
             self.piece_images[self.piece_clicked].configure(fg_color = WHITE)
         self.piece_clicked = False
-        
+    
+
 
     def is_black_field(self,position):
         if (position[0]+ position[1]) % 2 == 1:

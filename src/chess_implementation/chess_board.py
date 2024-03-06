@@ -99,6 +99,12 @@ class ChessBoard:
 
         for piece in self.white_pieces:
             piece.show_piece()
+
+        for piece in self.black_pieces:
+            piece.show_piece()
+
+        for ind in range(self.move_count):
+            print("(",self.past_moves[ind*5],",",self.past_moves[ind*5+1],")", "->","(",self.past_moves[ind*5+2],",",self.past_moves[ind*5+3],") ",self.past_moves[ind*5+4],"\n" )
     
 
 

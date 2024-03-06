@@ -118,10 +118,10 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     add_en_passant(chess_board, piece, moves)
 
 def add_en_passant(chess_board : ChessBoard, piece: Piece, moves):
-    if chess_board.past_moves[chess_board.move_count*5+4] == DOUBLE_PAWN:
+    if chess_board.past_moves[(chess_board.move_count-1)*5+4] == DOUBLE_PAWN:
         color = chess_board.color_to_move
-        last_move_to_x = chess_board.past_moves[chess_board.move_count*5+2]
-        last_move_to_y = chess_board.past_moves[chess_board.move_count*5+3]
+        last_move_to_x = chess_board.past_moves[(chess_board.move_count-1)*5+2]
+        last_move_to_y = chess_board.past_moves[(chess_board.move_count-1)*5+3]
         if (piece.position[0] == last_move_to_x + 1 or piece.position[0]  == last_move_to_x - 1) and piece.position[1] == last_move_to_y:
             add_move(piece.position[0], piece.position[1], last_move_to_x, last_move_to_y + color, moves, EN_PASSEN)
 
