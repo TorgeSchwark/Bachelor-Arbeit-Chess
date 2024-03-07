@@ -1,6 +1,7 @@
 from chess_implementation.chess_board import ChessBoard
 from chess_implementation.piece_rules import PieceRules
 from chess_implementation.piece import Piece
+from chess_implementation.chess_variables import *
 from chess_implementation.find_moves import find_all_moves
 from chess_implementation.make_moves import make_move
 from chess_implementation.move_stack import MoveStack
@@ -40,6 +41,10 @@ class PlayGameView(View):
 
         self.board_make_random_move_button = ctk.CTkButton(master=self.settings_frame, text="make a move", command=self.make_random_move)
         self.board_make_random_move_button.pack(expand=False, padx=20, pady=5)
+
+        self.board_castling_switch_var = ctk.StringVar(value="off")
+        self.board_castling_switch = ctk.CTkSwitch(master=self.settings_frame, text="castling", variable=self.board_castling_switch_var, onvalue="on", offvalue="off")
+        self.board_castling_switch.pack(expand=False, padx=20,pady=10)
 
         self.draw_board()
         self.draw_pieces_on_position()
@@ -129,6 +134,7 @@ class PlayGameView(View):
             else:
                 self.rectangles[key].configure(bg=WHITE)
 
+    #castling needs to be implemented
     def on_piece_click(self, position):
         if not self.piece_clicked:
             self.piece_clicked = position
@@ -138,6 +144,7 @@ class PlayGameView(View):
                 self.piece_images[position].configure(fg_color = LIGHTGREEN)
         else:
             move = self.is_move(self.piece_clicked[0], self.piece_clicked[1], position[0], position[1])
+
             if move:
                 make_move(self.chess_board_instance, *move)
                 self.reset_color()
@@ -146,16 +153,14 @@ class PlayGameView(View):
                 self.chess_board_instance.show_board()
             else:
                 self.unfocus_piece()
-
-            # self.piece_clicked = [-1,-1] nichts geklicked
-            # wenn irgendwo linksklick -> [-1,-1]
-            # wenn rechts klick und figur -> [posx, posy]
-            # wenn rechts klick und feld in legal_moves der figur -> mache zug 
+            
     
     def field_click(self, position):
-        move = self.is_move(self.piece_clicked[0], self.piece_clicked[1], position[0], position[1])
+        if self.piece_clicked:
+            move = self.is_move(self.piece_clicked[0], self.piece_clicked[1], position[0], position[1])
+        else: 
+            move = False
         if move:
-            
             make_move(self.chess_board_instance, *move)
             self.reset_color()
             self.draw_moves()
@@ -165,12 +170,15 @@ class PlayGameView(View):
             self.unfocus_piece()
 
 
-
-
-
     def is_move(self, from_x, from_y, to_x, to_y):
+        if self.board_castling_switch_var.get() == "on":
+            print("yes")
+            castling = True
+        else:
+            castling = False
+
         for ind in range(self.moves.head):
-            if self.moves.stack[ind*5] == from_x and self.moves.stack[ind*5+1] == from_y and self.moves.stack[ind*5+2] == to_x and self.moves.stack[ind*5+3] == to_y:
+            if self.moves.stack[ind*5] == from_x and self.moves.stack[ind*5+1] == from_y and self.moves.stack[ind*5+2] == to_x and self.moves.stack[ind*5+3] == to_y and ((not castling and  self.moves.stack[ind*5+4] != CASTLING) or (castling and self.moves.stack[ind*5+4] == CASTLING)):
                 return (self.moves.stack[ind*5],self.moves.stack[ind*5+1],self.moves.stack[ind*5+2], self.moves.stack[ind*5+3], self.moves.stack[ind*5+4])
         return False
 

@@ -7,7 +7,8 @@ from chess_implementation.chess_variables import *
 
 
 def find_all_moves(chess_board: ChessBoard):
-    print("1")
+    """ Finds all move for the Player which has to move"""
+
     if chess_board.color_to_move == 1:
         pieces = chess_board.white_pieces
     else:
@@ -22,6 +23,8 @@ def find_all_moves(chess_board: ChessBoard):
 
 
 def find_piece_moves(chess_board, piece: Piece, moves):
+    """ finds the moves for each individual piece (only if its that colors turn)"""
+
     if piece.rules.pawn:
         find_pawn_moves(chess_board, piece, moves)
     elif piece.rules.king:
@@ -36,6 +39,8 @@ def find_piece_moves(chess_board, piece: Piece, moves):
 
 #do this next
 def add_castling(chess_board: ChessBoard, piece: Piece, moves):
+    """ Checks if castling is possible. If so it adds the castling move"""
+
     color = chess_board.color_to_move
     if color == 1:
         king_pos = chess_board.white_king_pos
@@ -59,6 +64,7 @@ def add_castling(chess_board: ChessBoard, piece: Piece, moves):
 
 
 def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
+    """ Extra function to find pawn moves. Handles extra cases: double move, promotion"""
     
     pos_x = piece.position[0]
     pos_y = piece.position[1]
@@ -118,16 +124,19 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     add_en_passant(chess_board, piece, moves)
 
 def add_en_passant(chess_board : ChessBoard, piece: Piece, moves):
+    """ Checks if a piece can do en passant"""
+
     if chess_board.past_moves[(chess_board.move_count-1)*5+4] == DOUBLE_PAWN:
         color = chess_board.color_to_move
         last_move_to_x = chess_board.past_moves[(chess_board.move_count-1)*5+2]
         last_move_to_y = chess_board.past_moves[(chess_board.move_count-1)*5+3]
         if (piece.position[0] == last_move_to_x + 1 or piece.position[0]  == last_move_to_x - 1) and piece.position[1] == last_move_to_y:
-            add_move(piece.position[0], piece.position[1], last_move_to_x, last_move_to_y + color, moves, EN_PASSEN)
+            add_move(piece.position[0], piece.position[1], last_move_to_x, last_move_to_y + color, moves, EN_PASSANT)
 
 
 
 def find_move_directions(chess_board: ChessBoard, piece: Piece, moves):
+    """ finds all directional moves of a piece e.g. bishop"""
 
     move_directions = piece.rules.move_directions
 
@@ -169,7 +178,7 @@ def find_move_directions(chess_board: ChessBoard, piece: Piece, moves):
 
 
 def find_jump_moves(chess_board: ChessBoard, piece: Piece, moves):
-
+    """ Finds jump moves for jumping pieces e.g. knight"""
     jump_moves = piece.rules.jump_moves
 
     pos_x = piece.position[0]
@@ -192,6 +201,7 @@ def find_jump_moves(chess_board: ChessBoard, piece: Piece, moves):
 
 
 def add_move(from_x, from_y, to_x, to_y, moves: MoveStack, move_type):
+    """ adds a move to the move stack"""
     move_ind = moves.head
     moves.stack[move_ind*5] = from_x
     moves.stack[move_ind*5+1] = from_y
@@ -202,6 +212,7 @@ def add_move(from_x, from_y, to_x, to_y, moves: MoveStack, move_type):
 
 
 def add_promotions(from_x,from_y, to_x, to_y, moves: MoveStack, chess_board: ChessBoard):
+    """ Adds all possible transition options for promoting pieces on the move stack"""
     for ind in range(len(chess_board.all_non_pawn_pieces)):
         move_ind = moves.head
         moves.stack[move_ind*5] = from_x
@@ -210,9 +221,10 @@ def add_promotions(from_x,from_y, to_x, to_y, moves: MoveStack, chess_board: Che
         moves.stack[move_ind*5+3] = to_y
         moves.stack[move_ind*5+4] = ind
         moves.head += 1
-
+    
 
 def promotion(y, color, size):
+    """ Check if a field is the last rank for that color"""
     if (color == 1 and y == size-1) or (color == -1 and y == 0):
         return True
     return False

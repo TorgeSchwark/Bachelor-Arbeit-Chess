@@ -6,19 +6,18 @@ import numpy as np
 from chess_implementation.chess_variables import *
 
 def make_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
-    if move_type == NORMAL_MOVE or DOUBLE_PAWN:
+    """Executes moves"""
+    if move_type == NORMAL_MOVE or move_type == DOUBLE_PAWN:
         make_normal_move(chess_board, from_x, from_y, to_x, to_y, move_type)
     elif move_type == CASTLING:
         make_castling_move(chess_board,from_x, from_y, to_x, to_y, move_type)
 
 def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
-    color = chess_board.color_to_move
+    """Executes normal (also capturing) moves"""
     piece_number = chess_board.board[from_x][from_y]
     pos_in_piece_list = abs(piece_number)-1
     
-    move_count = chess_board.move_count
-    
-    if color == WHITE:
+    if chess_board.color_to_move == WHITE:
         piece: Piece= chess_board.white_pieces[pos_in_piece_list]
     else:
         piece: Piece = chess_board.black_pieces[pos_in_piece_list]
@@ -27,22 +26,18 @@ def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
     on_field = chess_board.board[to_x][to_y]
     #if a piece gets captured
     if on_field != 0:
-        chess_board.captured_pieces[move_count] = on_field
+        chess_board.captured_pieces[chess_board.move_count] = on_field
         pos_in_piece_list_captured = abs(on_field)-1
         
-        if color == WHITE:
+        if chess_board.color_to_move == WHITE:
             captured_piece:Piece = chess_board.black_pieces[pos_in_piece_list_captured]
         else:
             captured_piece:Piece = chess_board.white_pieces[pos_in_piece_list_captured]
         captured_piece.is_alive = False
-    piece.first_move = move_count
+    piece.first_move = chess_board.move_count
 
     #save the move
-    chess_board.past_moves[move_count*5] = from_x
-    chess_board.past_moves[move_count*5+1] = from_y
-    chess_board.past_moves[move_count*5+2] = to_x
-    chess_board.past_moves[move_count*5+3] = to_y
-    chess_board.past_moves[move_count*5+4] = move_type
+    save_in_last_moves(chess_board, from_x, from_y, to_x, to_y, move_type)
 
     #set piece on position update piece position
     chess_board.board[to_x][to_y] = piece_number
@@ -53,5 +48,92 @@ def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
     chess_board.color_to_move *= -1
     chess_board.move_count += 1
 
-def make_castling_move(chess_board,from_x, from_y, to_x, to_y, move_type):
-    pass
+
+
+def make_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
+    """Executes en Passant moves"""
+    piece_number = chess_board.board[from_x][from_y]
+    pos_in_piece_list = abs(piece_number)-1
+
+    if chess_board.color_to_move == WHITE:
+        piece: Piece = chess_board.white_pieces[pos_in_piece_list]
+    else:
+        piece: Piece = chess_board.black_pieces[pos_in_piece_list]
+    
+    chess_board.board[from_x][from_y] = 0
+
+    on_field = chess_board.board[to_x][from_y]
+    pos_in_piece_list_captured = abs(on_field)-1
+    chess_board.captured_pieces[chess_board.move_count] = on_field
+    
+
+    if chess_board.color_to_move == WHITE:
+        captured_piece:Piece = chess_board.black_pieces[pos_in_piece_list_captured]
+    else:
+        captured_piece:Piece = chess_board.white_pieces[pos_in_piece_list_captured]
+    captured_piece.is_alive = False
+    chess_board.board[to_x][from_y] = 0
+
+    #save the move
+    save_in_last_moves(chess_board, from_x, from_y, to_x, to_y, move_type)
+
+    #set piece on position update piece position
+    chess_board.board[to_x][to_y] = piece_number
+    piece.position[0] = to_x
+    piece.position[1] = to_y
+    piece.first_move = chess_board.move_count
+
+    #change color to move and move count
+    chess_board.color_to_move *= -1
+    chess_board.move_count += 1
+
+def make_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
+    """Executes castling moves"""
+    piece_number = chess_board.board[from_x][from_y]
+    pos_in_piece_list = abs(piece_number)-1
+    king_moving_direction = (from_x-to_x)//abs(from_x-to_x)
+    
+    if chess_board.color_to_move == WHITE:
+        piece: Piece= chess_board.white_pieces[pos_in_piece_list]
+        king_number = chess_board.board[chess_board.white_king_pos[0]][chess_board.white_king_pos[1]]
+        king_in_piece_list = abs(king_number)-1
+        king: Piece = chess_board.white_pieces[king_in_piece_list]
+    else:
+        piece: Piece = chess_board.black_pieces[pos_in_piece_list]
+        king_number = chess_board.board[chess_board.black_king_pos[0]][chess_board.black_king_pos[1]]
+        king_in_piece_list = abs(king_number)
+        king: Piece = chess_board.black_king_pos[king_in_piece_list]
+
+    chess_board.board[from_x][from_y] = 0
+    chess_board.board[to_x][to_y] = piece_number
+    piece.position[0] = to_x 
+    piece.first_move = chess_board.move_count
+
+    chess_board.board[king.position[0]][king.position[1]] = 0
+    king.position[0] = king.position[0]+ 2*king_moving_direction
+    chess_board.board[king.position[0]][king.position[1]] = king_number
+    king.first_move = chess_board.move_count
+
+    if chess_board.color_to_move == WHITE:
+        chess_board.white_king_pos[0] = king.position[0]
+        chess_board.white_king_pos[2] = chess_board.move_count
+    else:
+        chess_board.black_king_pos[0] = king.position[0]
+        chess_board.black_king_pos[2] = chess_board.move_count
+    
+    save_in_last_moves(chess_board, from_x, from_y, to_x, to_y, move_type)
+
+    chess_board.color_to_move *= -1
+    chess_board.move_count += 1
+    
+    
+
+
+def save_in_last_moves(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
+    """Saves the move in the past_moves stack"""
+    chess_board.past_moves[chess_board.move_count*5] = from_x
+    chess_board.past_moves[chess_board.move_count*5+1] = from_y
+    chess_board.past_moves[chess_board.move_count*5+2] = to_x
+    chess_board.past_moves[chess_board.move_count*5+3] = to_y
+    chess_board.past_moves[chess_board.move_count*5+4] = move_type
+

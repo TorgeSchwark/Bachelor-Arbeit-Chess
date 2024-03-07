@@ -9,6 +9,14 @@ from chess_implementation.piece_rules import PieceRules
 class ChessBoard:
 
     def __init__(self):
+        """
+            Initiates an Instance of the class ChessBoard.
+
+            Parameters:
+            size(int), has_king(bool): for Initiation, white/black-_king_pos(np.array): (x,y,first_move),
+            move_count(int), fifty_move_count(int), all_non_pawn_pieces(np.array int): for Promotion,
+            capture_pieces(np.array int): for undo_move, board(np.array int), white/black-pieces(np.array)   
+        """
         self.size = 0 #board >= 0 to < size
         self.has_king = False
         self.white_king_pos = np.zeros(3, dtype=int)
@@ -27,6 +35,8 @@ class ChessBoard:
 
 
     def add_piece(self, piece_rule: PieceRules, offset, start_pos):  #adds a piece for white and blacks side
+        """ Adds a piece for both sides symmetrically, contains security checks: only one King, castling pieces must be in the same row as king ..."""
+
         if (piece_rule.king and self.has_king) or (piece_rule.king and len(start_pos) > 1) :
             print("game already has a king or can only have one king !")
 
@@ -37,7 +47,9 @@ class ChessBoard:
             if piece_rule.castling and not piece_rule.king:
                 for ind in range(len(start_pos)):
                     print(start_pos[ind], self.white_king_pos[1])
-                    if start_pos[ind][1]-offset != self.white_king_pos[1]:
+                    # if abs(start_pos[ind][0]-offset - self.white_king_pos[0]) is not given only the king jumps over the piece, 
+                    # but only field between king and castling piece must be empty  
+                    if start_pos[ind][1]-offset != self.white_king_pos[1] or abs(start_pos[ind][0]-offset - self.white_king_pos[0]) >= 2:
                         print("castling pieces mus be in the same row as the king")
                         return 
 
@@ -86,6 +98,8 @@ class ChessBoard:
 
 
     def show_board(self):
+        """ Prints out current board"""
+        
         print("\n Board looks like this: \n" , self.board)
         print("\n")
 
