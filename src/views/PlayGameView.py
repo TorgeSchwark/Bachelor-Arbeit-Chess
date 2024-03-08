@@ -3,7 +3,7 @@ from chess_implementation.piece_rules import PieceRules
 from chess_implementation.piece import Piece
 from chess_implementation.chess_variables import *
 from chess_implementation.find_moves import find_all_moves
-from chess_implementation.make_moves import make_move
+from chess_implementation.make_moves import make_move, undo_last_move
 from chess_implementation.move_stack import MoveStack
 from views.View import View
 import customtkinter as ctk
@@ -46,8 +46,19 @@ class PlayGameView(View):
         self.board_castling_switch = ctk.CTkSwitch(master=self.settings_frame, text="castling", variable=self.board_castling_switch_var, onvalue="on", offvalue="off")
         self.board_castling_switch.pack(expand=False, padx=20,pady=10)
 
+        self.undo_move_button = ctk.CTkButton(master=self.settings_frame, text="Undo move", command= self.call_undo_last_move)
+        self.undo_move_button.pack(expand=False, padx=20, pady=5)
+
+
         self.draw_board()
         self.draw_pieces_on_position()
+
+    def call_undo_last_move(self):
+        undo_last_move(self.chess_board_instance)
+        self.reset_color()
+        self.draw_moves()
+        self.draw_pieces_on_position()
+        self.chess_board_instance.show_board()
 
     def draw_board(self):
         

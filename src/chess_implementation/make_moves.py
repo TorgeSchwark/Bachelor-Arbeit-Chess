@@ -162,17 +162,20 @@ def undo_last_move(chess_board: ChessBoard):
     last_move_type   = chess_board.past_moves[(move_count-1)*5+4]
     if last_move_type == NORMAL_MOVE or last_move_type == DOUBLE_PAWN:
         undo_normal_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
+    elif last_move_type == EN_PASSANT:
+        undo_en_passant(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
 
 def undo_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Undoes the last normal move"""
-    piece_number = chess_board.board[from_x][from_y]
+
+    piece_number = chess_board.board[to_x][to_y]
     pos_in_piece_list = abs(piece_number)-1
     move_count = chess_board.move_count
 
     if chess_board.color_to_move == WHITE:
-        piece: Piece= chess_board.white_pieces[pos_in_piece_list]
+        piece: Piece= chess_board.black_pieces[pos_in_piece_list]
     else:
-        piece: Piece = chess_board.black_pieces[pos_in_piece_list]
+        piece: Piece = chess_board.white_pieces[pos_in_piece_list]
 
     captured_piece_number = chess_board.captured_pieces[move_count-1]
     captured_piece_pos_in_piece_list = abs(captured_piece_number)-1
@@ -194,6 +197,29 @@ def undo_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
     chess_board.color_to_move *= -1
     chess_board.move_count -= 1
 
+def undo_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
+    """Undoes the last move it was an en passant"""
+
+    #puts the captured pawn on the to_x to_y field where it shouldnt be    
+    undo_normal_move(chess_board, from_x, from_y, to_x, to_y, move_type)
+
+    #this is slower but since en passant is a rare case Ok ...
+    captured_piece_number = chess_board.board[to_x][to_y]
+    print(captured_piece_number)
+    pos_in_piece_list = abs(captured_piece_number)-1
+
+    if chess_board.color_to_move == WHITE:
+        piece: Piece = chess_board.black_pieces[pos_in_piece_list]
+    else: 
+        piece: Piece = chess_board.white_pieces[pos_in_piece_list]
+    
+    piece.position[0] = to_x
+    piece.position[1] = from_y
+    piece.is_alive = True
+    chess_board.board[to_x][to_y] = 0
+    chess_board.board[to_x][from_y] = captured_piece_number
+
+    
 
 def save_in_last_moves(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Saves the move in the past_moves stack"""
