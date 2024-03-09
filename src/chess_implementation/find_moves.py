@@ -112,14 +112,14 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     direction_y = chess_board.color_to_move
 
     #diagonal capture Moves(on_board(x,y) and gegner and not_promotion field)
-    if on_board(pos_x+1, size) and on_board(pos_y+direction_y, size) and (board[pos_x+1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and (not promotion(pos_y +direction_y,size,color)):
+    if on_board(pos_x+1, size) and on_board(pos_y+direction_y, size) and (board[pos_x+1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and (not promotion(pos_y +direction_y,color, size)):
         add_move(pos_x, pos_y, pos_x+1,pos_y+direction_y, moves, NORMAL_MOVE)
-    elif on_board(pos_x+1, size) and on_board(pos_y+direction_y, size) and (board[pos_x+1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and promotion(pos_y +direction_y,size,color):
+    elif on_board(pos_x+1, size) and on_board(pos_y+direction_y, size) and (board[pos_x+1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and promotion(pos_y +direction_y,color, size):
         add_promotions(pos_x, pos_y, pos_x+1,pos_y+direction_y, moves, chess_board)
-    if on_board(pos_x-1, size) and on_board(pos_y+direction_y, size) and (board[pos_x-1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and (not promotion(pos_y +direction_y,size,color)):
+    if on_board(pos_x-1, size) and on_board(pos_y+direction_y, size) and (board[pos_x-1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and (not promotion(pos_y +direction_y,color,size)):
         add_move(pos_x,pos_y, pos_x-1,pos_y+direction_y, moves, NORMAL_MOVE)
-    elif on_board(pos_x-1, size) and on_board(pos_y+direction_y, size) and (board[pos_x-1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and promotion(pos_y +direction_y,size,color):
-        add_promotions(pos_x,pos_y, pos_x+1,pos_y+direction_y, moves, chess_board)
+    elif on_board(pos_x-1, size) and on_board(pos_y+direction_y, size) and (board[pos_x-1][pos_y+direction_y] * board[pos_x][pos_y] < 0) and promotion(pos_y +direction_y,color,size):
+        add_promotions(pos_x,pos_y, pos_x-1,pos_y+direction_y, moves, chess_board)
     
     add_en_passant(chess_board, piece, moves)
 
@@ -227,7 +227,8 @@ def promotion(y, color, size):
     """ Check if a field is the last rank for that color"""
     if (color == 1 and y == size-1) or (color == -1 and y == 0):
         return True
-    return False
+    else:
+        return False
 
 
 def on_board(x,size):

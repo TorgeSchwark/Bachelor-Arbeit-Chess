@@ -25,8 +25,10 @@ class ChessBoard:
         self.white_king_pos[2] = -1
         self.color_to_move = 1
         self.move_count = 0
-        self.fifty_move_rule = 0
+        self.fifty_move_rule = np.zeros(1000,dtype=int)
         self.all_non_pawn_pieces = np.zeros(0,dtype=int)
+        self.white_pawn = 0
+        self.black_pawn = 0
         self.past_moves = np.zeros(1000, dtype= int)
         self.captured_pieces = np.zeros(1000, dtype= int)
         self.board = np.zeros((self.size, self.size),dtype=int)
@@ -49,7 +51,7 @@ class ChessBoard:
                     print(start_pos[ind], self.white_king_pos[1])
                     # if abs(start_pos[ind][0]-offset - self.white_king_pos[0]) is not given only the king jumps over the piece, 
                     # but only field between king and castling piece must be empty  
-                    if start_pos[ind][1]-offset != self.white_king_pos[1] or abs(start_pos[ind][0]-offset - self.white_king_pos[0]) >= 2:
+                    if start_pos[ind][1]-offset != self.white_king_pos[1] or abs(start_pos[ind][0]-offset - self.white_king_pos[0]) < 2:
                         print("castling pieces mus be in the same row as the king")
                         return 
 
@@ -90,7 +92,13 @@ class ChessBoard:
                 if new_piece and not (piece_rule.king or piece_rule.pawn):
                     new_piece = False
                     self.all_non_pawn_pieces = np.append(self.all_non_pawn_pieces, len(self.white_pieces)-1) #for each unique piece save one index in piece list
-
+                elif new_piece and piece_rule.pawn:
+                    if isinstance(self.white_pawn, PieceRules):
+                        print("Only one type of pawn is allowed!")
+                    else:
+                        new_piece = False
+                        self.white_pawn = piece_rule
+                        self.black_pawn = black_piece_rules
 
     def set_size(self, size):
         self.size = size
@@ -99,6 +107,7 @@ class ChessBoard:
 
     def show_board(self):
         """ Prints out current board"""
+        print("\n board size=",self.size)
         
         print("\n Board looks like this: \n" , self.board)
         print("\n")
@@ -110,6 +119,10 @@ class ChessBoard:
         print("\n ")
 
         print("\n all different pieces: ", self.all_non_pawn_pieces)
+
+        if isinstance(self.white_pawn, PieceRules):
+            self.white_pawn.show_piece()
+            self.black_pawn.show_piece()
 
         for piece in self.white_pieces:
             piece.show_piece()

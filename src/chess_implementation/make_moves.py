@@ -26,10 +26,19 @@ def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
     else:
         piece: Piece = chess_board.black_pieces[pos_in_piece_list]
 
+    if piece.rules.pawn:
+        chess_board.fifty_move_rule[chess_board.move_count] = 0
+    else: 
+        if chess_board.move_count >= 1:
+            chess_board.fifty_move_rule[chess_board.move_count] = chess_board.fifty_move_rule[chess_board.move_count-1]+1
+        else:
+            chess_board.fifty_move_rule[chess_board.move_count] = 1 
+
     chess_board.board[from_x][from_y] = 0
     on_field = chess_board.board[to_x][to_y]
     #if a piece gets captured
     if on_field != 0:
+        chess_board.fifty_move_rule[chess_board.move_count] = 0
         chess_board.captured_pieces[chess_board.move_count] = on_field
         pos_in_piece_list_captured = abs(on_field)-1
         
@@ -85,8 +94,8 @@ def make_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
     chess_board.board[to_x][to_y] = piece_number
     piece.position[0] = to_x
     piece.position[1] = to_y
-    if piece.first_move == -1:
-        piece.first_move = chess_board.move_count
+
+    chess_board.fifty_move_rule[chess_board.move_count] = 0
 
     #change color to move and move count
     chess_board.color_to_move *= -1
@@ -95,32 +104,22 @@ def make_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
 
 def make_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Executes castling moves"""
-    piece_number = chess_board.board[from_x][from_y]
-    pos_in_piece_list = abs(piece_number)-1
     king_moving_direction = (from_x-to_x)//abs(from_x-to_x)
     
     if chess_board.color_to_move == WHITE:
-        piece: Piece= chess_board.white_pieces[pos_in_piece_list]
         king_number = chess_board.board[chess_board.white_king_pos[0]][chess_board.white_king_pos[1]]
         king_in_piece_list = abs(king_number)-1
         king: Piece = chess_board.white_pieces[king_in_piece_list]
     else:
-        piece: Piece = chess_board.black_pieces[pos_in_piece_list]
         king_number = chess_board.board[chess_board.black_king_pos[0]][chess_board.black_king_pos[1]]
         king_in_piece_list = abs(king_number)
         king: Piece = chess_board.black_king_pos[king_in_piece_list]
 
-    chess_board.board[from_x][from_y] = 0
-    chess_board.board[to_x][to_y] = piece_number
-    piece.position[0] = to_x 
-    if piece.first_move == -1:
-        piece.first_move = chess_board.move_count
-
     chess_board.board[king.position[0]][king.position[1]] = 0
     king.position[0] = king.position[0]+ 2*king_moving_direction
     chess_board.board[king.position[0]][king.position[1]] = king_number
-    if king.first_move == -1:
-        king.first_move = chess_board.move_count
+
+    king.first_move = chess_board.move_count
 
     if chess_board.color_to_move == WHITE:
         chess_board.white_king_pos[0] = king.position[0]
@@ -129,10 +128,7 @@ def make_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move
         chess_board.black_king_pos[0] = king.position[0]
         chess_board.black_king_pos[2] = chess_board.move_count
     
-    save_in_last_moves(chess_board, from_x, from_y, to_x, to_y, move_type)
-
-    chess_board.color_to_move *= -1
-    chess_board.move_count += 1
+    make_normal_move(chess_board, from_x, from_y, to_x, to_y, move_type)
 
 
 def make_promotion(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
@@ -148,7 +144,7 @@ def make_promotion(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_typ
         piece_alike: Piece = chess_board.black_pieces[chess_board.all_non_pawn_pieces[move_type]]
 
     piece.rules = piece_alike.rules
-
+    
     make_normal_move(chess_board, from_x, from_y, to_x, to_y, move_type)
     
 
@@ -164,6 +160,10 @@ def undo_last_move(chess_board: ChessBoard):
         undo_normal_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
     elif last_move_type == EN_PASSANT:
         undo_en_passant(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
+    elif last_move_type == CASTLING:
+        undo_castling_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
+    elif last_move_type >= 0:
+        undo_promotion(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
 
 def undo_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Undoes the last normal move"""
@@ -196,7 +196,7 @@ def undo_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
     
     chess_board.color_to_move *= -1
     chess_board.move_count -= 1
-
+    
 def undo_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Undoes the last move it was an en passant"""
 
@@ -219,7 +219,47 @@ def undo_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
     chess_board.board[to_x][to_y] = 0
     chess_board.board[to_x][from_y] = captured_piece_number
 
+def undo_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
+    """Undoes the last move if it was an castling move"""
+    king_moving_direction = (-(from_x-to_x))//abs(from_x-to_x)
+
+    if chess_board.color_to_move == WHITE:
+        king_number = chess_board.board[chess_board.black_king_pos[0]][chess_board.black_king_pos[1]]
+        king_in_piece_list = abs(king_number)
+        king: Piece = chess_board.black_king_pos[king_in_piece_list]
+    else:
+        king_number = chess_board.board[chess_board.white_king_pos[0]][chess_board.white_king_pos[1]]
+        king_in_piece_list = abs(king_number)-1
+        king: Piece = chess_board.white_pieces[king_in_piece_list]
+
+    chess_board.board[king.position[0]][king.position[1]] = 0
+    king.position[0] = king.position[0] + 2*king_moving_direction
+    chess_board.board[king.position[0]][king.position[1]] = king_number
+
+    king.first_move = -1
+
+    if chess_board.color_to_move == WHITE:
+        chess_board.black_king_pos[0] = king.position[0]
+        chess_board.black_king_pos[2] = -1
+    else:
+        chess_board.white_king_pos[0] = king.position[0]
+        chess_board.white_king_pos[2] = -1
+
+    undo_normal_move(chess_board, from_x, from_y, to_x, to_y, move_type)
+
+def undo_promotion(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
+    """Undoes Promotion move"""
+    piece_number = chess_board.board[to_x][to_y]
+    pos_in_piece_list = abs(piece_number)-1
+
+    if chess_board.color_to_move == WHITE:
+        piece: Piece = chess_board.black_pieces[pos_in_piece_list]
+        piece.rules = chess_board.black_pawn
+    else:
+        piece: Piece = chess_board.white_pieces[pos_in_piece_list]
+        piece.rules = chess_board.white_pawn
     
+    undo_normal_move(chess_board, from_x, from_y, to_x, to_y, move_type)
 
 def save_in_last_moves(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Saves the move in the past_moves stack"""
