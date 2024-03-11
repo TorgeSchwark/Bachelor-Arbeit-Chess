@@ -1,1 +1,10 @@
-125.000 moves per second. at 40% Ram utilisation and 15% CPU usage 
+125.000 moves per second. at 40% Ram utilisation and 10% CPU usage
+-> np.int8 -> 60.000 moves per second at same utilisation !!
+
+
+undo_last_move duration: 4.291534423828125e-06
+make_move duration: 5.4836273193359375e-06
+find_all_moves duration: 0.00012159347534179688
+find_all_moves duration: 0.000102996826171875
+find_all_moves duration: 0.00012159347534179688
+find_all_moves duration: 0.00011229515075683594

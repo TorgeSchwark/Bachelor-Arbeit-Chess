@@ -61,7 +61,7 @@ class PlayGameView(View):
     def call_engine(self):
         count_moves = [-1]
         start_time = time.time()
-        test_engine(self.chess_board_instance,6,count_moves)
+        test_engine(self.chess_board_instance,3,count_moves)
         end_time = time.time()
         execution_time = end_time - start_time
         

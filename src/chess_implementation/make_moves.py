@@ -37,7 +37,7 @@ def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
     chess_board.board[from_x][from_y] = 0
     on_field = chess_board.board[to_x][to_y]
     #if a piece gets captured
-    if on_field != 0:
+    if on_field:
         chess_board.fifty_move_rule[chess_board.move_count] = 0
         chess_board.captured_pieces[chess_board.move_count] = on_field
         pos_in_piece_list_captured = abs(on_field)-1
@@ -58,9 +58,7 @@ def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
 
     #set piece on position update piece position
     chess_board.board[to_x][to_y] = piece_number
-    piece.position[0] = to_x
-    piece.position[1] = to_y
-
+    piece.position = [to_x, to_y]
     #change color to move and move count
     chess_board.color_to_move *= -1
     chess_board.move_count += 1
@@ -95,8 +93,7 @@ def make_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
 
     #set piece on position update piece position
     chess_board.board[to_x][to_y] = piece_number
-    piece.position[0] = to_x
-    piece.position[1] = to_y
+    piece.position = [to_x, to_y]
 
     chess_board.fifty_move_rule[chess_board.move_count] = 0
 
@@ -163,14 +160,13 @@ def undo_last_move(chess_board: ChessBoard):
         last_move_type   = chess_board.past_moves[(move_count-1)*5+4]
         if last_move_type == NORMAL_MOVE or last_move_type == DOUBLE_PAWN:
             undo_normal_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
-        elif last_move_type == EN_PASSANT:
-            undo_en_passant(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
         elif last_move_type == CASTLING:
             undo_castling_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
         elif last_move_type >= 0:
             undo_promotion(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
-    else:
-        pass 
+        elif last_move_type == EN_PASSANT:
+            undo_en_passant(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
+    
     
 def undo_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Undoes the last normal move"""
