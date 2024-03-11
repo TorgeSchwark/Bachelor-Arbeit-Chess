@@ -28,11 +28,11 @@ def find_piece_moves(chess_board, piece: Piece, moves):
     if piece.rules.pawn:
         find_pawn_moves(chess_board, piece, moves)
     elif piece.rules.king:
-        pass
+        find_jump_moves(chess_board, piece, moves)
+        find_move_directions(chess_board, piece, moves)
     else:
         if piece.rules.castling:
             add_castling(chess_board, piece, moves)
-        print("normal piece")
         find_jump_moves(chess_board, piece, moves)
         find_move_directions(chess_board, piece, moves)
 
@@ -48,7 +48,7 @@ def add_castling(chess_board: ChessBoard, piece: Piece, moves):
         king_pos = chess_board.black_king_pos
 
     if king_pos[2] != -1 or piece.first_move != -1:
-        print("Piece or King has already moved")
+        pass 
     else:
         #from king to piece
         is_free = True

@@ -76,4 +76,9 @@ class PieceRules:
         for i in range(len(self.jump_moves)):
             self.jump_moves[i] = -self.jump_moves[i]
 
+    def equals(self, other):
+        if (self.move_directions == other.move_directions).all() and (self.jump_moves == other.jump_moves).all() and self.boarder_x == other.boarder_x and self.boarder_y == other.boarder_y and self.king == other.king and self.pawn == other.pawn:
+            return True
+        return False
+ 
 

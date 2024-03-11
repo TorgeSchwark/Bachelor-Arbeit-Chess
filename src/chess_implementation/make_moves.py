@@ -47,6 +47,9 @@ def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
         else:
             captured_piece:Piece = chess_board.white_pieces[pos_in_piece_list_captured]
         captured_piece.is_alive = False
+    else:  #if we dont overwright old captures will be put on the board
+        chess_board.captured_pieces[chess_board.move_count] = 0
+
     if piece.first_move == -1:
         piece.first_move = chess_board.move_count
 
@@ -150,21 +153,25 @@ def make_promotion(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_typ
 
 def undo_last_move(chess_board: ChessBoard):
     """Undoes the last move"""
-    move_count = chess_board.move_count
-    last_move_from_x = chess_board.past_moves[(move_count-1)*5]
-    last_move_from_y = chess_board.past_moves[(move_count-1)*5+1]
-    last_move_to_x   = chess_board.past_moves[(move_count-1)*5+2]
-    last_move_to_y   = chess_board.past_moves[(move_count-1)*5+3]
-    last_move_type   = chess_board.past_moves[(move_count-1)*5+4]
-    if last_move_type == NORMAL_MOVE or last_move_type == DOUBLE_PAWN:
-        undo_normal_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
-    elif last_move_type == EN_PASSANT:
-        undo_en_passant(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
-    elif last_move_type == CASTLING:
-        undo_castling_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
-    elif last_move_type >= 0:
-        undo_promotion(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
 
+    move_count = chess_board.move_count
+    if move_count > 0:
+        last_move_from_x = chess_board.past_moves[(move_count-1)*5]
+        last_move_from_y = chess_board.past_moves[(move_count-1)*5+1]
+        last_move_to_x   = chess_board.past_moves[(move_count-1)*5+2]
+        last_move_to_y   = chess_board.past_moves[(move_count-1)*5+3]
+        last_move_type   = chess_board.past_moves[(move_count-1)*5+4]
+        if last_move_type == NORMAL_MOVE or last_move_type == DOUBLE_PAWN:
+            undo_normal_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
+        elif last_move_type == EN_PASSANT:
+            undo_en_passant(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
+        elif last_move_type == CASTLING:
+            undo_castling_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
+        elif last_move_type >= 0:
+            undo_promotion(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
+    else:
+        pass 
+    
 def undo_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Undoes the last normal move"""
 
@@ -205,7 +212,6 @@ def undo_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
 
     #this is slower but since en passant is a rare case Ok ...
     captured_piece_number = chess_board.board[to_x][to_y]
-    print(captured_piece_number)
     pos_in_piece_list = abs(captured_piece_number)-1
 
     if chess_board.color_to_move == WHITE:

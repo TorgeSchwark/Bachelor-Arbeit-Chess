@@ -5,11 +5,13 @@ from chess_implementation.chess_variables import *
 from chess_implementation.find_moves import find_all_moves
 from chess_implementation.make_moves import make_move, undo_last_move
 from chess_implementation.move_stack import MoveStack
+from testing.testing_chess_impl import test_engine
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
 from PIL import Image
 import random
+import time
 
 class PlayGameView(View):
     
@@ -49,9 +51,26 @@ class PlayGameView(View):
         self.undo_move_button = ctk.CTkButton(master=self.settings_frame, text="Undo move", command= self.call_undo_last_move)
         self.undo_move_button.pack(expand=False, padx=20, pady=5)
 
+        self.engine_button = ctk.CTkButton(master=self.settings_frame, text="Chess engine", command= self.call_engine)
+        self.engine_button.pack(expand=False, padx=20, pady=5)
+
 
         self.draw_board()
         self.draw_pieces_on_position()
+
+    def call_engine(self):
+        count_moves = [-1]
+        start_time = time.time()
+        test_engine(self.chess_board_instance,6,count_moves)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        
+
+        self.reset_color()
+        self.draw_moves()
+        self.draw_pieces_on_position()
+        print(count_moves, "in : ", execution_time," Seconds")
+        print(count_moves[0]/execution_time, "moves per second")
 
     def call_undo_last_move(self):
         undo_last_move(self.chess_board_instance)

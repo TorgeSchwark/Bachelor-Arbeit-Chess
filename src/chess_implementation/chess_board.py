@@ -134,4 +134,33 @@ class ChessBoard:
             print("(",self.past_moves[ind*5],",",self.past_moves[ind*5+1],")", "->","(",self.past_moves[ind*5+2],",",self.past_moves[ind*5+3],") ",self.past_moves[ind*5+4],"\n" )
     
 
+    def equals(self, other):
+        if not (self.size == other.size):
+            return False
+        if not self.has_king == other.has_king:
+            return False
+        if not (self.white_king_pos == other.white_king_pos).all():
+            return False
+        if not(self.black_king_pos == other.black_king_pos).all():
+            return False
+        if not self.color_to_move == other.color_to_move:
+            return False
+        if not self.move_count == other.move_count:
+            return False
+        if not (self.all_non_pawn_pieces == other.all_non_pawn_pieces).all():
+            return False
+        if not self.white_pawn.equals(other.white_pawn):
+            return False
+        if not self.black_pawn.equals(other.black_pawn):
+            return False
+        if not (self.board == other.board).all():
+            return False
 
+        for ind in range(len(self.white_pieces)):
+            if not self.white_pieces[ind].equals(other.white_pieces[ind]):
+                print("piece differnt !")
+                return False
+            
+        return True
+        
+        

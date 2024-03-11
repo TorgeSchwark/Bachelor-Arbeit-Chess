@@ -15,3 +15,8 @@ class Piece:
         print("\n postion : ", self.position)
         print("\n first_move : ", self.first_move)
         self.rules.show_piece()
+
+    def equals(self, other):
+        if self.rules.equals(other.rules) and self.is_alive == other.is_alive and (self.position == other.position).all() and self.first_move == other.first_move:
+            return True
+        return False
