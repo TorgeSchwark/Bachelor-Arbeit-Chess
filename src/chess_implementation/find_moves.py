@@ -40,16 +40,15 @@ def add_castling(chess_board: ChessBoard, piece: Piece, moves):
             king_pos = chess_board.black_king_pos
 
         #from king to piece
-        is_free = True
-        direction = (piece.position[0]-king_pos[0]) // abs(piece.position[0]-king_pos[0])
+        
+        direction = -1 if piece.position[0] < king_pos[0] else 1
         field_x = king_pos[0] + direction
         field_y = king_pos[1]
         while  field_x != piece.position[0]:
             if chess_board.board[field_x][field_y] != 0:
-                is_free = False 
+                return
             field_x += direction
-        if is_free:
-            add_move(piece.position[0], piece.position[1], king_pos[0] + direction, king_pos[1], moves, CASTLING)
+        add_move(piece.position[0], piece.position[1], king_pos[0] + direction, king_pos[1], moves, CASTLING)
 
 
 def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
@@ -62,22 +61,22 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     board = chess_board.board
 
     if piece.first_move == -1:
-        move_directions = [d * 2 if i % 3 == 2 else d for i, d in enumerate(piece.rules.move_directions)]
         double_move = True
     else: 
         double_move = False
-        move_directions = piece.rules.move_directions
+
+    move_directions = piece.rules.move_directions
     
     #could also chose to make a backwards running pawn!
     #Move directions double if pawn hasnt moved
     for ind in range(len(move_directions)//3):
-        direction_x = move_directions[ind*3]
-        direction_y = move_directions[ind*3+1]
-        rangee = move_directions[ind*3+2]
+        pos_ind = ind*3
+        direction_x = move_directions[pos_ind]
+        direction_y = move_directions[pos_ind+1]
+        rangee = move_directions[pos_ind+2]
+        real_range = rangee
         if double_move:
-            real_range = rangee // 2
-        else: 
-            real_range = rangee
+            rangee *= 2 
 
         dist = 1
         field_x  = pos_x+direction_x
@@ -99,28 +98,32 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     
     direction_y = chess_board.color_to_move
 
-    min_move_on_board_attack =  on_board(pos_x-1, size) and on_board(pos_y+direction_y, size) and (board[pos_x-1][pos_y+direction_y] * board[pos_x][pos_y] < 0) 
-    plus_move_on_board_attack =  on_board(pos_x+1, size) and on_board(pos_y+direction_y, size) and (board[pos_x+1][pos_y+direction_y] * board[pos_x][pos_y] < 0)
+    to_y = pos_y+direction_y
+    to_min = pos_x-1
+    to_plus = pos_x+1
+    min_move_on_board_attack =  on_board(to_min, size) and on_board(to_y, size) and board[to_min][to_y] != 0 and (board[to_min][to_y] < 0) != (board[pos_x][pos_y] < 0)
+    plus_move_on_board_attack =  on_board(to_plus, size) and on_board(to_y, size) and board[to_plus][to_y] != 0 and (board[to_plus][to_y] < 0) !=  (board[pos_x][pos_y] < 0)
+
     #diagonal capture Moves(on_board(x,y) and gegner and not_promotion field)
-    if plus_move_on_board_attack and (not promotion(pos_y +direction_y,color, size)):
-        add_move(pos_x, pos_y, pos_x+1,pos_y+direction_y, moves, NORMAL_MOVE)
-    elif plus_move_on_board_attack and promotion(pos_y +direction_y,color, size):
-        add_promotions(pos_x, pos_y, pos_x+1,pos_y+direction_y, moves, chess_board)
-    if min_move_on_board_attack and (not promotion(pos_y +direction_y,color,size)):
-        add_move(pos_x,pos_y, pos_x-1,pos_y+direction_y, moves, NORMAL_MOVE)
-    elif min_move_on_board_attack and promotion(pos_y +direction_y,color,size):
-        add_promotions(pos_x,pos_y, pos_x-1,pos_y+direction_y, moves, chess_board)
+    if plus_move_on_board_attack and (not promotion(to_y,color, size)):
+        add_move(pos_x, pos_y, to_plus,to_y, moves, NORMAL_MOVE)
+    elif plus_move_on_board_attack and promotion(to_y,color, size):
+        add_promotions(pos_x, pos_y, to_plus,to_y, moves, chess_board)
+    if min_move_on_board_attack and (not promotion(to_y,color,size)):
+        add_move(pos_x,pos_y, to_min,to_y, moves, NORMAL_MOVE)
+    elif min_move_on_board_attack and promotion(to_y,color,size):
+        add_promotions(pos_x,pos_y, to_min,to_y, moves, chess_board)
     
     add_en_passant(chess_board, piece, moves)
 
 
 def add_en_passant(chess_board : ChessBoard, piece: Piece, moves):
     """ Checks if a piece can do en passant"""
-
-    if chess_board.past_moves[(chess_board.move_count-1)*5+4] == DOUBLE_PAWN:
+    pos_ind = (chess_board.move_count-1)*5
+    if chess_board.past_moves[pos_ind+4] == DOUBLE_PAWN:
         color = chess_board.color_to_move
-        last_move_to_x = chess_board.past_moves[(chess_board.move_count-1)*5+2]
-        last_move_to_y = chess_board.past_moves[(chess_board.move_count-1)*5+3]
+        last_move_to_x = chess_board.past_moves[pos_ind+2]
+        last_move_to_y = chess_board.past_moves[pos_ind+3]
         if (piece.position[0] == last_move_to_x + 1 or piece.position[0]  == last_move_to_x - 1) and piece.position[1] == last_move_to_y:
             add_move(piece.position[0], piece.position[1], last_move_to_x, last_move_to_y + color, moves, EN_PASSANT)
 
@@ -136,20 +139,20 @@ def find_move_directions(chess_board: ChessBoard, piece: Piece, moves):
     board = chess_board.board
 
     for ind in range(len(move_directions)//3):
-        direction_x = move_directions[ind*3]
-        direction_y = move_directions[ind*3+1]
-        rangee = move_directions[ind*3+2]
-        
-        if rangee == 0:
-            rangee = 99999
+        pos_ind = ind*3
+        direction_x = move_directions[pos_ind]
+        direction_y = move_directions[pos_ind+1]
+        rangee = move_directions[pos_ind+2]
 
         dist = 1
         field_x  = pos_x + direction_x
         field_y  = pos_y + direction_y
         while dist <= rangee and (on_board(field_x, size) or piece.rules.boarder_x) and (on_board(field_y, size) or piece.rules.boarder_y): 
             
-            field_x %= size
-            field_y %= size
+            if field_x >= size:
+                field_x %= size
+            if field_y >= size:
+                field_y %= size
 
             if board[field_x][field_y] == 0:
                 add_move(pos_x, pos_y, field_x, field_y, moves, NORMAL_MOVE)
@@ -174,8 +177,9 @@ def find_jump_moves(chess_board: ChessBoard, piece: Piece, moves):
     board = chess_board.board
 
     for ind in range(len(jump_moves)//2):
-        field_x = pos_x + jump_moves[ind*2]
-        field_y = pos_y + jump_moves[ind*2+1]
+        pos_ind = ind*2
+        field_x = pos_x + jump_moves[pos_ind]
+        field_y = pos_y + jump_moves[pos_ind+1]
 
         if (on_board(field_y, size) or piece.rules.boarder_y) and (on_board(field_x, size) or piece.rules.boarder_x):
             field_x %= size 
@@ -183,7 +187,7 @@ def find_jump_moves(chess_board: ChessBoard, piece: Piece, moves):
         else:
             continue
         
-        if (board[field_x][field_y] >= 0) != (board[pos_x][pos_y] >= 0):
+        if board[field_x][field_y] == 0 or (board[field_x][field_y] >= 0) != (board[pos_x][pos_y] >= 0):
             add_move(pos_x, pos_y, field_x, field_y, moves, NORMAL_MOVE)
 
 

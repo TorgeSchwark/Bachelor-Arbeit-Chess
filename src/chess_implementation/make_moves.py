@@ -98,13 +98,14 @@ def make_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
     chess_board.fifty_move_rule[chess_board.move_count] = 0
 
     #change color to move and move count
-    chess_board.color_to_move *= -1
+    chess_board.color_to_move = -1 if chess_board.color_to_move == 1 else 1
     chess_board.move_count += 1
 
 
 def make_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Executes castling moves"""
-    king_moving_direction = (from_x-to_x)//abs(from_x-to_x)
+    king_moving_direction = 2 if from_x > to_x else -2
+    
     
     if chess_board.color_to_move == WHITE:
         king_number = chess_board.board[chess_board.white_king_pos[0]][chess_board.white_king_pos[1]]
@@ -116,7 +117,7 @@ def make_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move
         king: Piece = chess_board.black_king_pos[king_in_piece_list]
 
     chess_board.board[king.position[0]][king.position[1]] = 0
-    king.position[0] = king.position[0]+ 2*king_moving_direction
+    king.position[0] = king.position[0]+ king_moving_direction
     chess_board.board[king.position[0]][king.position[1]] = king_number
 
     king.first_move = chess_board.move_count
@@ -153,11 +154,12 @@ def undo_last_move(chess_board: ChessBoard):
 
     move_count = chess_board.move_count
     if move_count > 0:
-        last_move_from_x = chess_board.past_moves[(move_count-1)*5]
-        last_move_from_y = chess_board.past_moves[(move_count-1)*5+1]
-        last_move_to_x   = chess_board.past_moves[(move_count-1)*5+2]
-        last_move_to_y   = chess_board.past_moves[(move_count-1)*5+3]
-        last_move_type   = chess_board.past_moves[(move_count-1)*5+4]
+        pos_ind = (move_count-1)*5
+        last_move_from_x = chess_board.past_moves[pos_ind]
+        last_move_from_y = chess_board.past_moves[pos_ind+1]
+        last_move_to_x   = chess_board.past_moves[pos_ind+2]
+        last_move_to_y   = chess_board.past_moves[pos_ind+3]
+        last_move_type   = chess_board.past_moves[pos_ind+4]
         if last_move_type == NORMAL_MOVE or last_move_type == DOUBLE_PAWN:
             undo_normal_move(chess_board, last_move_from_x, last_move_from_y, last_move_to_x, last_move_to_y, last_move_type)
         elif last_move_type == CASTLING:
@@ -197,7 +199,7 @@ def undo_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
     if piece.first_move == move_count-1:
         piece.first_move = -1
     
-    chess_board.color_to_move *= -1
+    chess_board.color_to_move = -1 if chess_board.color_to_move == 1 else 1
     chess_board.move_count -= 1
     
 def undo_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
@@ -265,9 +267,10 @@ def undo_promotion(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_typ
 
 def save_in_last_moves(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Saves the move in the past_moves stack"""
-    chess_board.past_moves[chess_board.move_count*5] = from_x
-    chess_board.past_moves[chess_board.move_count*5+1] = from_y
-    chess_board.past_moves[chess_board.move_count*5+2] = to_x
-    chess_board.past_moves[chess_board.move_count*5+3] = to_y
-    chess_board.past_moves[chess_board.move_count*5+4] = move_type
+    pos_ind = chess_board.move_count*5
+    chess_board.past_moves[pos_ind] = from_x
+    chess_board.past_moves[pos_ind+1] = from_y
+    chess_board.past_moves[pos_ind+2] = to_x
+    chess_board.past_moves[pos_ind+3] = to_y
+    chess_board.past_moves[pos_ind+4] = move_type
 

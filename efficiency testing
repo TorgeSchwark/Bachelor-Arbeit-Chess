@@ -1,5 +1,6 @@
 125.000 moves per second. at 40% Ram utilisation and 10% CPU usage
 -> np.int8 -> 60.000 moves per second at same utilisation !!
+140942.5660928939 moves per second after optimisation ... 
 
 
 undo_last_move duration: 4.291534423828125e-06

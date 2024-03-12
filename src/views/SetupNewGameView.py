@@ -289,7 +289,7 @@ class SetupNewGameView(View):
                     if self.rectangles[(x,y)].cget("bg") == LIGHTGREEN or self.rectangles[(x,y)].cget("bg") == DARKGREEN:
                         piece.add_jump_move((x_vec,y_vec))
                     if self.rectangles[(x,y)].cget("bg") == DARKRED or self.rectangles[(x,y)].cget("bg") == LIGHTRED:
-                        piece.add_direction((direction_x,direction_y,0)) #only once
+                        piece.add_direction((direction_x,direction_y,99999)) #only once
                     if self.rectangles[(x,y)].cget("highlightbackground") == LIGHTYELLOW or self.rectangles[(x,y)].cget("highlightbackground") == DARKYELLOW:
                         self.piece_start_pos += [[x,y]]
                         print("hier")

@@ -45,6 +45,7 @@ class PieceRules:
 
         
     def add_direction(self,tupel):
+        print(tupel)
         add = True
         for ind in range(0,int(len(self.move_directions)/3)):
             if self.move_directions[ind*3] == tupel[0] and self.move_directions[ind*3+1] == tupel[1] and self.move_directions[ind*3+2] == tupel[2]:

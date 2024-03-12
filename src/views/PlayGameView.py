@@ -11,7 +11,9 @@ import customtkinter as ctk
 from views.view_variables import *
 from PIL import Image
 import random
+from copy import deepcopy
 import time
+from multiprocessing import Pool
 
 class PlayGameView(View):
     
@@ -58,19 +60,38 @@ class PlayGameView(View):
         self.draw_board()
         self.draw_pieces_on_position()
 
+
+    
     def call_engine(self):
-        count_moves = [-1]
+        num_processes = 20
+        depth = 5
+        pool = Pool(num_processes)
+
         start_time = time.time()
-        test_engine(self.chess_board_instance,3,count_moves)
+        args_list = [(deepcopy(self.chess_board_instance), depth) for _ in range(num_processes)]
+        result = pool.map(thread_engine, args_list)
         end_time = time.time()
         execution_time = end_time - start_time
-        
+        pool.close()
+        summ = 0
+        for sublist in result:
+            summ += sublist[0]
+        print(summ, "moves in ", execution_time , " seconds ")
+        print(summ/execution_time, " per second ")
 
-        self.reset_color()
-        self.draw_moves()
-        self.draw_pieces_on_position()
-        print(count_moves, "in : ", execution_time," Seconds")
-        print(count_moves[0]/execution_time, "moves per second")
+        # count_moves = [-1]
+        # start_time = time.time()
+        # test_engine(self.chess_board_instance,6,count_moves)
+        # end_time = time.time()
+        # execution_time = end_time - start_time
+        
+        # self.reset_color()
+        # self.draw_moves()
+        # self.draw_pieces_on_position()
+        # print(count_moves, "in : ", execution_time," Seconds")
+        # print(count_moves[0]/execution_time, "moves per second")
+    	# #0.043 - 0.05320096015930176  find_move time 
+
 
     def call_undo_last_move(self):
         undo_last_move(self.chess_board_instance)
@@ -228,3 +249,10 @@ class PlayGameView(View):
     
     def destroy(self):
         return self.main_frame.destroy()
+    
+
+
+def thread_engine(args):
+    move_count = [-1]
+    test_engine(args[0], args[1], move_count)
+    return move_count
