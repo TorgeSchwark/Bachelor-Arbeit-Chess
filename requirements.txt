@@ -2,3 +2,4 @@ numpy
 customtkinter
 pillow
 numba
+cython

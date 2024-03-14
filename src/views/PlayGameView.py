@@ -15,6 +15,7 @@ from copy import deepcopy
 import time
 from multiprocessing import Pool
 
+
 class PlayGameView(View):
     
     def __init__(self, master, controller):
