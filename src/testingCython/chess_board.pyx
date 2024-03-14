@@ -1,6 +1,4 @@
-cimport numpy as np  # Importieren der C-API von NumPy
-import sqlite3
-import pickle
+cimport piece
 
 cdef struct ChessBoard:
 
@@ -25,11 +23,11 @@ cdef struct ChessBoard:
     signed char board[20][20]
 
     unsigned char piece_count
-    signed char white_pieces[50]
-    signed char black_pieces[50]
+    piece.Piece white_pieces[50]
+    piece.Piece black_pieces[50]
 
 
-cpdef int set_up_chess_board(ChessBoard chess_board):
+cpdef void set_up_chess_board(ChessBoard chess_board):
 
     chess_board.size = 0
     chess_board.has_king = False
@@ -63,12 +61,9 @@ cpdef int set_up_chess_board(ChessBoard chess_board):
             chess_board.board[i][m] = 0
 
     for i in range(len(chess_board.white_pieces)):
-        chess_board.white_pieces[i] = 0
-        chess_board.black_pieces[i] = 0
+        piece.set_up_piece(chess_board.white_pieces[i])
+        piece.set_up_piece(chess_board.black_pieces[i])
     
-    return 0
-
-
 
 cdef class ChessBoardd:
     cdef ChessBoard chess_board
@@ -92,8 +87,12 @@ cdef class ChessBoardd:
         print("Past moves:", [self.chess_board.past_moves[i] for i in range(3000)])
         print("Captured pieces:", [self.chess_board.captured_pieces[i] for i in range(3000)])
         print("Piece count:", self.chess_board.piece_count)
-        print("White pieces:", [self.chess_board.white_pieces[i] for i in range(50)])
-        print("Black pieces:", [self.chess_board.black_pieces[i] for i in range(50)])
+        print("White pieces:") 
+        for i in range(50):
+            piece.show_piece(self.chess_board.white_pieces[i])
+        print("Black pieces:") 
+        for i in range(50):
+            piece.show_piece(self.chess_board.black_pieces[i])
         print("Board:")
         for i in range(len(self.chess_board.board)):
             for j in range(len(self.chess_board.board)):
