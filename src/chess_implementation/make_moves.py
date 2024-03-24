@@ -108,26 +108,17 @@ def make_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move
     
     
     if chess_board.color_to_move == WHITE:
-        king_number = chess_board.board[chess_board.white_king_pos[0]][chess_board.white_king_pos[1]]
-        king_in_piece_list = abs(king_number)-1
-        king: Piece = chess_board.white_pieces[king_in_piece_list]
+        king_number = chess_board.king_pos +1
+        king: Piece = chess_board.white_pieces[chess_board.king_pos]
     else:
-        king_number = chess_board.board[chess_board.black_king_pos[0]][chess_board.black_king_pos[1]]
-        king_in_piece_list = abs(king_number)
-        king: Piece = chess_board.black_king_pos[king_in_piece_list]
+        king_number = -(chess_board.king_pos +1)
+        king: Piece = chess_board.black_pieces[chess_board.king_pos]
 
     chess_board.board[king.position[0]][king.position[1]] = 0
     king.position[0] = king.position[0]+ king_moving_direction
     chess_board.board[king.position[0]][king.position[1]] = king_number
 
     king.first_move = chess_board.move_count
-
-    if chess_board.color_to_move == WHITE:
-        chess_board.white_king_pos[0] = king.position[0]
-        chess_board.white_king_pos[2] = chess_board.move_count
-    else:
-        chess_board.black_king_pos[0] = king.position[0]
-        chess_board.black_king_pos[2] = chess_board.move_count
     
     make_normal_move(chess_board, from_x, from_y, to_x, to_y, move_type)
 
@@ -228,26 +219,17 @@ def undo_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move
     king_moving_direction = (-(from_x-to_x))//abs(from_x-to_x)
 
     if chess_board.color_to_move == WHITE:
-        king_number = chess_board.board[chess_board.black_king_pos[0]][chess_board.black_king_pos[1]]
-        king_in_piece_list = abs(king_number)
-        king: Piece = chess_board.black_king_pos[king_in_piece_list]
+        king_number = -(chess_board.king_pos +1)
+        king: Piece = chess_board.black_pieces[chess_board.king_pos]
     else:
-        king_number = chess_board.board[chess_board.white_king_pos[0]][chess_board.white_king_pos[1]]
-        king_in_piece_list = abs(king_number)-1
-        king: Piece = chess_board.white_pieces[king_in_piece_list]
+        king_number = chess_board.king_pos+1
+        king: Piece = chess_board.white_pieces[chess_board.king_pos]
 
     chess_board.board[king.position[0]][king.position[1]] = 0
     king.position[0] = king.position[0] + 2*king_moving_direction
     chess_board.board[king.position[0]][king.position[1]] = king_number
 
     king.first_move = -1
-
-    if chess_board.color_to_move == WHITE:
-        chess_board.black_king_pos[0] = king.position[0]
-        chess_board.black_king_pos[2] = -1
-    else:
-        chess_board.white_king_pos[0] = king.position[0]
-        chess_board.white_king_pos[2] = -1
 
     undo_normal_move(chess_board, from_x, from_y, to_x, to_y, move_type)
 

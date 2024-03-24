@@ -30,21 +30,21 @@ def find_all_moves(chess_board: ChessBoard):
 def add_castling(chess_board: ChessBoard, piece: Piece, moves):
     """ Checks if castling is possible. If so it adds the castling move"""
 
-    if chess_board.white_king_pos[2] != -1 or piece.first_move != -1:
+    if (chess_board.white_pieces[chess_board.king_pos].first_move != -1 and chess_board.color_to_move == WHITE) or (chess_board.black_pieces[chess_board.king_pos].first_move != -1 and chess_board.color_to_move == BLACK) or piece.first_move != -1:
         return
     else:
         color = chess_board.color_to_move
         if color == 1:
-            king_pos = chess_board.white_king_pos
+            king_pos = chess_board.white_pieces[chess_board.king_pos].position
         else:
-            king_pos = chess_board.black_king_pos
+            king_pos = chess_board.black_pieces[chess_board.king_pos].position
 
         #from king to piece
         
         direction = -1 if piece.position[0] < king_pos[0] else 1
         field_x = king_pos[0] + direction
         field_y = king_pos[1]
-        while  field_x != piece.position[0]:
+        while field_x != piece.position[0]:
             if chess_board.board[field_x][field_y] != 0:
                 return
             field_x += direction

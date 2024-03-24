@@ -6,6 +6,7 @@ from chess_implementation.find_moves import find_all_moves
 from chess_implementation.make_moves import make_move, undo_last_move
 from chess_implementation.move_stack import MoveStack
 from testing.testing_chess_impl import test_engine
+from testing.play_game_testing import play_game_test
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
@@ -61,36 +62,18 @@ class PlayGameView(View):
         self.draw_pieces_on_position()
 
 
-    
+    #aply longer test
     def call_engine(self):
-        num_processes = 20
-        depth = 5
+
+        num_processes = 3 #20
+        depth = 2 #3
+        lenght = 10 #200
         pool = Pool(num_processes)
 
-        start_time = time.time()
-        args_list = [(deepcopy(self.chess_board_instance), depth) for _ in range(num_processes)]
-        result = pool.map(thread_engine, args_list)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        pool.close()
-        summ = 0
-        for sublist in result:
-            summ += sublist[0]
-        print(summ, "moves in ", execution_time , " seconds ")
-        print(summ/execution_time, " per second ")
-
-        # count_moves = [-1]
-        # start_time = time.time()
-        # test_engine(self.chess_board_instance,6,count_moves)
-        # end_time = time.time()
-        # execution_time = end_time - start_time
+        args_list = [(deepcopy(self.chess_board_instance), depth, lenght) for _ in range(num_processes)]
+        pool.map(thread_testing, args_list)
         
-        # self.reset_color()
-        # self.draw_moves()
-        # self.draw_pieces_on_position()
-        # print(count_moves, "in : ", execution_time," Seconds")
-        # print(count_moves[0]/execution_time, "moves per second")
-    	# #0.043 - 0.05320096015930176  find_move time 
+        pool.close()
 
 
     def call_undo_last_move(self):
@@ -256,3 +239,6 @@ def thread_engine(args):
     move_count = [-1]
     test_engine(args[0], args[1], move_count)
     return move_count
+
+def thread_testing(args):
+    play_game_test(args[0],args[1],args[2])

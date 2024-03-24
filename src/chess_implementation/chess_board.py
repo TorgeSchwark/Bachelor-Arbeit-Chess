@@ -20,10 +20,7 @@ class ChessBoard:
         """
         self.size = 0 #board >= 0 to < size
         self.has_king = False
-        self.white_king_pos = np.zeros(3, dtype=int)
-        self.white_king_pos[2] = -1
-        self.black_king_pos = np.zeros(3, dtype=int)
-        self.white_king_pos[2] = -1
+        self.king_pos = -1
         self.color_to_move = 1
         self.move_count = 0
         self.fifty_move_rule = np.zeros(1000,dtype=int)
@@ -49,10 +46,7 @@ class ChessBoard:
             
             if piece_rule.castling and not piece_rule.king:
                 for ind in range(len(start_pos)):
-                    print(start_pos[ind], self.white_king_pos[1])
-                    # if abs(start_pos[ind][0]-offset - self.white_king_pos[0]) is not given only the king jumps over the piece, 
-                    # but only field between king and castling piece must be empty  
-                    if start_pos[ind][1]-offset != self.white_king_pos[1] or abs(start_pos[ind][0]-offset - self.white_king_pos[0]) < 2:
+                    if start_pos[ind][1]-offset != self.white_pieces[self.king_pos].position[1] or abs(start_pos[ind][0]-offset - self.white_pieces[self.king_pos].position[0]) < 2:
                         print("castling pieces mus be in the same row as the king")
                         return 
 
@@ -84,10 +78,7 @@ class ChessBoard:
                 self.board[x][self.size-1-y] = -(len(self.black_pieces))  #negative position in piece list -1
 
                 if piece_rule.king:
-                    self.white_king_pos[0] = x
-                    self.white_king_pos[1] = y 
-                    self.black_king_pos[0] = x 
-                    self.black_king_pos[1] = self.size-1-y
+                    self.king_pos = len(self.white_pieces)-1
                     self.has_king = True
 
                 if new_piece and not (piece_rule.king or piece_rule.pawn):
@@ -140,9 +131,7 @@ class ChessBoard:
             return False
         if not self.has_king == other.has_king:
             return False
-        if not (self.white_king_pos == other.white_king_pos).all():
-            return False
-        if not(self.black_king_pos == other.black_king_pos).all():
+        if not self.king_pos== other.king_pos:
             return False
         if not self.color_to_move == other.color_to_move:
             return False
