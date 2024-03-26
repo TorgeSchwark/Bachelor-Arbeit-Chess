@@ -15,6 +15,7 @@ import random
 from copy import deepcopy
 import time
 from multiprocessing import Pool
+from testing.play_setup import play_game
 
 class PlayGameView(View):
     
@@ -64,10 +65,11 @@ class PlayGameView(View):
 
     #aply longer test
     def call_engine(self):
-
-        num_processes = 3 #20
-        depth = 2 #3
-        lenght = 10 #200
+        #play_game(self.chess_board_instance)
+        #play_game_test(self.chess_board_instance, 2, 20000)
+        num_processes = 20
+        depth = 3
+        lenght = 50000
         pool = Pool(num_processes)
 
         args_list = [(deepcopy(self.chess_board_instance), depth, lenght) for _ in range(num_processes)]

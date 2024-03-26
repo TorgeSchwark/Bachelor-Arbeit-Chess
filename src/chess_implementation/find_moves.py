@@ -5,7 +5,7 @@ from chess_implementation.move_stack import MoveStack
 import numpy as np
 from chess_implementation.chess_variables import *
 from numba import jit 
-
+import time
 
 def find_all_moves(chess_board: ChessBoard):
     """ Finds all move for the Player which has to move"""
@@ -33,8 +33,16 @@ def add_castling(chess_board: ChessBoard, piece: Piece, moves):
     if (chess_board.white_pieces[chess_board.king_pos].first_move != -1 and chess_board.color_to_move == WHITE) or (chess_board.black_pieces[chess_board.king_pos].first_move != -1 and chess_board.color_to_move == BLACK) or piece.first_move != -1:
         return
     else:
+        if (piece.position[1] != chess_board.white_pieces[chess_board.king_pos].position[1] and chess_board.color_to_move == WHITE) or (piece.position[1] != chess_board.black_pieces[chess_board.king_pos].position[1] and chess_board.color_to_move == BLACK):
+            #print(chess_board.past_moves)  # wie kann das sein?????
+            print("moves: \n")
+            chess_board.show_board()
+            # for i in range(chess_board.move_count):
+            #     ind = i*5
+            #     print("(",chess_board.past_moves[ind],",",chess_board.past_moves[ind+1],") -> (",chess_board.past_moves[ind+2],",", chess_board.past_moves[ind+3],") ", chess_board.past_moves[ind+4] )
+            raise ValueError("Die figuren dürfen nicht in unterschiedlichen reihen sein ...")
         color = chess_board.color_to_move
-        if color == 1:
+        if color == WHITE:
             king_pos = chess_board.white_pieces[chess_board.king_pos].position
         else:
             king_pos = chess_board.black_pieces[chess_board.king_pos].position
@@ -120,13 +128,13 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
 def add_en_passant(chess_board : ChessBoard, piece: Piece, moves):
     """ Checks if a piece can do en passant"""
     pos_ind = (chess_board.move_count-1)*5
-    if chess_board.past_moves[pos_ind+4] == DOUBLE_PAWN:
-        color = chess_board.color_to_move
-        last_move_to_x = chess_board.past_moves[pos_ind+2]
-        last_move_to_y = chess_board.past_moves[pos_ind+3]
-        if (piece.position[0] == last_move_to_x + 1 or piece.position[0]  == last_move_to_x - 1) and piece.position[1] == last_move_to_y:
-            add_move(piece.position[0], piece.position[1], last_move_to_x, last_move_to_y + color, moves, EN_PASSANT)
-
+    if chess_board.move_count > 0:
+        if chess_board.past_moves[pos_ind+4] == DOUBLE_PAWN:
+            color = chess_board.color_to_move
+            last_move_to_x = chess_board.past_moves[pos_ind+2]
+            last_move_to_y = chess_board.past_moves[pos_ind+3]
+            if (piece.position[0] == last_move_to_x + 1 or piece.position[0]  == last_move_to_x - 1) and piece.position[1] == last_move_to_y:
+                add_move(piece.position[0], piece.position[1], last_move_to_x, last_move_to_y + color, moves, EN_PASSANT)
 
 def find_move_directions(chess_board: ChessBoard, piece: Piece, moves):
     """ finds all directional moves of a piece e.g. bishop"""

@@ -13,6 +13,7 @@ import random
 def play_game_test(chess_board: ChessBoard, depth, legnth):
 
     for i in range(legnth):
+        print("ein spiel")
         chess_board_mut = copy.deepcopy(chess_board)
 
         play_game(chess_board_mut, depth)
@@ -25,7 +26,7 @@ def play_game(chess_board, depth):
 
         engine(chess_board,depth)
         
-        move_ind = random.randint(0,moves.head)
+        move_ind = random.randint(0,moves.head-1)
         ind_pos = move_ind*5
 
         make_move(chess_board, moves.stack[ind_pos],moves.stack[ind_pos+1], moves.stack[ind_pos+2], moves.stack[ind_pos+3], moves.stack[ind_pos+4])
@@ -38,11 +39,16 @@ def engine(chess_board, depth):
 
         for ind in range(moves.head):
             ind_pos = ind*5
+            color = chess_board.color_to_move
             make_move(chess_board, moves.stack[ind_pos],moves.stack[ind_pos+1], moves.stack[ind_pos+2], moves.stack[ind_pos+3], moves.stack[ind_pos+4])
+            if chess_board.color_to_move == color:
+                print("no color change making")
             
             engine(chess_board, depth-1)
-                
+            color = chess_board.color_to_move
             undo_last_move(chess_board)
+            if chess_board.color_to_move == color:
+                print("no color move undo")
 
 
 def legal_board(chess_board: ChessBoard):

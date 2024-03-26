@@ -99,6 +99,8 @@ class ChessBoard:
 
     def show_board(self):
         """ Prints out current board"""
+        print("\n move count : " , self.move_count)
+        print("\n color to move : " , self.color_to_move)
         print("\n board size=",self.size)
         
         print("\n Board looks like this: \n" , self.board)

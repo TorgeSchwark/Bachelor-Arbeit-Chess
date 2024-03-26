@@ -58,7 +58,8 @@ def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
 
     #set piece on position update piece position
     chess_board.board[to_x][to_y] = piece_number
-    piece.position = [to_x, to_y]
+    piece.position[0] = to_x
+    piece.position[1] = to_y
     #change color to move and move count
     chess_board.color_to_move *= -1
     chess_board.move_count += 1
@@ -93,12 +94,13 @@ def make_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
 
     #set piece on position update piece position
     chess_board.board[to_x][to_y] = piece_number
-    piece.position = [to_x, to_y]
+    piece.position[0] = to_x
+    piece.position[1] = to_y
 
     chess_board.fifty_move_rule[chess_board.move_count] = 0
 
     #change color to move and move count
-    chess_board.color_to_move = -1 if chess_board.color_to_move == 1 else 1
+    chess_board.color_to_move *= -1
     chess_board.move_count += 1
 
 
@@ -190,7 +192,7 @@ def undo_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
     if piece.first_move == move_count-1:
         piece.first_move = -1
     
-    chess_board.color_to_move = -1 if chess_board.color_to_move == 1 else 1
+    chess_board.color_to_move *= -1
     chess_board.move_count -= 1
     
 def undo_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
@@ -216,7 +218,11 @@ def undo_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
 
 def undo_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Undoes the last move if it was an castling move"""
-    king_moving_direction = (-(from_x-to_x))//abs(from_x-to_x)
+    if from_x-to_x == 0:
+        print(from_x, from_y, to_x, to_y, move_type, "move")
+        print(chess_board.white_pieces[chess_board.king_pos].position, "white_king")
+        print(chess_board.black_pieces[chess_board.king_pos].position, "black_king")
+    king_moving_direction = -2 if from_x > to_x else 2
 
     if chess_board.color_to_move == WHITE:
         king_number = -(chess_board.king_pos +1)
@@ -226,7 +232,7 @@ def undo_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move
         king: Piece = chess_board.white_pieces[chess_board.king_pos]
 
     chess_board.board[king.position[0]][king.position[1]] = 0
-    king.position[0] = king.position[0] + 2*king_moving_direction
+    king.position[0] = king.position[0] + king_moving_direction
     chess_board.board[king.position[0]][king.position[1]] = king_number
 
     king.first_move = -1
