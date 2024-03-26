@@ -16,6 +16,7 @@ from copy import deepcopy
 import time
 from multiprocessing import Pool
 from testing.play_setup import play_game
+from engines.negmax import negmax
 
 class PlayGameView(View):
     
@@ -55,16 +56,26 @@ class PlayGameView(View):
         self.undo_move_button = ctk.CTkButton(master=self.settings_frame, text="Undo move", command= self.call_undo_last_move)
         self.undo_move_button.pack(expand=False, padx=20, pady=5)
 
+        self.test_engine_button = ctk.CTkButton(master=self.settings_frame, text="Test engines", command= self.call_test_engine)
+        self.test_engine_button.pack(expand=False, padx=20, pady=5)
+
         self.engine_button = ctk.CTkButton(master=self.settings_frame, text="Chess engine", command= self.call_engine)
         self.engine_button.pack(expand=False, padx=20, pady=5)
-
 
         self.draw_board()
         self.draw_pieces_on_position()
 
 
-    #aply longer test
     def call_engine(self):
+        count = [0]
+        start = time.time()
+        move = negmax(self.chess_board_instance, 4, count)
+        end = time.time()
+        print("it took", (end-start), "seconds for ", count[0], "moves")
+        print(count[0]/(end-start), "moves per second")
+        print(move[0], move[1])
+    
+    def call_test_engine(self):
         #play_game(self.chess_board_instance)
         #play_game_test(self.chess_board_instance, 2, 20000)
         num_processes = 20
