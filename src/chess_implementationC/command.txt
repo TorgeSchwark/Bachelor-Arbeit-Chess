@@ -1,0 +1,1 @@
+gcc -fPIC -shared -o clibary.so clibary.c

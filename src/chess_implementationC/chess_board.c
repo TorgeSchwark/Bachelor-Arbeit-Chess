@@ -22,7 +22,7 @@ struct ChessBoard
     signed char white_piece_move_directions[30][28];
     int white_piece_fist_move[30];
 
-    unsigned char black_piece_pos[30];
+    unsigned char black_piece_pos[60];
     bool black_piece_alive[30];
     signed char black_piece_jump_moves[30][30];
     signed char black_piece_move_directions[30][28];
@@ -34,11 +34,10 @@ struct ChessBoard
     bool king[30];
     bool pawn[30];
     bool castling[30];
-    char *image[30];
-    
 };
 
-void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, char *image, int offset){
+// [-9999] [-1, -1, -1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1] [5, 4, 10, 4] False False False False False Knight.png 4
+void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset){
     int len_start_pos = position[0]; 
     if ((king && board->has_king) || king && len_start_pos > 3){
         printf("game already has a king and can only have one king");
@@ -48,7 +47,7 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
         if(castling && !king){
             for(int ind = 1; ind < len_start_pos; ind+=2){
                 if(position[ind+1]-offset != board->white_piece_pos[board->king_pos*2+1] || abs(position[ind]-offset -board->white_piece_pos[board->king_pos*2]) < 2){
-                    printf("castling pieces must be in the same row as the king");
+                    printf("castling pieces must be in the same row as the king ");
                     return;
                 }
             }
@@ -61,7 +60,7 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
             int y = position[ind+1] - offset;
 
             if(y > board->size/2){
-                printf("White piece must be on the lower half");
+                printf("White piece must be on the lower half :%d, %d )", x, y);
             }
             
             // add the white piece information
@@ -96,7 +95,6 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
             board->king[board->piece_count] = king;
             board->pawn[board->piece_count] = pawn;
             board->castling[board->piece_count] = castling;
-            board->image[board->piece_count] = image;
 
             // add the black piece information
             board->black_piece_pos[board->piece_count*2] = x;
@@ -141,7 +139,6 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
     }
 
 }
-
 
 // Funktion zum Drucken eines ChessBoard-Objekts
 void printChessBoard(struct ChessBoard *board) {
@@ -248,10 +245,6 @@ void printChessBoard(struct ChessBoard *board) {
     for (int i = 0; i < board->piece_count; i++) {
         printf("%s ", board->castling[i] ? "true" : "false");
     }
-    printf("\nimage:\n");
-    for (int i = 0; i < board->piece_count; i++) {
-        printf("%s ", board->image[i]);
-    }
     printf("\n");
 }
 
@@ -264,10 +257,9 @@ void add_king(struct ChessBoard *board){
     bool king = true;
     bool pawn = false;
     bool castling = false;
-    char* image = "king";
     int offset = 0;
     
-    add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, image, offset);
+    add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, offset);
 }
 
 void add_rooks(struct ChessBoard *board){
@@ -279,10 +271,9 @@ void add_rooks(struct ChessBoard *board){
     bool king = false;
     bool castling = true;
     bool pawn = false;
-    char* image = "rook";
     int offset = 0;
     
-    add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, image, offset);
+    add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, offset);
 }
 
 void add_pawns(struct ChessBoard *board){
@@ -294,10 +285,9 @@ void add_pawns(struct ChessBoard *board){
     bool pawn = true;
     bool king = false;
     bool castling = false;
-    char* image = "pawn";
     int offset = 0;
 
-    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, image, offset);
+    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset);
 }
 
 void add_knight(struct ChessBoard* board){
@@ -309,10 +299,9 @@ void add_knight(struct ChessBoard* board){
     bool king = false;
     bool pawn = false;
     bool castling = false;
-    char* image = "knight";
     int offset = 0;
 
-    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, image, offset);
+    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset);
 } 
 
 void add_bishop(struct ChessBoard *board){
@@ -324,10 +313,9 @@ void add_bishop(struct ChessBoard *board){
     bool king = false;
     bool pawn = false;
     bool castling = false;
-    char* image = "bishop";
     int offset = 0;
 
-    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, image, offset);
+    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset);
 }
 
 void add_queen(struct ChessBoard *board){
@@ -339,10 +327,9 @@ void add_queen(struct ChessBoard *board){
     bool king = false;
     bool pawn = false;
     bool castling = false;
-    char* image = "queen";
     int offset = 0;
 
-    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, image, offset);
+    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset);
 }
 
 void setup_normals(struct ChessBoard *board){
@@ -360,9 +347,6 @@ void setup_normals(struct ChessBoard *board){
         board->black_piece_move_directions[i][0] = 0;
     }
 
-    for(int i = 0; i < 30; i++){ 
-        board->image[i] = "test";
-    }
     for (int ind_row = 0; ind_row < 20; ind_row++){
         for (int ind_col = 0; ind_col < 20; ind_col++){
             board->board[ind_row][ind_col] = 0;
