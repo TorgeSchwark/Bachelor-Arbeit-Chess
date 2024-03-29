@@ -1,1 +1,2 @@
-gcc -fPIC -shared -o clibary.so clibary.c
+gcc -fPIC -shared -o chess_board.so chess_board.c
+gcc -fPIC -shared -o find_moves.so find_moves.c

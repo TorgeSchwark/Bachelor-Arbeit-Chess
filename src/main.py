@@ -1,6 +1,6 @@
 # -*- encoding:utf-8 -*-
 from core.Core import Core
-from chess_implementationC.test import run
+# from chess_implementationC.test import run
 
 """
     Main class. Responsible for running the application.

@@ -10,7 +10,7 @@ from views.view_variables import *
 #from chess_implementation.chess_board import ChessBoard
 #from chess_implementation.piece_rules import PieceRules
 from views.View import View
-from chess_implementationC.chess_board_wrapper import ChessBoard, clibrary
+from chess_implementationC.chess_board_wrapper import ChessBoard, chess_board_lib 
 
 
 class SetupNewGameView(View):
@@ -336,7 +336,7 @@ class SetupNewGameView(View):
             self.piece_start_pos = [len(self.piece_start_pos)+1] + self.piece_start_pos
             
             print( self.piece_move_directions, self.piece_jump_moves, self.piece_start_pos, boarder_x, boarder_y, pawn, king, castling, self.piece_image_path, self.real_board_x_min)
-            clibrary.add_piece(
+            chess_board_lib.add_piece(
                 ctypes.byref(self.chess_board_instance),  
                 (ctypes.c_int * len(self.piece_move_directions))(*self.piece_move_directions),  
                 (ctypes.c_int * len(self.piece_jump_moves))(*self.piece_jump_moves),  
@@ -351,7 +351,7 @@ class SetupNewGameView(View):
             for i in range((len(self.piece_start_pos)-1)//2):
                 self.chess_board_instance.images += [self.piece_image_path]
             
-            clibrary.printChessBoard(ctypes.byref(self.chess_board_instance))
+            chess_board_lib .printChessBoard(ctypes.byref(self.chess_board_instance))
             for i in self.chess_board_instance.images:
                 print(i)
 

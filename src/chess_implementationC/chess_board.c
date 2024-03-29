@@ -1,40 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+
+#include "chess_board.h"
 
 // pawns can only walk like normal pawns!
 
-struct ChessBoard
-{   
-    unsigned char size;
-    bool has_king;
-    signed char king_pos;
-    short move_count;
-    unsigned char fifty_move_rule[500];
-    unsigned char non_pawn_pieces[30];
-    unsigned char past_moves[2500];
-    unsigned char captured_piece[500];
-    signed char board[20][20];
-
-    unsigned char white_piece_pos[60];
-    bool white_piece_alive[30];
-    signed char white_piece_jump_moves[30][30];
-    signed char white_piece_move_directions[30][28];
-    int white_piece_fist_move[30];
-
-    unsigned char black_piece_pos[60];
-    bool black_piece_alive[30];
-    signed char black_piece_jump_moves[30][30];
-    signed char black_piece_move_directions[30][28];
-    int black_piece_fist_move[30];
-
-    unsigned char piece_count;
-    bool boarder_x[30];
-    bool boarder_y[30];
-    bool king[30];
-    bool pawn[30];
-    bool castling[30];
-};
 
 // [-9999] [-1, -1, -1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1] [5, 4, 10, 4] False False False False False Knight.png 4
 void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset){
@@ -333,6 +301,7 @@ void add_queen(struct ChessBoard *board){
 }
 
 void setup_normals(struct ChessBoard *board){
+    board->color_to_move = 1;
     board->size = 0;
     board->has_king = false;
     board->king_pos = -1;
@@ -357,7 +326,7 @@ void setup_normals(struct ChessBoard *board){
 void create_chess(struct ChessBoard *board){
     setup_normals(board);
     board->size = 8;
-    add_pawns(board);
+    // add_pawns(board);
     add_king(board);
     add_rooks(board);
     add_queen(board);
