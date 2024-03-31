@@ -21,14 +21,16 @@ def run():
     # Die Funktion aufrufen und den Zeiger übergeben
     board_ptr = ctypes.byref(board)
     move_couts = ctypes.byref(ctypes.c_short(0))
+
     start = timer()
     find_moves_lib.find_all_moves(board_ptr, ctypes_array, move_couts)
     end = timer()
 
     print(end-start)
 
-    start = timer()
-    end = timer()
+#     start = timer()
+#     end = timer()
 
-    print(end-start)
+#     print(end-start)
+    
 run()

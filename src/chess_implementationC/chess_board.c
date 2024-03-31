@@ -326,7 +326,7 @@ void setup_normals(struct ChessBoard *board){
 void create_chess(struct ChessBoard *board){
     setup_normals(board);
     board->size = 8;
-    // add_pawns(board);
+    add_pawns(board);
     add_king(board);
     add_rooks(board);
     add_queen(board);
