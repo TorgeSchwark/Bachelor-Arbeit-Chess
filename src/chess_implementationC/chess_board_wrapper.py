@@ -30,8 +30,5 @@ class ChessBoard(ctypes.Structure):
                 ("castling", ctypes.c_bool * 30),]
     images = []  #because of ugly c array of srings
 
-chess_board_lib = ctypes.CDLL("./src/chess_implementationC/chess_board.so")
+chess_lib = ctypes.CDLL("./src/chess_implementationC/chess_library.so")
 
-find_moves_lib = ctypes.CDLL("./src/chess_implementationC/find_moves.so")
-
-make_moves_lib = ctypes.CDLL("./src/chess_implementationC/make_moves.so")

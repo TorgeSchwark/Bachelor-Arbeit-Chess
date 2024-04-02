@@ -52,7 +52,7 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
                 }
             }
             board->white_piece_alive[board->piece_count] = true;
-            board->white_piece_fist_move[board->piece_count] = -1;
+            board->white_piece_first_move[board->piece_count] = -1;
             
             board->board[x][y] = board->piece_count+1; 
             board->white_piece_img[board->piece_count] = img;
@@ -87,7 +87,7 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
             }
 
             board->black_piece_alive[board->piece_count] = true;
-            board->black_piece_fist_move[board->piece_count] = -1;
+            board->black_piece_first_move[board->piece_count] = -1;
             board->black_pawn[board->piece_count] = pawn;
             board->black_piece_img[board->piece_count] = img;
 
@@ -167,7 +167,7 @@ void printChessBoard(struct ChessBoard *board) {
     }
     printf("\nwhite_piece_fist_move:\n");
     for (int i = 0; i < board->piece_count; i++) {
-        printf("%d ", board->white_piece_fist_move[i]);
+        printf("%d ", board->white_piece_first_move[i]);
     }
     
     printf("\nblack_piece_pos:\n");
@@ -194,7 +194,7 @@ void printChessBoard(struct ChessBoard *board) {
     }
     printf("\nblack_piece_fist_move:\n");
     for (int i = 0; i < board->piece_count; i++) {
-        printf("%d ", board->black_piece_fist_move[i]);
+        printf("%d ", board->black_piece_first_move[i]);
     }
     
     printf("\nboarder_x:\n");
@@ -325,6 +325,8 @@ void setup_normals(struct ChessBoard *board){
     board->non_pawn_pieces[0] = 1;
     board->has_king = false;
     for(int i = 0; i < 30; i++){
+        board->white_piece_first_move[i] = -1;
+        board->black_piece_first_move[i] = -1;
         board->white_piece_jump_moves[i][0] = 0;
         board->black_piece_jump_moves[i][0] = 0;
 

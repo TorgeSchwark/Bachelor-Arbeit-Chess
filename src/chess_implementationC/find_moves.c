@@ -13,7 +13,7 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
         for (unsigned char ind = 0; ind < board->piece_count; ind++){
             if (board->white_piece_alive[ind]){
                 if (board->white_pawn[ind]){
-                    find_pawn_moves(board, board->white_piece_pos, board->white_piece_move_directions[ind], board->white_piece_fist_move, moves, moves_count, ind);
+                    find_pawn_moves(board, board->white_piece_pos, board->white_piece_move_directions[ind], board->white_piece_first_move, moves, moves_count, ind);
                 }else if(board->king[ind]){
                     continue;
                 }else{
@@ -25,7 +25,7 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
                         find_move_directions(board, board->white_piece_pos, board->white_piece_move_directions[ind], moves, moves_count, ind);
                     }
                     if (board->castling[ind]){
-                        add_castling(board, board->white_piece_pos, board->white_piece_fist_move, ind, moves, moves_count);
+                        add_castling(board, board->white_piece_pos, board->white_piece_first_move, ind, moves, moves_count);
                     }
                 }
             }
@@ -34,7 +34,7 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
         for (unsigned char ind = 0; ind < board->piece_count; ind++){
             if (board->black_piece_alive[ind]){
                 if (board->black_pawn[ind]){
-                    find_pawn_moves(board, board->black_piece_pos, board->black_piece_move_directions[ind], board->black_piece_fist_move, moves, moves_count, ind);
+                    find_pawn_moves(board, board->black_piece_pos, board->black_piece_move_directions[ind], board->black_piece_first_move, moves, moves_count, ind);
                 }else if(board->king[ind]){
                     continue;
                 }else{
@@ -46,15 +46,11 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
                         find_move_directions(board, board->black_piece_pos, board->black_piece_move_directions[ind], moves, moves_count, ind);
                     }
                     if (board->castling[ind]){
-                        add_castling(board, board->black_piece_pos, board->black_piece_fist_move, ind, moves, moves_count);
+                        add_castling(board, board->black_piece_pos, board->black_piece_first_move, ind, moves, moves_count);
                     }
                 }
             }
         }
-    }
-    printf("hier %d \n",  *moves_count);
-    for (int ind = 0; ind < *moves_count; ind+=5){
-        printf("( %d , %d ) -> ( %d , %d ) %d \n", moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
     }
 }
 

@@ -8,7 +8,7 @@
 // Definition der Struktur ChessBoard
 struct ChessBoard
 {
-    unsigned char color_to_move;
+    signed char color_to_move;
     unsigned char size;
     bool has_king;
     signed char king_pos;
@@ -23,7 +23,7 @@ struct ChessBoard
     bool white_piece_alive[30];
     signed char white_piece_jump_moves[30][30];
     signed char white_piece_move_directions[30][28];
-    short white_piece_fist_move[30];
+    short white_piece_first_move[30];
     unsigned char white_piece_img[30];
     bool white_pawn[30];
 
@@ -31,7 +31,7 @@ struct ChessBoard
     bool black_piece_alive[30];
     signed char black_piece_jump_moves[30][30];
     signed char black_piece_move_directions[30][28];
-    short black_piece_fist_move[30];
+    short black_piece_first_move[30];
     unsigned char black_piece_img[30];
     bool black_pawn[30];
 
