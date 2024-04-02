@@ -12,7 +12,7 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
     if (board->color_to_move == 1){
         for (unsigned char ind = 0; ind < board->piece_count; ind++){
             if (board->white_piece_alive[ind]){
-                if (board->pawn[ind]){
+                if (board->white_pawn[ind]){
                     find_pawn_moves(board, board->white_piece_pos, board->white_piece_move_directions[ind], board->white_piece_fist_move, moves, moves_count, ind);
                 }else if(board->king[ind]){
                     continue;
@@ -33,7 +33,7 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
     }else{
         for (unsigned char ind = 0; ind < board->piece_count; ind++){
             if (board->black_piece_alive[ind]){
-                if (board->pawn[ind]){
+                if (board->black_pawn[ind]){
                     find_pawn_moves(board, board->black_piece_pos, board->black_piece_move_directions[ind], board->black_piece_fist_move, moves, moves_count, ind);
                 }else if(board->king[ind]){
                     continue;
@@ -50,6 +50,7 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
                     }
                 }
             }
+        }
     }
     printf("hier %d \n",  *moves_count);
     for (int ind = 0; ind < *moves_count; ind+=5){
@@ -201,7 +202,7 @@ void find_move_directions(struct ChessBoard *board, unsigned char *color_pos, si
             }
             if (board->board[field_x][field_y] == 0){
                 add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], field_x, field_y, NORMAL_MOVE, moves, move_counts);
-            }else if((board->board[field_x][field_y] >= 0) == (board->board[color_pos[piece_pos_ind]],color_pos[piece_pos_ind+1] >= 0)){
+            }else if((board->board[field_x][field_y] >= 0) == (board->board[color_pos[piece_pos_ind]][color_pos[piece_pos_ind+1]] >= 0)){
                 break;
             }else{
                 add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], field_x, field_y, NORMAL_MOVE, moves, move_counts);

@@ -15,7 +15,7 @@ struct ChessBoard
     short move_count;
     unsigned char fifty_move_rule[500];
     unsigned char non_pawn_pieces[30];
-    unsigned char past_moves[2500];
+    signed char past_moves[2500];
     unsigned char captured_piece[500];
     signed char board[20][20];
 
@@ -24,23 +24,26 @@ struct ChessBoard
     signed char white_piece_jump_moves[30][30];
     signed char white_piece_move_directions[30][28];
     short white_piece_fist_move[30];
+    unsigned char white_piece_img[30];
+    bool white_pawn[30];
 
     unsigned char black_piece_pos[60];
     bool black_piece_alive[30];
     signed char black_piece_jump_moves[30][30];
     signed char black_piece_move_directions[30][28];
     short black_piece_fist_move[30];
+    unsigned char black_piece_img[30];
+    bool black_pawn[30];
 
     unsigned char piece_count;
     bool boarder_x[30];
     bool boarder_y[30];
     bool king[30];
-    bool pawn[30];
     bool castling[30];
 };
 
 // Funktionen zum Hinzufügen verschiedener Schachfiguren
-void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset);
+void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset,unsigned char img);
 void add_king(struct ChessBoard *board);
 void add_rooks(struct ChessBoard *board);
 void add_pawns(struct ChessBoard *board);

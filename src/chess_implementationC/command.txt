@@ -1,2 +1,3 @@
 gcc -fPIC -shared -o chess_board.so chess_board.c
 gcc -fPIC -shared -o find_moves.so find_moves.c
+gcc -fPIC -shared -o make_moves.so make_moves.c

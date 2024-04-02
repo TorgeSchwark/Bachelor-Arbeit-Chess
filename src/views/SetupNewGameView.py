@@ -275,6 +275,7 @@ class SetupNewGameView(View):
 
     #searches the board to detect the settings for the piece by looking for rect colors
     def save_piece(self):
+        
         if len(self.piece_start_pos) > 0:
             self.piece_start_pos = []
             self.piece_jump_moves = []
@@ -335,7 +336,7 @@ class SetupNewGameView(View):
                 self.piece_jump_moves = [len(self.piece_jump_moves)+1] + self.piece_jump_moves
             self.piece_start_pos = [len(self.piece_start_pos)+1] + self.piece_start_pos
             
-            print( self.piece_move_directions, self.piece_jump_moves, self.piece_start_pos, boarder_x, boarder_y, pawn, king, castling, self.piece_image_path, self.real_board_x_min)
+            print( self.piece_move_directions, self.piece_jump_moves, self.piece_start_pos, boarder_x, boarder_y, pawn, king, castling, self.piece_image_path, self.real_board_x_min, self.piece_image_path)
             chess_board_lib.add_piece(
                 ctypes.byref(self.chess_board_instance),  
                 (ctypes.c_int * len(self.piece_move_directions))(*self.piece_move_directions),  
@@ -346,7 +347,8 @@ class SetupNewGameView(View):
                 ctypes.c_bool(pawn),  
                 ctypes.c_bool(king),  
                 ctypes.c_bool(castling),  
-                ctypes.c_int(self.real_board_x_min)  
+                ctypes.c_int(self.real_board_x_min),
+                ctypes.c_byte(0)
             )
             for i in range((len(self.piece_start_pos)-1)//2):
                 self.chess_board_instance.images += [self.piece_image_path]

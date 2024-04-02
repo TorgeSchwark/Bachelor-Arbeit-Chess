@@ -5,7 +5,7 @@
 
 
 // [-9999] [-1, -1, -1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1] [5, 4, 10, 4] False False False False False Knight.png 4
-void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset){
+void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset,unsigned char img){
     int len_start_pos = position[0]; 
     if ((king && board->has_king) || king && len_start_pos > 3){
         printf("game already has a king and can only have one king");
@@ -55,13 +55,15 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
             board->white_piece_fist_move[board->piece_count] = -1;
             
             board->board[x][y] = board->piece_count+1; 
+            board->white_piece_img[board->piece_count] = img;
+            board->white_pawn[board->piece_count] = pawn;
+
             
             // add the neutral information
 
             board->boarder_x[board->piece_count] = boarder_x;
             board->boarder_y[board->piece_count] = boarder_y;
             board->king[board->piece_count] = king;
-            board->pawn[board->piece_count] = pawn;
             board->castling[board->piece_count] = castling;
 
             // add the black piece information
@@ -86,6 +88,8 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
 
             board->black_piece_alive[board->piece_count] = true;
             board->black_piece_fist_move[board->piece_count] = -1;
+            board->black_pawn[board->piece_count] = pawn;
+            board->black_piece_img[board->piece_count] = img;
 
             board->board[x][board->size-1-y] = -(board->piece_count+1);
             
@@ -125,7 +129,7 @@ void printChessBoard(struct ChessBoard *board) {
     }
     printf("\npast_moves:\n");
     for (int i = 0; i < board->move_count*5; i+=5) {
-        printf("( %u , %u ) -> ( %u , %u ) %u ", board->past_moves[i],board->past_moves[i+1],board->past_moves[i+2], board->past_moves[i+3], board->past_moves[i+4]);
+        printf("( %d , %d ) -> ( %d , %d ) %d ", board->past_moves[i],board->past_moves[i+1],board->past_moves[i+2], board->past_moves[i+3], board->past_moves[i+4]);
     }
     printf("\ncaptured_piece:\n");
     for (int i = 0; i < board->move_count; i++) {
@@ -205,13 +209,25 @@ void printChessBoard(struct ChessBoard *board) {
     for (int i = 0; i < board->piece_count; i++) {
         printf("%s ", board->king[i] ? "true" : "false");
     }
-    printf("\npawn:\n");
+    printf("\nwhite pawns:\n");
     for (int i = 0; i < board->piece_count; i++) {
-        printf("%s ", board->pawn[i] ? "true" : "false");
+        printf("%s ", board->white_pawn[i] ? "true" : "false");
+    }
+    printf("\nblack pawns:\n");
+    for (int i = 0; i < board->piece_count; i++) {
+        printf("%s ", board->black_pawn[i] ? "true" : "false");
     }
     printf("\ncastling:\n");
     for (int i = 0; i < board->piece_count; i++) {
         printf("%s ", board->castling[i] ? "true" : "false");
+    }
+    printf("\nwhite piece imges\n");
+    for(int i = 0; i < board->piece_count; i++){
+        printf("%d\n", board->white_piece_img[i]);
+    }
+    printf("\nblack piece imges\n");
+    for(int i = 0; i < board->piece_count; i++){
+        printf("%d\n", board->black_piece_img[i]);
     }
     printf("\n");
 }
@@ -227,7 +243,7 @@ void add_king(struct ChessBoard *board){
     bool castling = false;
     int offset = 0;
     
-    add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, offset);
+    add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, offset, 0);
 }
 
 void add_rooks(struct ChessBoard *board){
@@ -241,7 +257,7 @@ void add_rooks(struct ChessBoard *board){
     bool pawn = false;
     int offset = 0;
     
-    add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, offset);
+    add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, offset, 0);
 }
 
 void add_pawns(struct ChessBoard *board){
@@ -255,7 +271,7 @@ void add_pawns(struct ChessBoard *board){
     bool castling = false;
     int offset = 0;
 
-    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset);
+    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset, 0);
 }
 
 void add_knight(struct ChessBoard* board){
@@ -269,7 +285,7 @@ void add_knight(struct ChessBoard* board){
     bool castling = false;
     int offset = 0;
 
-    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset);
+    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset, 0);
 } 
 
 void add_bishop(struct ChessBoard *board){
@@ -283,7 +299,7 @@ void add_bishop(struct ChessBoard *board){
     bool castling = false;
     int offset = 0;
 
-    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset);
+    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset, 0);
 }
 
 void add_queen(struct ChessBoard *board){
@@ -297,7 +313,7 @@ void add_queen(struct ChessBoard *board){
     bool castling = false;
     int offset = 0;
 
-    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset);
+    add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset, 0);
 }
 
 void setup_normals(struct ChessBoard *board){
@@ -321,6 +337,9 @@ void setup_normals(struct ChessBoard *board){
             board->board[ind_row][ind_col] = 0;
         }
     }
+    for (int i = 0; i < 500; i++){
+        board->captured_piece[i] = 0;
+    }
 }
 
 void create_chess(struct ChessBoard *board){
@@ -333,7 +352,6 @@ void create_chess(struct ChessBoard *board){
     add_knight(board);
     add_bishop(board);
 }
-
 
 int main() {
     // Erstellen einer Instanz der Struktur ChessBoard
