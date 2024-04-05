@@ -34,7 +34,7 @@ def run():
     #     print("(",ctypes_array[ind*5],",", ctypes_array[ind*5+1],") -> (",ctypes_array[ind*5+2],",",ctypes_array[ind*5+3],")",ctypes_array[ind*5+4])
     #chess_lib.printChessBoard(ctypes.byref(board))
     start = time.time()
-    chess_lib.test_engine(board_ptr, ctypes.c_int(7))
+    chess_lib.test_engine(board_ptr, ctypes.c_int(4))
     end = time.time()
     print("time:", end-start)
     #chess_lib.printChessBoard(ctypes.byref(board))

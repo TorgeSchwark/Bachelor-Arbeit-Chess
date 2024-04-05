@@ -232,6 +232,11 @@ void printChessBoard(struct ChessBoard *board) {
     printf("\n");
 }
 
+void copyBoard(struct ChessBoard *board, struct Chess_board *copies[], int amount){
+
+    
+}
+
 void add_king(struct ChessBoard *board){
     int move_direction[1] = {-9999};
     int jump_moves[17] = {17,0,1,1,0,1,1,-1,0,-1,-1,-1,1,1,-1,0,-1};

@@ -6,6 +6,13 @@
 #include <stdlib.h>
 
 // Definition der Struktur ChessBoard
+#define MAX_MOVES 2024
+#define MAX_PIECES 32
+#define MAX_MOVE_DIRECTIONS 32
+#define MAX_JUMP_MOVES 32
+#define MAX_FIFTY_MOVE_RULE 512
+#define BOARD_SIZE 20
+
 struct ChessBoard
 {
     signed char color_to_move;
@@ -13,33 +20,33 @@ struct ChessBoard
     bool has_king;
     signed char king_pos;
     short move_count;
-    unsigned char fifty_move_rule[500];
-    unsigned char non_pawn_pieces[30];
-    signed char past_moves[2500];
-    signed char captured_piece[500];
-    signed char board[20][20];
+    unsigned char fifty_move_rule[MAX_FIFTY_MOVE_RULE];
+    unsigned char non_pawn_pieces[MAX_PIECES];
+    signed char past_moves[MAX_MOVES];
+    signed char captured_piece[MAX_FIFTY_MOVE_RULE];
+    signed char board[BOARD_SIZE][BOARD_SIZE];
 
-    unsigned char white_piece_pos[60];
-    bool white_piece_alive[30];
-    signed char white_piece_jump_moves[30][30];
-    signed char white_piece_move_directions[30][28];
-    short white_piece_first_move[30];
-    unsigned char white_piece_img[30];
-    bool white_pawn[30];
+    unsigned char white_piece_pos[2 * MAX_PIECES];
+    bool white_piece_alive[MAX_PIECES];
+    signed char white_piece_jump_moves[MAX_PIECES][MAX_JUMP_MOVES*2];
+    signed char white_piece_move_directions[MAX_PIECES][MAX_MOVE_DIRECTIONS];
+    short white_piece_first_move[MAX_PIECES];
+    unsigned char white_piece_img[MAX_PIECES];
+    bool white_pawn[MAX_PIECES];
 
-    unsigned char black_piece_pos[60];
-    bool black_piece_alive[30];
-    signed char black_piece_jump_moves[30][30];
-    signed char black_piece_move_directions[30][28];
-    short black_piece_first_move[30];
-    unsigned char black_piece_img[30];
-    bool black_pawn[30];
+    unsigned char black_piece_pos[2 * MAX_PIECES];
+    bool black_piece_alive[MAX_PIECES];
+    signed char black_piece_jump_moves[MAX_PIECES][MAX_JUMP_MOVES *2];
+    signed char black_piece_move_directions[MAX_PIECES][MAX_MOVE_DIRECTIONS];
+    short black_piece_first_move[MAX_PIECES];
+    unsigned char black_piece_img[MAX_PIECES];
+    bool black_pawn[MAX_PIECES];
 
     unsigned char piece_count;
-    bool boarder_x[30];
-    bool boarder_y[30];
-    bool king[30];
-    bool castling[30];
+    bool boarder_x[MAX_PIECES];
+    bool boarder_y[MAX_PIECES];
+    bool king[MAX_PIECES];
+    bool castling[MAX_PIECES];
 };
 
 // Funktionen zum Hinzufügen verschiedener Schachfiguren
