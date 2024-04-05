@@ -16,7 +16,7 @@ struct ChessBoard
     unsigned char fifty_move_rule[500];
     unsigned char non_pawn_pieces[30];
     signed char past_moves[2500];
-    unsigned char captured_piece[500];
+    signed char captured_piece[500];
     signed char board[20][20];
 
     unsigned char white_piece_pos[60];

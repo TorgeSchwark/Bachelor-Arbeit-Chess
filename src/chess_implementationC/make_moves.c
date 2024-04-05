@@ -25,7 +25,7 @@ void make_normal_move(struct ChessBoard *board, signed char from_x, signed char 
     signed char piece_number = board->board[from_x][from_y];
     signed char pos_in_piece_list = abs(piece_number)-1;
 
-    if (board->color_to_move == 1 && board->white_pawn[pos_in_piece_list]|| board->color_to_move == -1 && board->black_pawn[pos_in_piece_list]){
+    if ((board->color_to_move == 1 && board->white_pawn[pos_in_piece_list]) || (board->color_to_move == -1 && board->black_pawn[pos_in_piece_list])){
         board->fifty_move_rule[board->move_count] = 0;
     }else{
         if(board->move_count >= 1){
@@ -52,13 +52,13 @@ void make_normal_move(struct ChessBoard *board, signed char from_x, signed char 
             board->white_piece_first_move[pos_in_piece_list] = board->move_count;
         }
         board->white_piece_pos[pos_in_piece_list<<1] = to_x;
-        board->white_piece_pos[pos_in_piece_list<<1 +1] = to_y; 
+        board->white_piece_pos[(pos_in_piece_list<<1)+1] = to_y; 
     }else{
         if (board->black_piece_first_move[pos_in_piece_list] == -1){
             board->black_piece_first_move[pos_in_piece_list] = board->move_count;
         }
         board->black_piece_pos[pos_in_piece_list<<1] = to_x;
-        board->black_piece_pos[pos_in_piece_list<<1 +1] = to_y; 
+        board->black_piece_pos[(pos_in_piece_list<<1)+1] = to_y; 
     }
 
     save_in_last_moves(board, from_x, from_y, to_x, to_y, move_type);
@@ -75,12 +75,12 @@ void make_en_passant(struct ChessBoard *board, signed char from_x, signed char f
 
     if(board->color_to_move == 1){
         board->white_piece_pos[(board->board[to_x][to_y]-1)<<1] = to_x;
-        board->white_piece_pos[(board->board[to_x][to_y]-1)<<1+1] = to_y; 
-        board->black_piece_alive[(-board->board[to_x][from_y])-1];
+        board->white_piece_pos[((board->board[to_x][to_y]-1)<<1)+1] = to_y;
+        board->black_piece_alive[abs(board->board[to_x][from_y])-1] = false;
     }else{
-        board->black_piece_pos[((-board->board[to_x][to_y])-1)<<1] = to_x;
-        board->black_piece_pos[((-board->board[to_x][to_y])-1)<<1+1] = to_y;
-        board->white_piece_alive[board->board[to_x][from_y]-1];
+        board->black_piece_pos[(abs(board->board[to_x][to_y])-1)<<1] = to_x;
+        board->black_piece_pos[((abs(board->board[to_x][to_y])-1)<<1)+1] = to_y;
+        board->white_piece_alive[board->board[to_x][from_y]-1] = false;
     }
     board->board[to_x][from_y] = 0;
 
@@ -126,7 +126,7 @@ void make_promotion(struct ChessBoard* board, signed char from_x, signed char fr
         board->white_pawn[piece_ind] = false;
     }else{
         signed char piece_to_ind = board->non_pawn_pieces[move_type];
-        unsigned char piece_ind = board->board[from_x][from_y]-1;
+        unsigned char piece_ind = (-board->board[from_x][from_y])-1;
         for(unsigned char jm_ind = 0; jm_ind < board->black_piece_jump_moves[piece_to_ind][0]; jm_ind += 1){
             board->black_piece_jump_moves[piece_ind][jm_ind] = board->black_piece_jump_moves[piece_to_ind][jm_ind];
         }
@@ -163,16 +163,20 @@ void undo_normal_move(struct ChessBoard *board, signed char from_x, signed char 
     board->board[to_x][to_y] = board->captured_piece[board->move_count-1];
 
     if (board->color_to_move == 1){
-        board->black_piece_pos[((-board->board[from_x][from_y])-1)<<1] = from_x;
-        board->black_piece_pos[((-board->board[from_x][from_y])-1)<<1+1] = from_y;
-        board->white_piece_alive[board->board[to_x][to_y]-1] = true;
-        if(board->black_piece_first_move[(-board->board[from_x][from_y])-1] == board->move_count-1){
-           board->black_piece_first_move[(-board->board[from_x][from_y])-1] = -1; 
+        board->black_piece_pos[(abs(board->board[from_x][from_y])-1)<<1] = from_x;
+        board->black_piece_pos[((abs(board->board[from_x][from_y])-1)<<1)+1] = from_y;
+        if(board->board[to_x][to_y]-1 >= 0){
+            board->white_piece_alive[board->board[to_x][to_y]-1] = true;
+        }
+        if(board->black_piece_first_move[abs(board->board[from_x][from_y])-1] == board->move_count-1){
+           board->black_piece_first_move[abs(board->board[from_x][from_y])-1] = -1; 
         }
     }else{
-        board->white_piece_pos[(-board->board[from_x][from_y]-1)<<1] = from_x;
-        board->white_piece_pos[(board->board[from_x][from_y]-1)<<1+1] = from_y;
-        board->black_piece_alive[(-board->board[to_x][to_y])-1] = true;
+        board->white_piece_pos[(board->board[from_x][from_y]-1)<<1] = from_x;
+        board->white_piece_pos[((board->board[from_x][from_y]-1)<<1)+1] = from_y;
+        if(abs(board->board[to_x][to_y])-1 >= 0){
+             board->black_piece_alive[abs(board->board[to_x][to_y])-1] = true;
+        }
         if(board->white_piece_first_move[(board->board[from_x][from_y])-1] == board->move_count-1){
            board->white_piece_first_move[(board->board[from_x][from_y])-1] = -1; 
         }
@@ -188,13 +192,13 @@ void undo_en_passant(struct ChessBoard *board, signed char from_x, signed char f
     undo_normal_move(board, from_x, from_y, to_x, to_y, move_type);
 
     if(board->color_to_move == 1){
-        board->black_piece_pos[((-board->board[to_x][to_y])-1)<<1] = to_x;
-        board->black_piece_pos[((-board->board[to_x][to_y])-1)<<1+1] = to_y;
-        board->black_piece_alive[((-board->board[to_x][to_y])-1)] = true;
+        board->black_piece_pos[(abs(board->board[to_x][to_y])-1)<<1] = to_x;
+        board->black_piece_pos[((abs(board->board[to_x][to_y])-1)<<1)+1] = to_y;
+        board->black_piece_alive[(abs(board->board[to_x][to_y])-1)] = true;
     }else{
-        board->white_piece_pos[((-board->board[to_x][to_y])-1)<<1] = to_x;
-        board->white_piece_pos[((-board->board[to_x][to_y])-1)<<1+1] = to_y;
-        board->white_piece_alive[((-board->board[to_x][to_y])-1)] = true;
+        board->white_piece_pos[((board->board[to_x][to_y])-1)<<1] = to_x;
+        board->white_piece_pos[(((board->board[to_x][to_y])-1)<<1)+1] = to_y;
+        board->white_piece_alive[((board->board[to_x][to_y])-1)] = true;
     }
 
     board->board[to_x][from_y] = board->board[to_x][to_y];
@@ -205,14 +209,14 @@ void undo_castling_move(struct ChessBoard *board, signed char from_x, signed cha
     signed char king_moving_direction = (from_x > to_x) ? -2 : 2;
 
     if(board->color_to_move == 1){
-        board->board[board->black_piece_pos[board->king_pos<<2]][board->black_piece_pos[board->king_pos<<2+1]] = 0;
-        board->black_piece_pos[board->king_pos<<2] += king_moving_direction;
-        board->board[board->black_piece_pos[board->king_pos<<2]][board->black_piece_pos[board->king_pos<<2+1]] = -(board->king_pos+1);
+        board->board[board->black_piece_pos[board->king_pos<<1]][board->black_piece_pos[(board->king_pos<<1)+1]] = 0;
+        board->black_piece_pos[board->king_pos<<1] += king_moving_direction;
+        board->board[board->black_piece_pos[board->king_pos<<1]][board->black_piece_pos[(board->king_pos<<1)+1]] = -(board->king_pos+1);
         board->black_piece_first_move[board->king_pos] = -1;
     }else{
-        board->board[board->white_piece_pos[board->king_pos<<2]][board->white_piece_pos[board->king_pos<<2+1]] = 0;
-        board->white_piece_pos[board->king_pos<<2] += king_moving_direction;
-        board->board[board->white_piece_pos[board->king_pos<<2]][board->white_piece_pos[board->king_pos<<2+1]] = -(board->king_pos+1);
+        board->board[board->white_piece_pos[board->king_pos<<1]][board->white_piece_pos[(board->king_pos<<1)+1]] = 0;
+        board->white_piece_pos[board->king_pos<<1] += king_moving_direction;
+        board->board[board->white_piece_pos[board->king_pos<<1]][board->white_piece_pos[(board->king_pos<<1)+1]] = (board->king_pos+1);
         board->white_piece_first_move[board->king_pos] = -1;
     }
 

@@ -21,6 +21,6 @@ void add_en_passant(struct ChessBoard *board, unsigned char *color_pos,unsigned 
 
 void add_promotion(signed char from_x, signed char from_y, signed char to_x, signed char to_y, unsigned char *non_pawn_pieces, signed char* moves, short *move_count);
 
-void add_castling(struct ChessBoard *board, unsigned char *color_pos, short *color_first_move, unsigned char piece_ind, signed char *moves, short* moves_count);
+void add_castling(struct ChessBoard *board, unsigned char *color_pos, short *color_first_move, unsigned char piece_ind, bool *color_alive, signed char *moves, short* moves_count);
 
 #endif /* FIND_MOVES_H */
