@@ -6,12 +6,14 @@
 #include <stdlib.h>
 
 // Definition der Struktur ChessBoard
-#define MAX_MOVES 2024
+#define MAX_MOVES 2048
 #define MAX_PIECES 32
 #define MAX_MOVE_DIRECTIONS 32
 #define MAX_JUMP_MOVES 32
 #define MAX_FIFTY_MOVE_RULE 512
 #define BOARD_SIZE 20
+
+
 
 struct ChessBoard
 {
@@ -49,6 +51,8 @@ struct ChessBoard
     bool castling[MAX_PIECES];
 };
 
+void set_size(struct ChessBoard *board, int size);
+
 // Funktionen zum Hinzufügen verschiedener Schachfiguren
 void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset,unsigned char img);
 void add_king(struct ChessBoard *board);
@@ -58,6 +62,8 @@ void add_knight(struct ChessBoard *board);
 void add_bishop(struct ChessBoard *board);
 void add_queen(struct ChessBoard *board);
 
+void board_to_fen(struct ChessBoard *board, char *fen);
+
 // Funktion zum Initialisieren eines normalen Schachbretts
 void setup_normals(struct ChessBoard *board);
 
@@ -66,5 +72,7 @@ void create_chess(struct ChessBoard *board);
 
 // Funktion zum Drucken eines ChessBoard-Objekts
 void printChessBoard(struct ChessBoard *board);
+
+void copyBoard(struct ChessBoard *board, struct ChessBoard *copies[], int amount);
 
 #endif // CHESS_BOARD_H

@@ -3,13 +3,13 @@
 
 
 #include <stdio.h>
-#include <windows.h>
 #include "chess_board.h"
 #include "find_moves.h"
 #include "make_moves.h"
-#define NUM_THREADS 1
 
+bool all_legal(struct ChessBoard *board, signed char *moves, short *move_count);
 
+bool is_legal(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type);
 
 void test_engine(struct ChessBoard *board, int depth); // Kein Semikolon hier
 

@@ -2,7 +2,6 @@ from chess_implementation.chess_board import ChessBoard
 from chess_implementation.piece_rules import PieceRules
 from chess_implementation.piece import Piece
 from chess_implementation.move_stack import MoveStack
-import numpy as np
 from chess_implementation.chess_variables import *
 
 def make_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):

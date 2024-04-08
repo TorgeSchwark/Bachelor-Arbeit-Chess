@@ -5,7 +5,7 @@ from chess_implementation.chess_variables import *
 # from chess_implementation.find_moves import find_all_moves
 # from chess_implementation.make_moves import make_move, undo_last_move
 # from chess_implementation.move_stack import MoveStack
-from chess_implementationC.chess_board_wrapper import ChessBoard, chess_board_lib 
+from chess_implementationC.chess_board_wrapper import ChessBoard, chess_lib 
 import ctypes
 
 from testing.testing_chess_impl import test_engine
@@ -32,7 +32,7 @@ class PlayGameView(View):
         self.chess_board_instance: ChessBoard = controller.board_instance
 
 
-        chess_board_lib .printChessBoard(ctypes.byref(self.chess_board_instance))
+        chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
 
         self.place_main_objects()
 

@@ -1,88 +1,71 @@
-#include "test_engin.h"
+#include "test_engin.h" 
 
 
-// Struktur für Argumente, die an den Thread übergeben werden
-struct ThreadArgs {
-    struct ChessBoard *board;
-    int depth;
-    int *count;
-};
 
-// Funktion, die von jedem Thread ausgeführt wird
-DWORD WINAPI thread_function(LPVOID lpParam) {
-    struct ThreadArgs *args = (struct ThreadArgs *)lpParam;
-    printf("sogar hier");
-    test_engine_all_moves(args->board, args->depth, args->count);
-    return 0;
-}
-
-// Funktion zum Parallelisieren des Testens aller Züge
-void parallel_test_engine_all_moves(struct ChessBoard *board, int depth, int *count) {
-    // Array für Thread-Handles
-    HANDLE threads[NUM_THREADS];
-    // Array für Argumente an Threads übergeben
-    struct ThreadArgs thread_args[NUM_THREADS];
-
-    printf("angekommen");
-
-    // Erstellen und Ausführen von Threads
-    for (int i = 0; i < NUM_THREADS; i++) {
-        printf("hier");
-        struct ChessBoard board_copy;
-        thread_args[i].board = copy_board(board, &board_copy);
-        thread_args[i].depth = depth;
-        thread_args[i].count = count;
-        threads[i] = CreateThread(NULL, 0, thread_function, &thread_args[i], 0, NULL);
-        if (threads[i] == NULL) {
-            fprintf(stderr, "Fehler beim Erstellen des Threads\n");
-            return;
-        }
-    }
-
-    // Auf das Beenden aller Threads warten
-    WaitForMultipleObjects(NUM_THREADS, threads, TRUE, INFINITE);
-    // Schließen der Thread-Handles
-    for (int i = 0; i < NUM_THREADS; i++) {
-        CloseHandle(threads[i]);
-    }
-}
-
-// Ihre ursprüngliche test_engine Funktion
 void test_engine(struct ChessBoard *board, int depth){
+
     int count = 0;
-    printf("hey %d", NUM_THREADS);
-    parallel_test_engine_all_moves(board, depth, &count);
+    
+    //test_engine_all_moves(board, depth, &count);
 
-    printf("moves %d\n", count);
+    printf("moves : %d", count);
+
+    printChessBoard(board);
 }
-
-
 
 void test_engine_all_moves(struct ChessBoard *board, int depth, int *count){
-    printf("i tryed");
+    if(board->white_piece_alive[board->king_pos] == false || board->black_piece_alive[board->king_pos] == false){
+        printf("fehler");
+    }
     *count += 1;
-
 
     if (depth >0){
         
-        signed char moves[1000];
+        signed char moves[2000];
         short move_count = 0;
         find_all_moves(board, moves, &move_count);
 
-        
 
-        for(short i = 0; i < move_count; i+=5){
+        if(!all_legal(board, moves, &move_count)){
+            *count -= 1;
+            //printf("illigal");
+        }else{
+            if(depth > 1){
+                for(short i = 0; i < move_count; i+=5){
 
-            if(depth == 5 && move_count > 270){
-                printChessBoard(board);
+                    make_move(board, moves[i], moves[i+1], moves[i+2], moves[i+3], moves[i+4]);
+
+                    test_engine_all_moves(board, depth-1, count);
+
+                    undo_last_move(board);
+                }
             }
-            make_move(board, moves[i], moves[i+1], moves[i+2], moves[i+3], moves[i+4]);
-
-            test_engine_all_moves(board, depth-1, count);
-
-            undo_last_move(board);
         }
     }
 
+
+}
+
+bool all_legal(struct ChessBoard *board, signed char *moves, short *move_count){
+    for(short i = 0; i < *move_count; i+=5){
+        if(!is_legal(board, moves[i], moves[i+1], moves[i+2], moves[i+3], moves[i+4])){
+            //printf("warum");
+            return false;
+        }
+    }
+    return true;
+}
+
+
+bool is_legal(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
+    if(move_type == -3){
+        printf("castling");
+    }
+    if( (board->color_to_move == -1 && board->white_piece_pos[board->king_pos<<1] == to_x && board->white_piece_pos[(board->king_pos<<1)+1] == to_y) || (board->color_to_move == 1 && board->black_piece_pos[board->king_pos<<1] == to_x && board->black_piece_pos[(board->king_pos<<1)+1] == to_y)){
+        //printf(" \n (%d, %d) -> (%d , %d) %d", from_x, from_y, to_x, to_y, move_type);
+        //printf(" \n white_king (%d ,%d), black_king (%d ,%d) ind %d", board->white_piece_pos[board->king_pos<<1], board->white_piece_pos[(board->king_pos<<1)+1], board->black_piece_pos[board->king_pos<<1], board->black_piece_pos[(board->king_pos<<1)+1], board->king_pos);
+        return false;
+    }
+    return true;
 
 }

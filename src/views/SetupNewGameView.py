@@ -10,7 +10,7 @@ from views.view_variables import *
 #from chess_implementation.chess_board import ChessBoard
 #from chess_implementation.piece_rules import PieceRules
 from views.View import View
-from chess_implementationC.chess_board_wrapper import ChessBoard, chess_board_lib 
+from chess_implementationC.chess_board_wrapper import ChessBoard, chess_lib 
 
 
 class SetupNewGameView(View):
@@ -21,6 +21,7 @@ class SetupNewGameView(View):
         self.master = master
         
         self.chess_board_instance = ChessBoard()
+        chess_lib.setup_normals(ctypes.byref(self.chess_board_instance))
 
         self.board_size = 0
         self.image_labels = {} 
@@ -183,20 +184,6 @@ class SetupNewGameView(View):
 
             self.rectangles[(black_piece_pos_x + offset, black_piece_pos_y + offset)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
 
-
-        
-        # for pos in range(len(self.chess_board_instance.white_pieces)):
-        #     piece = self.chess_board_instance.white_pieces[pos]
-        #     start_pos_x = piece.position[0]
-        #     start_pos_y = piece.position[1]
-        #     self.rectangles[(start_pos_x + self.real_board_x_min, start_pos_y +self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-        # for pos in range(len(self.chess_board_instance.black_pieces)):
-        #     piece = self.chess_board_instance.black_pieces[pos]
-        #     start_pos_x = piece.position[0]
-        #     start_pos_y = piece.position[1]
-        #     self.rectangles[(start_pos_x + self.real_board_x_min, start_pos_y+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-                  
-
     #changes colors to red for one direction
     def draw_direction(self,x,y, set): 
         if self.piece_col-x != 0:
@@ -320,6 +307,9 @@ class SetupNewGameView(View):
             if self.board_size_slider.cget("state") == "normal":
                 self.board_size_slider.configure(state="disabled") #board size cant be switched now
                 self.chess_board_instance.size = math.ceil(self.board_size / 2)
+                print(math.ceil(self.board_size / 2), "halooo")
+                chess_lib.set_size(ctypes.byref(self.chess_board_instance), ctypes.c_int(math.ceil(self.board_size / 2)))
+
 
             boarder_x = self.boarderx_var.get() == "on"
             boarder_y = self.boardery_var.get() == "on"
@@ -337,7 +327,7 @@ class SetupNewGameView(View):
             self.piece_start_pos = [len(self.piece_start_pos)+1] + self.piece_start_pos
             
             print( self.piece_move_directions, self.piece_jump_moves, self.piece_start_pos, boarder_x, boarder_y, pawn, king, castling, self.piece_image_path, self.real_board_x_min, self.piece_image_path)
-            chess_board_lib.add_piece(
+            chess_lib.add_piece(
                 ctypes.byref(self.chess_board_instance),  
                 (ctypes.c_int * len(self.piece_move_directions))(*self.piece_move_directions),  
                 (ctypes.c_int * len(self.piece_jump_moves))(*self.piece_jump_moves),  
@@ -353,7 +343,7 @@ class SetupNewGameView(View):
             for i in range((len(self.piece_start_pos)-1)//2):
                 self.chess_board_instance.images += [self.piece_image_path]
             
-            chess_board_lib .printChessBoard(ctypes.byref(self.chess_board_instance))
+            chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
             for i in self.chess_board_instance.images:
                 print(i)
 
@@ -438,34 +428,8 @@ class SetupNewGameView(View):
                     label.place(relx=0.5, rely=0.5, anchor="center")
         else:
             raise Exception("please configure one Piece first")
-
-        # if self.board_size_slider.cget("state") == "disabled":
-
-        #     children = self.piece_settings_frame.winfo_children()
-        #     for child in children:
-        #         child.destroy()
             
-        #     self.draw_normal_board(self.board_size//2)
-        #     #show all white pieces
-        #     for color in range(0,2):
-        #         for ind in range(len(self.chess_board_instance.white_pieces)):
-        #             if color == 0:
-        #                 path = WHITE_PIECES_PATH + self.chess_board_instance.white_pieces[ind].rules.img_name
-        #                 pos = self.chess_board_instance[ind].position
-        #             else:
-        #                 path = BLACK_PIECES_PATH + self.chess_board_instance.black_pieces[ind].rules.img_name
-        #                 pos = self.chess_board_instance.black_pieces[ind].position
-        #             rect_of_position = self.rectangles[pos[0],pos[1]]
-        #             label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
-        #             img = ctk.CTkImage(light_image=Image.open((path)).convert("RGBA"),
-        #                             dark_image=Image.open((path)).convert("RGBA"),
-        #                             size=(label_width, label_width))
-        #             label = ctk.CTkLabel(rect_of_position, text="", image=img)
-        #             label.place(relx=0.5, rely=0.5, anchor="center")
-
-        # else:
-        #     raise Exception("please configure one Piece first")
-
+      
 
     #loads images to chose from for the pieces
     def load_piece_images(self):

@@ -24,6 +24,7 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
                         find_move_directions(board, board->white_piece_pos, board->white_piece_move_directions[ind], moves, moves_count, ind);
                     }
                     if (board->castling[ind]){
+                        //continue;
                         add_castling(board, board->white_piece_pos, board->white_piece_first_move, ind,board->white_piece_alive, moves, moves_count);
                     }
                 }
@@ -44,10 +45,11 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
                         find_move_directions(board, board->black_piece_pos, board->black_piece_move_directions[ind], moves, moves_count, ind);
                     }
                     if (board->castling[ind]){
+                        //continue;
                         add_castling(board, board->black_piece_pos, board->black_piece_first_move, ind, board->black_piece_alive, moves, moves_count);
                     }
                 }
-            }
+            } 
         }
     }
     // ("move_count ------ %d", *moves_count);
