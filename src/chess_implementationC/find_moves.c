@@ -5,6 +5,8 @@ signed char DOUBLE_PAWN = -2;
 signed char CASTLING = -3;
 signed char EN_PASSANT = -4;
 
+
+
 void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_count){
     *moves_count = 0;
     short test = 0;
@@ -131,10 +133,10 @@ void find_pawn_moves(struct ChessBoard *board, unsigned char *color_pos, signed 
             if(board->board[field_x][field_y] == 0){
                 if (dist <= real_range && !promotion(field_y, board->color_to_move, board->size)){
                     add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], field_x, field_y, NORMAL_MOVE, moves, moves_count);
-                }else if(dist >= real_range){
+                }else if(dist > real_range){
                     add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], field_x, field_y, DOUBLE_PAWN, moves, moves_count);
                 }else{
-                    add_promotion(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], field_x, field_y,board->non_pawn_pieces, moves, moves_count);
+                    add_promotion(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], field_x, field_y, board->non_pawn_pieces, moves, moves_count);
                 }
             }else{
                 break;

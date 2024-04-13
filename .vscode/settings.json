@@ -5,6 +5,11 @@
         "find_moves.h": "c",
         "test_engine.C": "cpp",
         "test_engin.h": "c",
-        "chess_board.h": "c"
+        "chess_board.h": "c",
+        "algorithm": "c",
+        "ios": "c",
+        "type_traits": "c",
+        "xstring": "c",
+        "xutility": "c"
     }
 }

@@ -6,11 +6,11 @@
 #include <stdlib.h>
 
 // Definition der Struktur ChessBoard
-#define MAX_MOVES 2048
+#define MAX_MOVES 10000
 #define MAX_PIECES 32
 #define MAX_MOVE_DIRECTIONS 32
 #define MAX_JUMP_MOVES 32
-#define MAX_FIFTY_MOVE_RULE 512
+#define MAX_FIFTY_MOVE_RULE 2048
 #define BOARD_SIZE 20
 
 

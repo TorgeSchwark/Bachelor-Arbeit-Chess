@@ -34,7 +34,7 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
             // add the white piece information
             board->white_piece_pos[board->piece_count*2] = x;
             board->white_piece_pos[board->piece_count*2+1] = y;
-            printf("%d", (sizeof(jump_moves) / sizeof(jump_moves[0])));
+            //printf("%d", (sizeof(jump_moves) / sizeof(jump_moves[0])));
             if (jump_moves[0] != -9999){
                 for (int ind_jm = 1; ind_jm < jump_moves[0]; ind_jm+=2){
                     board->white_piece_jump_moves[board->piece_count][ind_jm] = jump_moves[ind_jm];
@@ -129,11 +129,11 @@ void printChessBoard(struct ChessBoard *board) {
         printf("%u ", board->fifty_move_rule[i]);
     }
     printf("\nnon_pawn_pieces:\n");
-    for (int i = 1; i < MAX_PIECES; i++) {
+    for (int i = 0; i < MAX_PIECES; i++) {
         printf("%u ", board->non_pawn_pieces[i]);
     }
     printf("\npast_moves:\n");
-    for (int i = 0; i < MAX_MOVES; i+=5) {
+    for (int i = 0; i < 50; i+=5) {
         printf("( %d , %d ) -> ( %d , %d ) %d ", board->past_moves[i],board->past_moves[i+1],board->past_moves[i+2], board->past_moves[i+3], board->past_moves[i+4]);
     }
     printf("\ncaptured_piece:\n");
@@ -158,17 +158,23 @@ void printChessBoard(struct ChessBoard *board) {
     }
     printf("\nwhite_piece_jump_moves:\n");
     for (int i = 0; i < MAX_JUMP_MOVES; i++) {
-        for (int j = 0; j < board->white_piece_jump_moves[i][0]; j++) {
-            printf("%d ", board->white_piece_jump_moves[i][j]);
-        }
+        if(board->white_piece_jump_moves[i][0] > 0){
+            printf("piece : %d ", i);
+            for (int j = 0; j < board->white_piece_jump_moves[i][0]; j++) {
+                printf("%d ", board->white_piece_jump_moves[i][j]);
+            }
         printf("\n");
+        }
     }
     printf("\nwhite_piece_move_directions:\n");
     for (int i = 0; i < MAX_MOVE_DIRECTIONS; i++) {
-        for (int j = 0; j < board->white_piece_move_directions[i][0]; j++) {
-            printf("%d ", board->white_piece_move_directions[i][j]);
-        }
+        if(board->white_piece_move_directions[i][0] > 0){
+            printf("piece : %d ", i);
+            for (int j = 0; j < board->white_piece_move_directions[i][0]; j++) {
+                printf("%d ", board->white_piece_move_directions[i][j]);
+            }
         printf("\n");
+        }
     }
     printf("\nwhite_piece_fist_move:\n");
     for (int i = 0; i < MAX_PIECES; i++) {
@@ -185,17 +191,23 @@ void printChessBoard(struct ChessBoard *board) {
     }
     printf("\nblack_piece_jump_moves:\n");
     for (int i = 0; i < MAX_JUMP_MOVES; i++) {
-        for (int j = 0; j < board->black_piece_jump_moves[i][0]; j++) {
-            printf("%d ", board->black_piece_jump_moves[i][j]);
-        }
+        if(board->black_piece_jump_moves[i][0] > 0){
+            printf("piece : %d ", i);
+            for (int j = 0; j < board->black_piece_jump_moves[i][0]; j++) {
+                printf("%d ", board->black_piece_jump_moves[i][j]);
+            }
         printf("\n");
+        }
     }
     printf("\nblack_piece_move_directions:\n");
     for (int i = 0; i < MAX_MOVE_DIRECTIONS; i++) {
-        for (int j = 0; j < board->black_piece_move_directions[i][0]; j++) {
-            printf("%d ", board->black_piece_move_directions[i][j]);
-        }
+        if(board->black_piece_move_directions[i][0] > 0){
+            printf("piece : %d ", i);
+            for (int j = 0; j < board->black_piece_move_directions[i][0]; j++) {
+                printf("%d ", board->black_piece_move_directions[i][j]);
+            }
         printf("\n");
+        }
     }
     printf("\nblack_piece_fist_move:\n");
     for (int i = 0; i < MAX_PIECES; i++) {
@@ -237,28 +249,70 @@ void printChessBoard(struct ChessBoard *board) {
     printf("\n");
 }
 
+void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char color){
+    if(color == 1){
+        if(board->white_pawn[*piece_ind]){
+            *piece_ind = 1;
+        }else if(board->white_piece_jump_moves[*piece_ind][0] == 17 && board->king[*piece_ind] == false){
+            *piece_ind = 12;
+        }else if(board->white_piece_jump_moves[*piece_ind][0] == 17){
+            *piece_ind = 8;
+        }else if(board->white_piece_move_directions[*piece_ind][0]  == 25){
+            *piece_ind = 11;
+        }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && board->white_piece_move_directions[*piece_ind][1] == -1){
+            *piece_ind = 14;
+        }else{
+            *piece_ind = 10;
+        }
+    }else{
+        if(board->black_pawn[*piece_ind]){
+            *piece_ind = 1;
+        }else if(board->black_piece_jump_moves[*piece_ind][0] == 17 && board->king[*piece_ind] == false){
+            *piece_ind = 12;
+        }else if(board->black_piece_jump_moves[*piece_ind][0] == 17){
+            *piece_ind = 8;
+        }else if(board->black_piece_move_directions[*piece_ind][0]  == 25){
+            *piece_ind = 11;
+        }else if(board->black_piece_move_directions[*piece_ind][0] == 13 && board->black_piece_move_directions[*piece_ind][1] == -1){
+            *piece_ind = 14;
+        }else{
+            *piece_ind = 10;
+        }
+    }
+
+
+}
 
 // work in progress 
 void board_to_fen(struct ChessBoard *board, char *fen){
-    char *white_pieces_to_fen = "PPPPPPPPKRRQNNBB";
-    char *black_pieces_to_fen = "ppppppppkrrqnnbb";
-    char *pos_to_letter = "hgfedcba";
-    char *num_to_num = "0123456789";
+    char white_pieces_to_fen[] = "PPPPPPPPKRRQNNBB";
+    char black_pieces_to_fen[] = "ppppppppkrrqnnbb";
+    char pos_to_letter[] = "hgfedcba";
+    char num_to_num[] = "0123456789";
 
 
     int fen_ind = 0;
     int empty_count = 0;
-    for(int i = board->size; i >= 0; i--){
-        for(int m = board->size; m >= 0; m-- ){
+    for(int i = board->size-1; i >= 0; i--){
+        empty_count = 0;
+        for(int m = board->size-1; m >= 0; m-- ){
             if(board->board[m][i] != 0){
                 if(empty_count > 0){
-                    fen[fen_ind] = empty_count;
+                    fen[fen_ind] = num_to_num[empty_count];
                     fen_ind += 1;
                 }
-                if(board->board[m][i] < 0){
-                    fen[fen_ind] = black_pieces_to_fen[(-board->board[m][i])-1];
+                signed char piece_ind = abs(board->board[m][i])-1;
+                signed char color = 0;
+                if(board->board[m][i] > 0){
+                    color = 1;
                 }else{
-                    fen[fen_ind] = white_pieces_to_fen[(board->board[m][i])-1];
+                    color = -1;
+                }
+                get_piece_type(board, &piece_ind, color);
+                if(board->board[m][i] < 0){
+                    fen[fen_ind] = black_pieces_to_fen[piece_ind];
+                }else{
+                    fen[fen_ind] = white_pieces_to_fen[piece_ind];
                 }
                 empty_count = 0;
                 fen_ind += 1;
@@ -267,71 +321,113 @@ void board_to_fen(struct ChessBoard *board, char *fen){
             }
         }
         if(empty_count != 0){
-            fen[fen_ind] = empty_count;
+            fen[fen_ind] = num_to_num[empty_count];
             fen_ind += 1;
         }
-        fen[fen_ind] = "/";
-        fen_ind += 1;
+        if(i != 0){
+            fen[fen_ind] = '/';
+            fen_ind += 1;
+        }
     }
     
-    fen[fen_ind] = " ";
+    fen[fen_ind] = ' ';
     fen_ind += 1;
 
     if(board->color_to_move == 1){
-        fen[fen_ind] = "w";
+        fen[fen_ind] = 'w';
     }else{
-        fen[fen_ind] = "b";
+        fen[fen_ind] = 'b';
     }
+    fen_ind += 1;
+
+    fen[fen_ind] = ' ';
     fen_ind += 1;
 
     if(board->white_piece_first_move[board->king_pos] == -1){
         if(board->white_piece_first_move[9] == -1 && board->white_piece_alive[9]){
-            fen[fen_ind] = "K";
+            fen[fen_ind] = 'K';
         }else{
-            fen[fen_ind] = "-";
+            fen[fen_ind] = '-';
         }
         fen_ind += 1;
         if(board->white_piece_first_move[10] == -1 && board->white_piece_alive[10]){
-            fen[fen_ind] = "K";
+            fen[fen_ind] = 'Q';
         }else{
-            fen[fen_ind] = "-";
+            fen[fen_ind] = '-';
         }
         fen_ind += 1;
     }else{
-        fen[fen_ind] = "-";
-        fen[fen_ind+1] = "-";
+        fen[fen_ind] = '-';
+        fen[fen_ind+1] = '-';
         fen_ind += 2;
     }
 
     if(board->black_piece_first_move[board->king_pos] == -1){
         if (board->black_piece_first_move[9] == -1 && board->black_piece_alive[9]){
-            fen[fen_ind] = "k";
+            fen[fen_ind] = 'k';
         }else{
-            fen[fen_ind] = "-";
+            fen[fen_ind] = '-';
         }
         fen_ind += 1;
         if(board->black_piece_first_move[10] == -1 && board->black_piece_alive[9]){
-            fen[fen_ind] = "q";
+            fen[fen_ind] = 'q';
         }else{
-            fen[fen_ind] = "-";
+            fen[fen_ind] = '-';
         }
         fen_ind += 1;
     }else{
-        fen[fen_ind] = "-";
-        fen[fen_ind+1] = "-";
+        fen[fen_ind] = '-';
+        fen[fen_ind+1] = '-';
         fen_ind += 2;
     }
 
-    fen[fen_ind] = " ";
+    fen[fen_ind] = ' ';
     fen_ind += 1;
 
     if(board->past_moves[board->move_count-1] == -2){
-        fen[fen_ind] = pos_to_letter[board->past_moves[board->move_count-3]]
-        fen[fen_ind+1]
+        fen[fen_ind] = pos_to_letter[board->past_moves[board->move_count-3]];
+        fen[fen_ind+1] = 'x';
+        fen_ind += 2;
+    }else{
+        fen[fen_ind] = '-';
+        fen_ind += 1;
     }
+
+    fen[fen_ind] = ' ';
+    fen_ind += 1;
+
+    if(board->fifty_move_rule[board->move_count] / 10 >= 1){
+        fen[fen_ind] = num_to_num[board->fifty_move_rule[board->move_count] / 10];
+        fen_ind += 1;
+    }
+    fen[fen_ind] = num_to_num[board->fifty_move_rule[board->move_count] % 10];
+    fen_ind += 1;
+
+    fen[fen_ind] = ' ';
+    fen_ind += 1;
+
+    unsigned char num_to_save = (board->move_count+2)/2;
+    if(num_to_save / 100  > 0){
+        printf("100 %d \n", num_to_save / 100 );
+        fen[fen_ind] = num_to_num[num_to_save / 100 ];
+        fen_ind += 1;
+    }
+    if(num_to_save / 10 > 0){
+        fen[fen_ind] = num_to_num[(num_to_save%100)/10];
+        fen_ind += 1;
+    }
+    fen[fen_ind] = num_to_num[num_to_save%10];
+    fen_ind += 1;
+
+
+
     
-
-
+    // 0:  1
+    // 1: 1
+    // 2 : 2
+    // 3 : 2
+    // 4 : 3 
+    printf("%s\n", fen);
 
 }
 

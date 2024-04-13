@@ -2,7 +2,11 @@
 
 
 void make_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
-   
+    if(board->white_pawn[abs(board->board[from_x][from_y])-1] && board->color_to_move == 1 && to_y == 7 && move_type < 0){
+        printf("DAS MUSS EINE PROMOTION SEIN");
+    }else if(board->black_pawn[abs(board->board[from_x][from_y])-1] && board->color_to_move == -1 && to_y == 0 && move_type < 0){
+        printf("DAS MUSS EINE PROMOTION SEIN SCHWARZ");
+    }
     switch (move_type){
         case -1:
         case -2:
@@ -15,6 +19,7 @@ void make_move(struct ChessBoard *board, signed char from_x, signed char from_y,
             make_en_passant(board, from_x, from_y, to_x, to_y, move_type);
             break;
         default:
+            printf("PROMOTED :) %d", abs(board->board[from_x][from_y])-1);
             make_promotion(board, from_x, from_y, to_x, to_y, move_type);
             break;
     }
@@ -115,27 +120,32 @@ void make_promotion(struct ChessBoard* board, signed char from_x, signed char fr
     // piece wont be able to walk over edges ...
     if(board->color_to_move == 1){
         signed char piece_to_ind = board->non_pawn_pieces[move_type];
-        unsigned char piece_ind = board->board[from_x][from_y]-1;
+        printf("the piece is a %d", 1);
+        signed char piece_ind = board->board[from_x][from_y]-1;
         for(unsigned char jm_ind = 0; jm_ind < board->white_piece_jump_moves[piece_to_ind][0]; jm_ind += 1){
             board->white_piece_jump_moves[piece_ind][jm_ind] = board->white_piece_jump_moves[piece_to_ind][jm_ind];
         }
         for(unsigned char md_ind = 0; md_ind < board->white_piece_move_directions[piece_to_ind][0]; md_ind += 1){
-            board->white_piece_move_directions[piece_ind][md_ind] = board->white_piece_move_directions[piece_to_ind][0];
+            board->white_piece_move_directions[piece_ind][md_ind] = board->white_piece_move_directions[piece_to_ind][md_ind];
         }
-        board->white_piece_img[piece_ind] = board->white_piece_img[piece_to_ind];
+        //board->white_piece_img[piece_ind] = board->white_piece_img[piece_to_ind];
         board->white_pawn[piece_ind] = false;
+        board->white_piece_img[piece_ind] = 1;
     }else{
+        printf("the piece is a %d", -1);
         signed char piece_to_ind = board->non_pawn_pieces[move_type];
-        unsigned char piece_ind = (-board->board[from_x][from_y])-1;
+        signed char piece_ind = (-board->board[from_x][from_y])-1;
         for(unsigned char jm_ind = 0; jm_ind < board->black_piece_jump_moves[piece_to_ind][0]; jm_ind += 1){
             board->black_piece_jump_moves[piece_ind][jm_ind] = board->black_piece_jump_moves[piece_to_ind][jm_ind];
         }
         for(unsigned char md_ind = 0; md_ind < board->black_piece_move_directions[piece_to_ind][0]; md_ind += 1){
-            board->black_piece_move_directions[piece_ind][md_ind] = board->black_piece_move_directions[piece_to_ind][0];
+            board->black_piece_move_directions[piece_ind][md_ind] = board->black_piece_move_directions[piece_to_ind][md_ind];
         }
-        board->black_piece_img[piece_ind] = board->black_piece_img[piece_to_ind];
+        //board->black_piece_img[piece_ind] = board->black_piece_img[piece_to_ind];
         board->black_pawn[piece_ind] = false;
+        board->black_piece_img[piece_ind] = 1;
     }
+    make_normal_move(board, from_x, from_y, to_x, to_y, move_type);
 }
 
 void undo_last_move(struct ChessBoard *board){
@@ -193,11 +203,11 @@ void undo_en_passant(struct ChessBoard *board, signed char from_x, signed char f
 
     if(board->color_to_move == 1){
         board->black_piece_pos[(abs(board->board[to_x][to_y])-1)<<1] = to_x;
-        board->black_piece_pos[((abs(board->board[to_x][to_y])-1)<<1)+1] = to_y;
+        board->black_piece_pos[((abs(board->board[to_x][to_y])-1)<<1)+1] = from_y;
         board->black_piece_alive[(abs(board->board[to_x][to_y])-1)] = true;
     }else{
         board->white_piece_pos[((board->board[to_x][to_y])-1)<<1] = to_x;
-        board->white_piece_pos[(((board->board[to_x][to_y])-1)<<1)+1] = to_y;
+        board->white_piece_pos[(((board->board[to_x][to_y])-1)<<1)+1] = from_y;
         board->white_piece_alive[((board->board[to_x][to_y])-1)] = true;
     }
 
@@ -223,24 +233,26 @@ void undo_castling_move(struct ChessBoard *board, signed char from_x, signed cha
     undo_normal_move(board, from_x, from_y, to_x, to_y, move_type);
 }
 
-void undo_promotion(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
+void  undo_promotion(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
     // there is no need to reset castling etc since pawn is checked first in find_moves also boarder_x, boarder_y is not enabled for pawn
     if(board->color_to_move == 1){
         signed char piece_ind = (-board->board[to_x][to_y])-1;
         board->black_pawn[piece_ind] = true;
-        board->black_piece_jump_moves[piece_ind][0] = 4;
-        board->black_piece_jump_moves[piece_ind][1] = 0;
-        board->black_piece_jump_moves[piece_ind][2] = -1;
-        board->black_piece_jump_moves[piece_ind][3] = 1;
-        board->black_piece_jump_moves[piece_ind][0] = 1;
+        board->black_piece_move_directions[piece_ind][0] = 4;
+        board->black_piece_move_directions[piece_ind][1] = 0;
+        board->black_piece_move_directions[piece_ind][2] = -1;
+        board->black_piece_move_directions[piece_ind][3] = 1;
+        board->black_piece_jump_moves[piece_ind][0] = 0;
+        //board->black_piece_img[piece_ind] = 0;
     }else{
         signed char piece_ind = board->board[to_x][to_y]-1;
         board->white_pawn[piece_ind] = true;
-        board->white_piece_jump_moves[piece_ind][0] = 4;
-        board->white_piece_jump_moves[piece_ind][1] = 0;
-        board->white_piece_jump_moves[piece_ind][2] = 1;
-        board->white_piece_jump_moves[piece_ind][3] = 1;
-        board->white_piece_jump_moves[piece_ind][0] = 1;
+        board->white_piece_move_directions[piece_ind][0] = 4;
+        board->white_piece_move_directions[piece_ind][1] = 0;
+        board->white_piece_move_directions[piece_ind][2] = 1;
+        board->white_piece_move_directions[piece_ind][3] = 1;
+        board->white_piece_jump_moves[piece_ind][0] = 0;
+        //board->white_piece_img[piece_ind] = 0;
     }
     undo_normal_move(board, from_x, from_y, to_x, to_y, move_type);
 }
