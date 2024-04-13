@@ -4,6 +4,18 @@ import time
 from timeit import default_timer as timer
 import struct
 import random
+from stockfish import Stockfish
+
+stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-windows-x86-64.exe")
+
+def perft_debug():
+    board = ChessBoard()
+
+    chess_lib.setup_normals(ctypes.byref(board))
+
+    chess_lib.create_chess(ctypes.byref(board)) 
+
+    chess_lib.test_engine(ctypes.byref(board), ctypes.c_int(6))
 
 def run():
     board = ChessBoard()
@@ -12,35 +24,25 @@ def run():
 
     chess_lib.create_chess(ctypes.byref(board))
 
-    chess_lib.printChessBoard(ctypes.byref(board))
+    # chess_lib.printChessBoard(ctypes.byref(board))
 
-    run_test_games(10, board)
+    run_test_games(1, board)
 
 
 def run_test_games(amount, board):
-    play_test_game(board)
-    # moves_buffer = ctypes.create_string_buffer(1024)
-    # moves_count = ctypes.c_short(0)
 
-    # chess_lib.find_all_moves(ctypes.byref(board), moves_buffer, ctypes.byref(moves_count))
 
-    # moves_list = struct.unpack(f'{moves_count.value}b', moves_buffer.raw[:moves_count.value])
-
-    # # chess_lib.make_move(ctypes.byref(board), moves_buffer[0], moves_buffer[1], moves_buffer[2], moves_buffer[3], moves_buffer[4] )
-    # for i in range(amount):
-    #     play_test_game(board)
-
-    # print("Gefundene Züge als signed char:")
-    # for move_value in moves_list:
-    #     print(move_value)
-
-    # chess_lib.make_move(ctypes.byref(board), ctypes.c_byte(moves_list[0]), ctypes.c_byte(moves_list[1]), ctypes.c_byte(moves_list[2]), ctypes.c_byte(moves_list[3]), ctypes.c_byte(moves_list[4]))
+    for i in range(amount):
+        play_test_game(board)
+        chess_lib.undo_game(ctypes.byref(board))
 
     # chess_lib.printChessBoard(ctypes.byref(board))
 
 def play_test_game(board):
     
-    moves_buffer = (ctypes.c_char * 1024)()
+    moves_buffer = (ctypes.c_char * 2024)()
+
+    move_count = 0
     
     moves_count = ctypes.c_short(0)
 
@@ -52,9 +54,22 @@ def play_test_game(board):
 
     chess_lib.legal_moves(ctypes.byref(board), moves_count.value, moves_buffer, legal_list)
     random_move_ind = generate_random_true_index(legal_list)
-    print(moves_list[1])
 
-    while random_move_ind != None:
+    while random_move_ind != None and move_count < 50:
+        move_count += 1
+        fen = get_fen_string(board)
+        counts_buffer = (ctypes.c_longlong * 400)()
+        chess_lib.count_for_each_move(ctypes.byref(board), 3, ctypes.byref(counts_buffer))
+
+        # for i in range(moves_count.value//5):
+        #     print(counts_buffer[i])
+        
+        # if not stockfish.is_fen_valid(fen):
+        #     chess_lib.printChessBoard(ctypes.byref(board))
+        #     print("SOCKFISH NOT VALID ")
+        #     print(fen)
+        
+
         chess_lib.make_move(ctypes.byref(board), ctypes.c_byte(moves_list[random_move_ind*5]), ctypes.c_byte(moves_list[random_move_ind*5+1]), ctypes.c_byte(moves_list[random_move_ind*5+2]), ctypes.c_byte(moves_list[random_move_ind*5+3]), ctypes.c_byte(moves_list[random_move_ind*5+4]))
         moves_count = ctypes.c_short(0)
 
@@ -67,43 +82,33 @@ def play_test_game(board):
         chess_lib.legal_moves(ctypes.byref(board), moves_count.value, moves_buffer, legal_list )
         random_move_ind = generate_random_true_index(legal_list)
 
-    
+
+    print(get_fen_string(board),"\n")
+    chess_lib.count_for_each_move(ctypes.byref(board), 6, ctypes.byref(counts_buffer))
     chess_lib.printChessBoard(ctypes.byref(board))
-    chess_lib.find_all_moves(ctypes.byref(board), ctypes.byref(moves_buffer), ctypes.byref(moves_count))
-    print("moves1 \n", moves_count.value)
-    legal_list = (ctypes.c_bool * moves_count.value)()
-    chess_lib.legal_moves(ctypes.byref(board), moves_count.value, moves_buffer, legal_list)
-    for i in legal_list:
-        print(i)
-    print("moves2 \n", moves_count.value)
-    print(get_fen_string(board))
-    print("finished game")
+    # for i in range(moves_count.value//5):
+    #     print(counts_buffer[i])
+   
     
     
-
-
-
 def generate_random_true_index(bool_list):
-    # Erstelle eine Liste der Indizes, bei denen der Wert True ist
-    #print(bool_list)
+    
     true_indices = [i for i, value in enumerate(bool_list) if value]
-    #print(true_indices)
-    # Überprüfe, ob es überhaupt True-Werte gibt
+    
     if not true_indices:
-        return None  # Rückgabe None, wenn keine True-Werte vorhanden sind
+        return None  
 
-    # Wähle einen zufälligen Index aus der Liste der True-Indizes
     random_index = random.choice(true_indices)
     return random_index
 
 
 def get_fen_string(board):
-    # Erzeuge einen Puffer für den FEN-String (angenommen maximal 256 Zeichen lang)
-    fen_buffer = ctypes.create_string_buffer(256)
+    
+    fen_buffer = ctypes.create_string_buffer(556)
     
     chess_lib.board_to_fen(ctypes.byref(board), fen_buffer)
     
-    # Gib den FEN-String als Python-String zurück
-    return fen_buffer.value.decode('utf-8')  # De
+    return fen_buffer.value.decode('utf-8')  
 
 run()
+#perft_debug()

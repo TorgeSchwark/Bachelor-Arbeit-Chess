@@ -2,6 +2,7 @@
 #define MAKE_MOVES_H
 
 #include "chess_board.h"
+#include "find_moves.h"
 
 void make_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type);
 

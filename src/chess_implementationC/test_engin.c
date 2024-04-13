@@ -1,7 +1,16 @@
 #include "test_engin.h" 
-int moves_pos_count = 0;
-int moves_pos[] = {4,1,4,3,-2, 2,6,2,4,-2, 4,3,4,4,-1, 3,6,3,4,-2, 4,0,4,3,-1};
+int moves_pos_count = 250; //115
+// 5,1,5,2,-1, 2,6,2 ,5 ,-1 , 7, 1, 7 ,3, -2,  3, 6, 3, 5, -1,  1, 0, 2 ,2 ,-1 , 4, 7, 3, 6, -1,  2, 2, 1, 0, -1,  6, 7, 5, 5, -1,  1, 1, 1, 2, -1,  3, 6, 5, 4, -1,  2, 0, 0, 2, -1,  1, 7, 3, 6, -1,  2, 1, 2, 3, -2,  3, 6, 4, 4, -1,  4, 1, 4, 3, -2,  1, 6 ,1 ,4 ,-2 , 7 ,3 ,7 ,4 ,-1,  1, 4, 1, 3, -1,  7, 4 ,7 ,5 ,-1 , 5, 4, 7, 2, -1
+int moves_pos[] = {  0 ,1 ,0, 2, -1,  7 ,6 ,7, 5, -1,  6 ,1 ,6, 2, -1,  7 ,5 ,7, 4, -1,  0 ,2 ,0, 3, -1,  4 ,6 ,4, 4, -2,  4 ,1 ,4, 3, -2,  3 ,6 ,3, 4, -2,  2 ,1 ,2, 2, -1,  7 ,7 ,7, 6, -1,  6 ,0 ,5, 2, -1,  4 ,7 ,4, 6, -1,  3 ,0 ,4, 1, -1,  1 ,6 ,1, 4, -2,  6 ,2 ,6, 3, -1,  2 ,6 
+,2, 4, -2,  5 ,2 ,6, 0, -1,  7 ,6 ,7, 5, -1,  5 ,0 ,7, 2, -1,  1 ,7 ,3, 6, -1,  2 ,2 ,2, 3, -1,  7 ,4 ,6, 3, -1,  1 ,1 ,1, 2, -1,  3 ,6 ,1, 7, -1,  1 ,0 ,2, 2, -1,  3 ,4 ,2, 3, -1,  2 ,2 ,0, 1, -1,  7 ,5 ,3, 5, -1,  5 ,1 ,5, 2, -1,  6 ,3 ,7, 2, -1,  4 ,0 ,3, 0, -1,  2 ,7 ,4, 5, -1,  3 ,0 ,4, 0, -1,  1 ,4 ,0, 3, -1,  1 ,2 ,1, 3, -1,  4 ,6 ,1, 6, -1,  3 ,1 ,3, 2, -1,  1 ,7 ,0, 5, -1,  4 ,1 ,3, 1, -1,  6 ,6 ,6, 4, -2,  3 ,1 ,3, 0, -1,  6 ,4 ,6, 3, -1,  0 ,0 ,1, 0, -1,  3 ,5 ,1, 5, -1,  6 ,0 ,7, 2, -1,  1 ,6 ,1, 7, -1,  
+4 ,0 ,6, 2, -1,  5 ,7 ,6, 6, -1,  3 ,0 ,4, 0, -1,  5 ,6 ,5, 5, -1};
 
+
+void undo_game(struct ChessBoard *board){
+    while(board->move_count > 0){
+        undo_last_move(board);
+    }
+}
 
 void legal_moves(struct ChessBoard *board, short move_count, char *moves, bool *legal){
     
@@ -20,7 +29,6 @@ void legal_moves(struct ChessBoard *board, short move_count, char *moves, bool *
         }
         if(board->fifty_move_rule[board->move_count-1] >= 50 || board->move_count > 2000){
             legal[ind/5] = false;
-            printf("hey illegal");
         }
         undo_last_move(board);
     }
@@ -28,23 +36,48 @@ void legal_moves(struct ChessBoard *board, short move_count, char *moves, bool *
 
 void test_engine(struct ChessBoard *board, int depth){
 
-    long long count = 0;
-    
-    //test_engine_all_moves(board, depth, &count);
-
+    long long counts[400];
+    char fen[400];
+    signed char color;
+    bool wrong = false;
     for(short i = 0; i < moves_pos_count; i+=5){
+        // printf(" %d, %d ,%d ,%d, %d \n",moves_pos[i], moves_pos[i+1], moves_pos[i+2], moves_pos[i+3], moves_pos[i+4]);
+        color = board->color_to_move;
         make_move(board, moves_pos[i], moves_pos[i+1], moves_pos[i+2], moves_pos[i+3], moves_pos[i+4]);
-       
-    }
 
-    test_engine_all_moves(board, depth, &count);
-    printf("\n moves %d \n", count);
+        if(board->color_to_move == color){
+            printf("wtf move_count %d", i /5);
+            wrong = true;
+        }
+        if(wrong){
+            break;
+        }
+        for(int ind = 0; ind < MAX_PIECES; ind++){
+            if(board->white_piece_alive[ind] && board->board[board->white_piece_pos[ind*2]][board->white_piece_pos[ind*2+1]] != ind +1){
+                printf("hier ist was falsch gegangen");
+                wrong = true;
+            }
+            if(board->black_piece_alive[ind] && board->board[board->black_piece_pos[ind*2]][board->black_piece_pos[ind*2+1]] != -(ind +1)){
+                printf("hier ist was falsch gegangen schwarz ");
+                wrong = true;
+            }
+        }
+        if(wrong){
+            break;
+        }
+    }
+    printChessBoard(board);
+
+    board_to_fen(board, fen);
+
+    count_for_each_move(board, depth, counts);
+
+    // printChessBoard(board);
     
 }
 
-void count_for_each_move(struct ChessBoard *board, int depth){
+void count_for_each_move(struct ChessBoard *board, int depth, long long *counts){
     char chess_not[] = "hgfedcba";
-    long long counts[400];
     signed char moves[2000];
     signed char debug_moves[2000];
     short move_count_debug = 0;
@@ -117,8 +150,6 @@ void test_engine_all_moves(struct ChessBoard *board, int depth, long long *count
             }
         }
     }
-
-
 }
 
 //check castling
@@ -165,9 +196,13 @@ bool all_legal(struct ChessBoard *board, signed char *moves, short *move_count){
             direction = 1;
         }
         for(int i = 0; i < 3; i++){
+            if(i != 1){ // if king is in check from a pawn before casling or after we will notice in the legal check above / below if a pawn treatens the field in between we dont the pawn therefore needs to stand infront of the field the king is moving from or to ...
+                if((board->board[king_x][king_y-board->color_to_move]) != 0 && ((board->color_to_move == 1 && board->board[king_x][king_y-board->color_to_move] <= 8 && board->board[king_x][king_y-board->color_to_move] > 0 && board->white_pawn[abs(board->board[king_x][king_y-board->color_to_move])-1]) || (board->color_to_move == -1 && board->board[king_x][king_y-board->color_to_move] >= -8 && board->board[king_x][king_y-board->color_to_move] < 0 && board->black_pawn[abs(board->board[king_x][king_y-board->color_to_move])-1]) ) ){
+                    return false;
+                }
+            }
             for(short ind = 0; ind < past_moves_count; ind+=5){
                 if(past_moves[ind+2] == king_x && past_moves[ind+3] == king_y){
-                    printf("illegal_castling");
                     return false;
                 }
             }

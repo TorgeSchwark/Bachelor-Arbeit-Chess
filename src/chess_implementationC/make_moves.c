@@ -2,11 +2,11 @@
 
 
 void make_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
-    if(board->white_pawn[abs(board->board[from_x][from_y])-1] && board->color_to_move == 1 && to_y == 7 && move_type < 0){
-        printf("DAS MUSS EINE PROMOTION SEIN");
-    }else if(board->black_pawn[abs(board->board[from_x][from_y])-1] && board->color_to_move == -1 && to_y == 0 && move_type < 0){
-        printf("DAS MUSS EINE PROMOTION SEIN SCHWARZ");
-    }
+    // if(board->white_pawn[abs(board->board[from_x][from_y])-1] && board->color_to_move == 1 && to_y == 7 && move_type < 0){
+    //     printf("DAS MUSS EINE PROMOTION SEIN");
+    // }else if(board->black_pawn[abs(board->board[from_x][from_y])-1] && board->color_to_move == -1 && to_y == 0 && move_type < 0){
+    //     printf("DAS MUSS EINE PROMOTION SEIN SCHWARZ");
+    // }
     switch (move_type){
         case -1:
         case -2:
@@ -19,7 +19,6 @@ void make_move(struct ChessBoard *board, signed char from_x, signed char from_y,
             make_en_passant(board, from_x, from_y, to_x, to_y, move_type);
             break;
         default:
-            printf("PROMOTED :) %d", abs(board->board[from_x][from_y])-1);
             make_promotion(board, from_x, from_y, to_x, to_y, move_type);
             break;
     }
@@ -27,8 +26,22 @@ void make_move(struct ChessBoard *board, signed char from_x, signed char from_y,
 }
 
 void make_normal_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
+    // if(from_x == 7 && from_y == 0 && to_x == 5 && to_y == 0 ){
+    //     printf("zug gefunden \n");
+    //     signed char moves[1000];
+    //     short move_count = 0;
+    //     find_all_moves(board, moves , &move_count);
+
+    //     for(int m = 0; m < move_count; m+=5){
+    //         printf("%d %d %d %d %d \n", moves[m], moves[m+1], moves[m+2], moves[m+3],moves[m+4]);
+    //     }
+    // }
     signed char piece_number = board->board[from_x][from_y];
     signed char pos_in_piece_list = abs(piece_number)-1;
+    // if(from_x == 7 && from_y == 0 && to_x == 5 && to_y == 0 ){
+    //     printf("zug gefunden piecenum pos_in list color to_move %d %d %d \n", piece_number, pos_in_piece_list,board->color_to_move );
+    //     printf("auf dem brett: %d", board->board[from_x][from_y]);
+    // }
 
     if ((board->color_to_move == 1 && board->white_pawn[pos_in_piece_list]) || (board->color_to_move == -1 && board->black_pawn[pos_in_piece_list])){
         board->fifty_move_rule[board->move_count] = 0;
@@ -120,26 +133,36 @@ void make_promotion(struct ChessBoard* board, signed char from_x, signed char fr
     // piece wont be able to walk over edges ...
     if(board->color_to_move == 1){
         signed char piece_to_ind = board->non_pawn_pieces[move_type];
-        printf("the piece is a %d", 1);
         signed char piece_ind = board->board[from_x][from_y]-1;
         for(unsigned char jm_ind = 0; jm_ind < board->white_piece_jump_moves[piece_to_ind][0]; jm_ind += 1){
             board->white_piece_jump_moves[piece_ind][jm_ind] = board->white_piece_jump_moves[piece_to_ind][jm_ind];
         }
+        if(board->white_piece_jump_moves[piece_to_ind][0] == 0){
+            board->white_piece_jump_moves[piece_ind][0] = 0;
+        }
         for(unsigned char md_ind = 0; md_ind < board->white_piece_move_directions[piece_to_ind][0]; md_ind += 1){
             board->white_piece_move_directions[piece_ind][md_ind] = board->white_piece_move_directions[piece_to_ind][md_ind];
+        }
+        if(board->white_piece_move_directions[piece_to_ind][0] == 0){
+            board->white_piece_move_directions[piece_ind][0] = 0;
         }
         //board->white_piece_img[piece_ind] = board->white_piece_img[piece_to_ind];
         board->white_pawn[piece_ind] = false;
         board->white_piece_img[piece_ind] = 1;
     }else{
-        printf("the piece is a %d", -1);
         signed char piece_to_ind = board->non_pawn_pieces[move_type];
         signed char piece_ind = (-board->board[from_x][from_y])-1;
         for(unsigned char jm_ind = 0; jm_ind < board->black_piece_jump_moves[piece_to_ind][0]; jm_ind += 1){
             board->black_piece_jump_moves[piece_ind][jm_ind] = board->black_piece_jump_moves[piece_to_ind][jm_ind];
         }
+        if(board->black_piece_jump_moves[piece_to_ind][0] == 0){
+            board->black_piece_jump_moves[piece_ind][0] = 0;
+        }
         for(unsigned char md_ind = 0; md_ind < board->black_piece_move_directions[piece_to_ind][0]; md_ind += 1){
             board->black_piece_move_directions[piece_ind][md_ind] = board->black_piece_move_directions[piece_to_ind][md_ind];
+        }
+        if(board->black_piece_move_directions[piece_to_ind][0] == 0){
+            board->black_piece_move_directions[piece_ind][0] = 0;
         }
         //board->black_piece_img[piece_ind] = board->black_piece_img[piece_to_ind];
         board->black_pawn[piece_ind] = false;
@@ -171,6 +194,7 @@ void undo_normal_move(struct ChessBoard *board, signed char from_x, signed char 
     
     board->board[from_x][from_y] = board->board[to_x][to_y];
     board->board[to_x][to_y] = board->captured_piece[board->move_count-1];
+    board->fifty_move_rule[board->move_count] = 0;
 
     if (board->color_to_move == 1){
         board->black_piece_pos[(abs(board->board[from_x][from_y])-1)<<1] = from_x;

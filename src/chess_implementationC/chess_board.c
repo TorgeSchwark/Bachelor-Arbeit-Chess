@@ -133,8 +133,8 @@ void printChessBoard(struct ChessBoard *board) {
         printf("%u ", board->non_pawn_pieces[i]);
     }
     printf("\npast_moves:\n");
-    for (int i = 0; i < 50; i+=5) {
-        printf("( %d , %d ) -> ( %d , %d ) %d ", board->past_moves[i],board->past_moves[i+1],board->past_moves[i+2], board->past_moves[i+3], board->past_moves[i+4]);
+    for (int i = 0; i < board->move_count*5; i+=5) {
+        printf(" %d ,%d ,%d, %d, %d, ", board->past_moves[i],board->past_moves[i+1],board->past_moves[i+2], board->past_moves[i+3], board->past_moves[i+4]);
     }
     printf("\ncaptured_piece:\n");
     for (int i = 0; i < MAX_FIFTY_MOVE_RULE; i++) {
@@ -259,7 +259,7 @@ void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char
             *piece_ind = 8;
         }else if(board->white_piece_move_directions[*piece_ind][0]  == 25){
             *piece_ind = 11;
-        }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && board->white_piece_move_directions[*piece_ind][1] == -1){
+        }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && board->white_piece_move_directions[*piece_ind][1] == 1){
             *piece_ind = 14;
         }else{
             *piece_ind = 10;
@@ -283,14 +283,33 @@ void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char
 
 }
 
+
+void fen_to_board(struct ChessBoard *board, char *fen, int fen_end){
+
+    unsigned char row_count = 0;
+    for(int ind = 0; ind < fen_end; ind++){
+
+        if(fen[ind] == '/'){
+            row_count = 0;
+        }
+        
+
+    }
+
+}
+
 // work in progress 
 void board_to_fen(struct ChessBoard *board, char *fen){
     char white_pieces_to_fen[] = "PPPPPPPPKRRQNNBB";
     char black_pieces_to_fen[] = "ppppppppkrrqnnbb";
     char pos_to_letter[] = "hgfedcba";
     char num_to_num[] = "0123456789";
+    bool castling = false;
 
-
+    if(board->move_count < 24 && board->fifty_move_rule[board->move_count-1] >48){
+        printf("------------------------------");
+        printChessBoard(board);
+    }
     int fen_ind = 0;
     int empty_count = 0;
     for(int i = board->size-1; i >= 0; i--){
@@ -346,39 +365,31 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     if(board->white_piece_first_move[board->king_pos] == -1){
         if(board->white_piece_first_move[9] == -1 && board->white_piece_alive[9]){
             fen[fen_ind] = 'K';
-        }else{
-            fen[fen_ind] = '-';
+            fen_ind += 1;
+            castling = true;
         }
-        fen_ind += 1;
         if(board->white_piece_first_move[10] == -1 && board->white_piece_alive[10]){
             fen[fen_ind] = 'Q';
-        }else{
-            fen[fen_ind] = '-';
+            fen_ind += 1;
+            castling = true;
         }
-        fen_ind += 1;
-    }else{
-        fen[fen_ind] = '-';
-        fen[fen_ind+1] = '-';
-        fen_ind += 2;
     }
 
     if(board->black_piece_first_move[board->king_pos] == -1){
         if (board->black_piece_first_move[9] == -1 && board->black_piece_alive[9]){
             fen[fen_ind] = 'k';
-        }else{
-            fen[fen_ind] = '-';
+            fen_ind += 1;
+            castling = true;
         }
-        fen_ind += 1;
         if(board->black_piece_first_move[10] == -1 && board->black_piece_alive[9]){
             fen[fen_ind] = 'q';
-        }else{
-            fen[fen_ind] = '-';
+            fen_ind += 1;
+            castling = true;
         }
-        fen_ind += 1;
-    }else{
+    }
+    if(!castling){
         fen[fen_ind] = '-';
-        fen[fen_ind+1] = '-';
-        fen_ind += 2;
+        fen_ind += 1;
     }
 
     fen[fen_ind] = ' ';
@@ -386,7 +397,7 @@ void board_to_fen(struct ChessBoard *board, char *fen){
 
     if(board->past_moves[board->move_count-1] == -2){
         fen[fen_ind] = pos_to_letter[board->past_moves[board->move_count-3]];
-        fen[fen_ind+1] = 'x';
+        fen[fen_ind+1] = num_to_num[board->past_moves[board->move_count-2]+1];
         fen_ind += 2;
     }else{
         fen[fen_ind] = '-';
