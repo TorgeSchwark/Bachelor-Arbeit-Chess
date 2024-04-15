@@ -16,3 +16,7 @@ class PlayGameController(Controller):
 
     def load_game(self, game_name):
         return self.model.load_game(game_name)
+    
+    def main_menu(self):
+        self.play_game_view.destroy()
+        Core.openController("MainMenu", self.master)

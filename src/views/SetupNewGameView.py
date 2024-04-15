@@ -267,7 +267,8 @@ class SetupNewGameView(View):
             self.piece_start_pos = []
             self.piece_jump_moves = []
             self.piece_move_directions = []
-            
+
+            directions_red = {}
             directions = {}
             for x in range(self.board_size):
                 for y in range(self.board_size):
@@ -285,7 +286,8 @@ class SetupNewGameView(View):
                     if self.rectangles[(x,y)].cget("bg") == LIGHTGREEN or self.rectangles[(x,y)].cget("bg") == DARKGREEN:
                         self.piece_jump_moves += [x_vec,y_vec]
                     if self.rectangles[(x,y)].cget("bg") == DARKRED or self.rectangles[(x,y)].cget("bg") == LIGHTRED:
-                        self.piece_move_directions += [direction_x,direction_y, 0]
+                        if not (direction_x,direction_y) in directions_red:
+                            directions_red[(direction_x,direction_y)] = 0
                     if self.rectangles[(x,y)].cget("highlightbackground") == LIGHTYELLOW or self.rectangles[(x,y)].cget("highlightbackground") == DARKYELLOW:
                         self.piece_start_pos += [x,y]
                     if self.rectangles[(x,y)].cget("bg") == DARKBLUE or self.rectangles[(x,y)].cget("bg") == LIGHTBLUE:
@@ -303,6 +305,9 @@ class SetupNewGameView(View):
 
             for key in directions:
                 self.piece_move_directions += [key[0],key[1], directions[key]]
+
+            for key in directions_red:
+                self.piece_move_directions += [key[0],key[1], directions_red[key]]
 
             if self.board_size_slider.cget("state") == "normal":
                 self.board_size_slider.configure(state="disabled") #board size cant be switched now

@@ -1,33 +1,8 @@
 // https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 // PeSTO evaluation funktion
-#include <evaluation.h>
+#include "evaluation.h"
 
-#define PAWN   0
-#define KNIGHT 1
-#define BISHOP 2
-#define ROOK   3
-#define QUEEN  4
-#define KING   5
 
-/* board representation */
-#define WHITE  0
-#define BLACK  1
-
-#define WHITE_PAWN      (2*PAWN   + WHITE)
-#define BLACK_PAWN      (2*PAWN   + BLACK)
-#define WHITE_KNIGHT    (2*KNIGHT + WHITE)
-#define BLACK_KNIGHT    (2*KNIGHT + BLACK)
-#define WHITE_BISHOP    (2*BISHOP + WHITE)
-#define BLACK_BISHOP    (2*BISHOP + BLACK)
-#define WHITE_ROOK      (2*ROOK   + WHITE)
-#define BLACK_ROOK      (2*ROOK   + BLACK)
-#define WHITE_QUEEN     (2*QUEEN  + WHITE)
-#define BLACK_QUEEN     (2*QUEEN  + BLACK)
-#define WHITE_KING      (2*KING   + WHITE)
-#define BLACK_KING      (2*KING   + BLACK)
-#define EMPTY           (BLACK_KING  +  1)
-
-#define PCOLOR(p) ((p)&1)
 
 int side2move;
 int board[64];
@@ -215,7 +190,7 @@ void init_tables()
 int piece_white(signed char ind, struct ChessBoard *pos_board){
     if(pos_board->white_pawn[ind]){
         return WHITE_PAWN;
-    }else if(pos_board->king){
+    }else if(pos_board->king[ind]){
         return WHITE_KING;
     }else if(pos_board->castling[ind]){
         return WHITE_ROOK;
@@ -228,9 +203,20 @@ int piece_white(signed char ind, struct ChessBoard *pos_board){
     }
 }
 
-
 int piece_black(signed char ind, struct ChessBoard *pos_board){
-
+    if(pos_board->black_pawn[ind]){
+        return BLACK_PAWN;
+    }else if(pos_board->king[ind]){
+        return BLACK_KING;
+    }else if(pos_board->castling[ind]){
+        return BLACK_ROOK;
+    }else if(pos_board->black_piece_jump_moves[ind][0] == 17){
+        return BLACK_KNIGHT;
+    }else if(pos_board->black_piece_move_directions[ind][0] == 25){
+        return BLACK_QUEEN;
+    }else{
+        return BLACK_BISHOP;
+    }
 }
 
 int eval(struct ChessBoard *pos_board)
@@ -246,16 +232,32 @@ int eval(struct ChessBoard *pos_board)
 
     /* evaluate each piece */
     for(int ind = 0; ind < pos_board->piece_count; ind++){
-        int pc = piece(ind);
+        int pc_w = piece_white(ind, pos_board);
+        int pc_b = piece_black(ind, pos_board);
+        if(pos_board->white_piece_alive[ind]){ // boards are upside down left right swaped and indices between 0 and 63
+            mg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+(7-pos_board->white_piece_pos[ind<1]+1)<<3];
+            eg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+(7-pos_board->white_piece_pos[ind<1]+1)<<3];
+            gamePhase += gamephaseInc[pc_w];
+        }
+        if(pos_board->black_piece_alive[ind]){
+            mg[BLACK] += mg_table[pc_w][(7-pos_board->black_piece_pos[ind<<1])+(7-pos_board->black_piece_pos[ind<1]+1)<<3];
+            mg[BLACK] += mg_table[pc_w][(7-pos_board->black_piece_pos[ind<<1])+(7-pos_board->black_piece_pos[ind<1]+1)<<3];
+            gamePhase += gamephaseInc[pc_b];
+        }
     }
 
-    for (int sq = 0; sq < 64; ++sq) {
-        int pc = board[sq];
-        if (pc != EMPTY) {
-            mg[PCOLOR(pc)] += mg_table[pc][sq];
-            eg[PCOLOR(pc)] += eg_table[pc][sq];
-            gamePhase += gamephaseInc[pc];
-        }
+    // for (int sq = 0; sq < 64; ++sq) {
+    //     int pc = board[sq];
+    //     if (pc != EMPTY) {
+    //         mg[PCOLOR(pc)] += mg_table[pc][sq];
+    //         eg[PCOLOR(pc)] += eg_table[pc][sq];
+    //         gamePhase += gamephaseInc[pc];
+    //     }
+    // }
+    if(pos_board->color_to_move == 1){
+        side2move = WHITE;
+    }else{
+        side2move = BLACK;
     }
 
     /* tapered eval */
@@ -264,5 +266,5 @@ int eval(struct ChessBoard *pos_board)
     int mgPhase = gamePhase;
     if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
     int egPhase = 24 - mgPhase;
-    return (mgScore * mgPhase + egScore * egPhase) / 24;
+    return (mgScore * mgPhase + egScore * egPhase) / 24 ;
 }
