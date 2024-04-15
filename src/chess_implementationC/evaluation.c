@@ -1,6 +1,6 @@
 // https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 // PeSTO evaluation funktion
-
+#include <evaluation.h>
 
 #define PAWN   0
 #define KNIGHT 1
@@ -32,8 +32,10 @@
 int side2move;
 int board[64];
 
-#define FLIP(sq) ((sq)^56)
+#define SIZE 7
+#define FLIP(sq) (SIZE-(sq))
 #define OTHER(side) ((side)^ 1)
+
 
 int mg_value[6] = { 82, 337, 365, 477, 1025,  0};
 int eg_value[6] = { 94, 281, 297, 512,  936,  0};
@@ -210,9 +212,28 @@ void init_tables()
     }
 }
 
+int piece_white(signed char ind, struct ChessBoard *pos_board){
+    if(pos_board->white_pawn[ind]){
+        return WHITE_PAWN;
+    }else if(pos_board->king){
+        return WHITE_KING;
+    }else if(pos_board->castling[ind]){
+        return WHITE_ROOK;
+    }else if(pos_board->white_piece_jump_moves[ind][0] == 17){
+        return WHITE_KNIGHT;
+    }else if(pos_board->white_piece_move_directions[ind][0] == 25){
+        return WHITE_QUEEN;
+    }else{
+        return WHITE_BISHOP;
+    }
+}
 
 
-int eval()
+int piece_black(signed char ind, struct ChessBoard *pos_board){
+
+}
+
+int eval(struct ChessBoard *pos_board)
 {
     int mg[2];
     int eg[2];
@@ -224,6 +245,10 @@ int eval()
     eg[BLACK] = 0;
 
     /* evaluate each piece */
+    for(int ind = 0; ind < pos_board->piece_count; ind++){
+        int pc = piece(ind);
+    }
+
     for (int sq = 0; sq < 64; ++sq) {
         int pc = board[sq];
         if (pc != EMPTY) {
