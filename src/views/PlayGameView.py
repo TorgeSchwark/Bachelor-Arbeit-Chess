@@ -91,10 +91,10 @@ class PlayGameView(View):
                 for ind in range(self.chess_board_instance.piece_count):
                     ind_pos = ind*2
                     if color == 0:
-                        path = WHITE_PIECES_PATH + self.chess_board_instance.images[ind]
+                        path = WHITE_PIECES_PATH + str(self.chess_board_instance.white_piece_img[ind]) +".png"
                         pos = self.chess_board_instance.white_piece_pos[ind_pos] ,self.chess_board_instance.white_piece_pos[ind_pos+1]
                     else: 
-                        path = BLACK_PIECES_PATH + self.chess_board_instance.images[ind]
+                        path = BLACK_PIECES_PATH + str(self.chess_board_instance.black_piece_img[ind]) +".png"
                         pos = self.chess_board_instance.black_piece_pos[ind_pos] ,self.chess_board_instance.black_piece_pos[ind_pos+1]
                     rect_of_position = self.rectangles[pos[0],pos[1]]
                     label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()

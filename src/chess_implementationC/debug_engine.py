@@ -26,7 +26,7 @@ def run():
 
     # chess_lib.printChessBoard(ctypes.byref(board))
 
-    run_test_games(1, board)
+    run_test_games(1000000, board)
 
 
 def run_test_games(amount, board):
@@ -36,7 +36,7 @@ def run_test_games(amount, board):
         play_test_game(board)
         chess_lib.undo_game(ctypes.byref(board))
 
-    # chess_lib.printChessBoard(ctypes.byref(board))
+    chess_lib.printChessBoard(ctypes.byref(board))
 
 def play_test_game(board):
     
@@ -55,11 +55,11 @@ def play_test_game(board):
     chess_lib.legal_moves(ctypes.byref(board), moves_count.value, moves_buffer, legal_list)
     random_move_ind = generate_random_true_index(legal_list)
 
-    while random_move_ind != None and move_count < 50:
+    while random_move_ind != None:
         move_count += 1
-        fen = get_fen_string(board)
-        counts_buffer = (ctypes.c_longlong * 400)()
-        chess_lib.count_for_each_move(ctypes.byref(board), 3, ctypes.byref(counts_buffer))
+        # fen = get_fen_string(board)
+        # counts_buffer = (ctypes.c_longlong * 400)()
+        # chess_lib.count_for_each_move(ctypes.byref(board), 3, ctypes.byref(counts_buffer))
 
         # for i in range(moves_count.value//5):
         #     print(counts_buffer[i])
@@ -83,9 +83,9 @@ def play_test_game(board):
         random_move_ind = generate_random_true_index(legal_list)
 
 
-    print(get_fen_string(board),"\n")
-    chess_lib.count_for_each_move(ctypes.byref(board), 6, ctypes.byref(counts_buffer))
-    chess_lib.printChessBoard(ctypes.byref(board))
+    # print(get_fen_string(board),"\n")
+    # chess_lib.count_for_each_move(ctypes.byref(board), 6, ctypes.byref(counts_buffer))
+    # chess_lib.printChessBoard(ctypes.byref(board))
     # for i in range(moves_count.value//5):
     #     print(counts_buffer[i])
    

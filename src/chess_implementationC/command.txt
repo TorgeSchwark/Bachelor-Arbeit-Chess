@@ -4,6 +4,20 @@ gcc -fPIC -shared -o make_moves.so make_moves.c
 gcc -fPIC -shared -o test_engin.so test_engin.c
 gcc -fPIC -shared -o chess_library.so chess_board.c find_moves.c make_moves.c test_engin.c
 
+Images:
+Pawn : 1
+Bishop: 2
+Centauer: 3
+Commoneer: 4
+Elephant: 5
+Giraf 6
+king 7
+knight 8
+Mann 9
+queen 10
+rook 11
+unicorn 12
+zebra 13
 
 
 TODO:: fen umwandeln fehler suche mit stockfisch betreiben

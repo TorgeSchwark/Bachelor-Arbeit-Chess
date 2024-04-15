@@ -194,6 +194,7 @@ void undo_normal_move(struct ChessBoard *board, signed char from_x, signed char 
     
     board->board[from_x][from_y] = board->board[to_x][to_y];
     board->board[to_x][to_y] = board->captured_piece[board->move_count-1];
+    board->captured_piece[board->move_count] = 0;
     board->fifty_move_rule[board->move_count] = 0;
 
     if (board->color_to_move == 1){
@@ -267,7 +268,7 @@ void  undo_promotion(struct ChessBoard *board, signed char from_x, signed char f
         board->black_piece_move_directions[piece_ind][2] = -1;
         board->black_piece_move_directions[piece_ind][3] = 1;
         board->black_piece_jump_moves[piece_ind][0] = 0;
-        //board->black_piece_img[piece_ind] = 0;
+        board->black_piece_img[piece_ind] = 1;
     }else{
         signed char piece_ind = board->board[to_x][to_y]-1;
         board->white_pawn[piece_ind] = true;
@@ -276,7 +277,7 @@ void  undo_promotion(struct ChessBoard *board, signed char from_x, signed char f
         board->white_piece_move_directions[piece_ind][2] = 1;
         board->white_piece_move_directions[piece_ind][3] = 1;
         board->white_piece_jump_moves[piece_ind][0] = 0;
-        //board->white_piece_img[piece_ind] = 0;
+        board->white_piece_img[piece_ind] = 1;
     }
     undo_normal_move(board, from_x, from_y, to_x, to_y, move_type);
 }

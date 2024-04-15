@@ -338,14 +338,14 @@ class SetupNewGameView(View):
                 ctypes.c_bool(king),  
                 ctypes.c_bool(castling),  
                 ctypes.c_int(self.real_board_x_min),
-                ctypes.c_byte(0)
+                ctypes.c_byte(int(self.piece_image_path.split(".")[0]))
             )
-            for i in range((len(self.piece_start_pos)-1)//2):
-                self.chess_board_instance.images += [self.piece_image_path]
+            # for i in range((len(self.piece_start_pos)-1)//2):
+            #     self.chess_board_instance.images += [self.piece_image_path]
             
             chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
-            for i in self.chess_board_instance.images:
-                print(i)
+            # for i in self.chess_board_instance.images:
+            #     print(i)
 
             self.update_board_colors()
             self.piece_lable.destroy()
@@ -378,7 +378,7 @@ class SetupNewGameView(View):
                                 variable=self.pawn_var , onvalue="on", offvalue="off")
 
         self.castling_var = ctk.StringVar(value="off")
-        self.castling_switch = ctk.CTkSwitch(self.piece_options_frame, text="Rochade",command=self.controller.castling_switches,
+        self.castling_switch = ctk.CTkSwitch(self.piece_options_frame, text="Castling",command=self.controller.castling_switches,
                                 variable=self.castling_var , onvalue="on", offvalue="off")
         
         self.boarderx_var = ctk.StringVar(value="off")
@@ -414,10 +414,10 @@ class SetupNewGameView(View):
                 for ind in range(self.chess_board_instance.piece_count):
                     ind_pos = ind*2
                     if color == 0:
-                        path = WHITE_PIECES_PATH + self.chess_board_instance.images[ind]
+                        path = WHITE_PIECES_PATH + str(self.chess_board_instance.white_piece_img[ind]) +".png"
                         pos = [self.chess_board_instance.white_piece_pos[ind_pos] ,self.chess_board_instance.white_piece_pos[ind_pos+1]]
                     else: 
-                        path = BLACK_PIECES_PATH + self.chess_board_instance.images[ind]
+                        path = BLACK_PIECES_PATH + str(self.chess_board_instance.black_piece_img[ind]) +".png"
                         pos = [self.chess_board_instance.black_piece_pos[ind_pos] ,self.chess_board_instance.black_piece_pos[ind_pos+1]]
                     rect_of_position = self.rectangles[pos[0],pos[1]]
                     label_width = 0.48 * self.rectangles[(0,0)].winfo_reqwidth()
