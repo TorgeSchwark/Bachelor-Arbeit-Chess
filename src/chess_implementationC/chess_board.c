@@ -119,6 +119,7 @@ void set_size(struct ChessBoard *board, int size){
 
 // Funktion zum Drucken eines ChessBoard-Objekts
 void printChessBoard(struct ChessBoard *board) {
+    printf("color_to_move", board->color_to_move);
     printf("size: %u\n", board->size);
     printf("has_king: %s\n", board->has_king ? "true" : "false");
     printf("king_pos: %d\n", board->king_pos);
@@ -257,9 +258,9 @@ void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char
             *piece_ind = 12;
         }else if(board->white_piece_jump_moves[*piece_ind][0] == 17){
             *piece_ind = 8;
-        }else if(board->white_piece_move_directions[*piece_ind][0]  == 25){
+        }else if(board->white_piece_move_directions[*piece_ind][0]  == 25 ){
             *piece_ind = 11;
-        }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && board->white_piece_move_directions[*piece_ind][1] == 1){
+        }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && (abs(board->white_piece_move_directions[*piece_ind][1]) == abs(board->white_piece_move_directions[*piece_ind][2]))){
             *piece_ind = 14;
         }else{
             *piece_ind = 10;
@@ -273,7 +274,7 @@ void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char
             *piece_ind = 8;
         }else if(board->black_piece_move_directions[*piece_ind][0]  == 25){
             *piece_ind = 11;
-        }else if(board->black_piece_move_directions[*piece_ind][0] == 13 && board->black_piece_move_directions[*piece_ind][1] == -1){
+        }else if(board->black_piece_move_directions[*piece_ind][0] == 13 && (abs(board->black_piece_move_directions[*piece_ind][1]) == abs(board->black_piece_move_directions[*piece_ind][2]))) {
             *piece_ind = 14;
         }else{
             *piece_ind = 10;
@@ -306,10 +307,6 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     char num_to_num[] = "0123456789";
     bool castling = false;
 
-    if(board->move_count < 24 && board->fifty_move_rule[board->move_count-1] >48){
-        printf("------------------------------");
-        printChessBoard(board);
-    }
     int fen_ind = 0;
     int empty_count = 0;
     for(int i = board->size-1; i >= 0; i--){
@@ -419,7 +416,6 @@ void board_to_fen(struct ChessBoard *board, char *fen){
 
     unsigned char num_to_save = (board->move_count+2)/2;
     if(num_to_save / 100  > 0){
-        printf("100 %d \n", num_to_save / 100 );
         fen[fen_ind] = num_to_num[num_to_save / 100 ];
         fen_ind += 1;
     }
@@ -438,7 +434,7 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     // 2 : 2
     // 3 : 2
     // 4 : 3 
-    printf("%s\n", fen);
+
 
 }
 

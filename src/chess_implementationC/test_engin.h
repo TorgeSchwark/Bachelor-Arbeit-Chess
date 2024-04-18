@@ -9,6 +9,8 @@
 
 void undo_game(struct ChessBoard *board);
 
+bool is_check_mate(struct ChessBoard *board);
+
 void count_for_each_move(struct ChessBoard *board, int depth, long long *counts);
 
 bool all_legal(struct ChessBoard *board, signed char *moves, short *move_count);

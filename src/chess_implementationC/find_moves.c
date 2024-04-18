@@ -233,3 +233,49 @@ void add_promotion(signed char from_x, signed char from_y, signed char to_x, sig
         add_move(from_x, from_y, to_x, to_y, ind, moves, move_count);
     }
 }
+
+
+void real_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, char *piece, signed char* moves, short moves_count, int *ind){
+    
+    signed char move_type = -10;
+    if (piece[0] != 'x'){
+        if(piece[0] == 'q'){
+            move_type = 4;
+        }else if(piece[0] == 'r'){
+            move_type = 1;
+        }else if(piece[0] == 'b'){
+            move_type = 3;
+            printf("move_type %d", 3);
+        }else{
+            printf("move_type %d", 2);
+            move_type = 2;
+        }
+    }
+    if((board->color_to_move == 1 && from_x == board->white_piece_pos[board->king_pos<<1] && from_y == board->white_piece_pos[(board->king_pos<<1)+1]) || (board->color_to_move == -1 && from_x == board->black_piece_pos[board->king_pos<<1] && from_y == board->black_piece_pos[(board->king_pos<<1)+1])){
+        if(abs(from_x - to_x) == 2){
+            move_type = -3;
+            if(to_x == 1){
+                from_x = 0;
+                to_x = 2;
+            }else if(to_x == 5){
+                from_x = 7;
+                to_x = 4;
+            }
+        }
+    }
+    
+    for(int i = 0; i < moves_count; i+=5){
+        if(move_type == -10){
+            if(moves[i] == from_x && moves[i+1] == from_y && moves[i+2] == to_x && moves[i+3] == to_y){
+                *ind = i;
+                
+            }
+        }else{
+            if(moves[i] == from_x && moves[i+1] == from_y && moves[i+2] == to_x && moves[i+3] == to_y && moves[i+4] == move_type){
+                
+                *ind = i;
+            }
+        }
+    }
+
+}

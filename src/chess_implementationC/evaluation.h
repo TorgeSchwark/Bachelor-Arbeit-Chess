@@ -30,12 +30,10 @@
 #define BLACK_KING      (2 * KING + BLACK)
 #define EMPTY           (BLACK_KING + 1)
 
-int eval(struct ChessBoard *pos_board);
+void eval(struct ChessBoard *pos_board, int *score);
 
 int piece_black(signed char ind, struct ChessBoard *pos_board);
 
 int piece_white(signed char ind, struct ChessBoard *pos_board);
-
-int side2move;
 
 #endif

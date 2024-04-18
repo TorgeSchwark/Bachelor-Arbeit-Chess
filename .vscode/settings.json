@@ -10,6 +10,10 @@
         "ios": "c",
         "type_traits": "c",
         "xstring": "c",
-        "xutility": "c"
+        "xutility": "c",
+        "standard_engines.h": "c",
+        "chrono": "c",
+        "limits": "c",
+        "utility": "c"
     }
 }

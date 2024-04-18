@@ -21,6 +21,7 @@ class ChessBoard(ctypes.Structure):
         ("past_moves", ctypes.c_byte * MAX_MOVES),
         ("captured_piece", ctypes.c_byte * MAX_FIFTY_MOVE_RULE),
         ("board", (ctypes.c_byte * BOARD_SIZE) * BOARD_SIZE),
+        
         ("white_piece_pos", ctypes.c_ubyte * (2 * MAX_PIECES)),
         ("white_piece_alive", ctypes.c_bool * MAX_PIECES),
         ("white_piece_jump_moves", (ctypes.c_byte * (MAX_JUMP_MOVES * 2)) * MAX_PIECES),
@@ -28,6 +29,7 @@ class ChessBoard(ctypes.Structure):
         ("white_piece_first_move", ctypes.c_short * MAX_PIECES),
         ("white_piece_img", ctypes.c_ubyte * MAX_PIECES),
         ("white_pawn", ctypes.c_bool * MAX_PIECES),
+
         ("black_piece_pos", ctypes.c_ubyte * (2 * MAX_PIECES)),
         ("black_piece_alive", ctypes.c_bool * MAX_PIECES),
         ("black_piece_jump_moves", (ctypes.c_byte * (MAX_JUMP_MOVES * 2)) * MAX_PIECES),
@@ -35,6 +37,7 @@ class ChessBoard(ctypes.Structure):
         ("black_piece_first_move", ctypes.c_short * MAX_PIECES),
         ("black_piece_img", ctypes.c_ubyte * MAX_PIECES),
         ("black_pawn", ctypes.c_bool * MAX_PIECES),
+
         ("piece_count", ctypes.c_ubyte),
         ("boarder_x", ctypes.c_bool * MAX_PIECES),
         ("boarder_y", ctypes.c_bool * MAX_PIECES),

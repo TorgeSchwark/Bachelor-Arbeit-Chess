@@ -2,18 +2,16 @@
 // PeSTO evaluation funktion
 #include "evaluation.h"
 
-
-
 int side2move;
 int board[64];
 
 #define SIZE 7
-#define FLIP(sq) (SIZE-(sq))
+#define FLIP(sq) ((sq)^56)
 #define OTHER(side) ((side)^ 1)
 
 
-int mg_value[6] = { 82, 337, 365, 477, 1025,  0};
-int eg_value[6] = { 94, 281, 297, 512,  936,  0};
+int mg_value[6] = { 82, 337, 365, 477, 1025,  20000};
+int eg_value[6] = { 94, 281, 297, 512,  936,  20000};
 
 /* piece/sq tables */
 /* values from Rofchade: http://www.talkchess.com/forum3/viewtopic.php?f=2&t=68311&start=19 */
@@ -219,7 +217,7 @@ int piece_black(signed char ind, struct ChessBoard *pos_board){
     }
 }
 
-int eval(struct ChessBoard *pos_board)
+void eval(struct ChessBoard *pos_board, int *score)
 {
     int mg[2];
     int eg[2];
@@ -234,37 +232,33 @@ int eval(struct ChessBoard *pos_board)
     for(int ind = 0; ind < pos_board->piece_count; ind++){
         int pc_w = piece_white(ind, pos_board);
         int pc_b = piece_black(ind, pos_board);
+        
         if(pos_board->white_piece_alive[ind]){ // boards are upside down left right swaped and indices between 0 and 63
-            mg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+(7-pos_board->white_piece_pos[ind<1]+1)<<3];
-            eg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+(7-pos_board->white_piece_pos[ind<1]+1)<<3];
+            mg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+((7-pos_board->white_piece_pos[(ind<<1)+1])<<3)];
+            eg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+((7-pos_board->white_piece_pos[(ind<<1)+1])<<3)];
             gamePhase += gamephaseInc[pc_w];
         }
         if(pos_board->black_piece_alive[ind]){
-            mg[BLACK] += mg_table[pc_w][(7-pos_board->black_piece_pos[ind<<1])+(7-pos_board->black_piece_pos[ind<1]+1)<<3];
-            mg[BLACK] += mg_table[pc_w][(7-pos_board->black_piece_pos[ind<<1])+(7-pos_board->black_piece_pos[ind<1]+1)<<3];
+            mg[BLACK] += mg_table[pc_b][(7-pos_board->black_piece_pos[ind<<1])+((7-pos_board->black_piece_pos[(ind<<1)+1])<<3)];
+            eg[BLACK] += mg_table[pc_b][(7-pos_board->black_piece_pos[ind<<1])+((7-pos_board->black_piece_pos[(ind<<1)+1])<<3)];
             gamePhase += gamephaseInc[pc_b];
         }
     }
 
-    // for (int sq = 0; sq < 64; ++sq) {
-    //     int pc = board[sq];
-    //     if (pc != EMPTY) {
-    //         mg[PCOLOR(pc)] += mg_table[pc][sq];
-    //         eg[PCOLOR(pc)] += eg_table[pc][sq];
-    //         gamePhase += gamephaseInc[pc];
-    //     }
-    // }
     if(pos_board->color_to_move == 1){
         side2move = WHITE;
     }else{
         side2move = BLACK;
     }
 
-    /* tapered eval */
     int mgScore = mg[side2move] - mg[OTHER(side2move)];
     int egScore = eg[side2move] - eg[OTHER(side2move)];
     int mgPhase = gamePhase;
-    if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
+    if (mgPhase > 24){
+        mgPhase = 24;
+    } /* in case of early promotion */
     int egPhase = 24 - mgPhase;
-    return (mgScore * mgPhase + egScore * egPhase) / 24 ;
+    *score = (mgScore * mgPhase + egScore * egPhase) / 24 ;
+    
+    
 }

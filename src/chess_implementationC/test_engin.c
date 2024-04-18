@@ -12,6 +12,21 @@ void undo_game(struct ChessBoard *board){
     }
 }
 
+bool is_check_mate(struct ChessBoard *board){
+
+    signed char moves[2000];
+    short move_count = 0;
+    find_all_moves(board, moves, &move_count);
+    bool legal[400];
+    legal_moves(board, move_count, moves, legal);
+    for(int i = 0; i < move_count/5; i++){
+        if(legal[i]){
+            return false;
+        }
+    }
+    return true;
+}
+
 void legal_moves(struct ChessBoard *board, short move_count, char *moves, bool *legal){
     
     for(int ind = 0; ind < move_count; ind += 5){

@@ -148,7 +148,7 @@ void make_promotion(struct ChessBoard* board, signed char from_x, signed char fr
         }
         //board->white_piece_img[piece_ind] = board->white_piece_img[piece_to_ind];
         board->white_pawn[piece_ind] = false;
-        board->white_piece_img[piece_ind] = 1;
+        board->white_piece_img[piece_ind] = board->white_piece_img[piece_to_ind];
     }else{
         signed char piece_to_ind = board->non_pawn_pieces[move_type];
         signed char piece_ind = (-board->board[from_x][from_y])-1;
@@ -166,7 +166,7 @@ void make_promotion(struct ChessBoard* board, signed char from_x, signed char fr
         }
         //board->black_piece_img[piece_ind] = board->black_piece_img[piece_to_ind];
         board->black_pawn[piece_ind] = false;
-        board->black_piece_img[piece_ind] = 1;
+        board->black_piece_img[piece_ind] = board->black_piece_img[piece_to_ind];
     }
     make_normal_move(board, from_x, from_y, to_x, to_y, move_type);
 }
