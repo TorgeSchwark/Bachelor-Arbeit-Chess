@@ -9,7 +9,7 @@
 
 void undo_game(struct ChessBoard *board);
 
-int is_check_mate(struct ChessBoard *board);
+void is_check_mate(struct ChessBoard *board, float *matt);
 
 bool three_fold_repetition(struct ChessBoard *board);
 

@@ -92,31 +92,35 @@ class PlayGameView(View):
     def get_elo(self):
 
         for i in range(10):
-            stockfish.set_elo_rating(1200 +100*i)
+            stockfish.set_elo_rating(1600 +100*i)
             won_games = 0
             for m in range(5):
                 value = self.play_game_stock()
                 print("game ended",value)
                 chess_lib.undo_game(ctypes.byref(self.chess_board_instance))
                 won_games += value
-            print("elo ", 1500+100*i ," won ", won_games, " form " , 5)
+            print("elo ", 1600+100*i ," won ", won_games, " form " , 5)
 
     def play_game_stock(self):
         chess_lib.find_all_moves(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
         self.moves_list = struct.unpack(f'{self.move_count.value}b', self.legal_moves_c.raw[:self.move_count.value])
 
         fen = get_fen_string(self.chess_board_instance)
+        matt = ctypes.c_float(0)
         while stockfish.is_fen_valid(fen):
             
             self.neg_max_engine()
             self.master.update()
-            if(chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance)) != 0):
-                return chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance)) 
+
+            chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance), ctypes.byref(matt) )
+            if(matt.value != 0):
+                return matt.value 
            
             self.stockfish_go()
             self.master.update()
-            if (chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance))) != 0:
-                return 1-chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance))
+            chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance), ctypes.byref(matt) )
+            if matt.value != 0:
+                return matt.value 
             
             fen = get_fen_string(self.chess_board_instance)
 
@@ -142,9 +146,10 @@ class PlayGameView(View):
         if(stockfish.is_fen_valid(fen)):
             
             stockfish.set_fen_position(fen)
-            print(stockfish.get_board_visual(fen))
+            stockfish.get_board_visual(fen)
         else:
             print("wrong")
+            print(fen)
             
         move = stockfish.get_best_move()
         ind = self.find_real_move(move)

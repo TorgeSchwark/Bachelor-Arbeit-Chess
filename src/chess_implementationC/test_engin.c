@@ -12,7 +12,7 @@ void undo_game(struct ChessBoard *board){
     }
 }
 
-int is_check_mate(struct ChessBoard *board){
+void is_check_mate(struct ChessBoard *board, float *matt){
 
     signed char moves[2000];
     short move_count = 0;
@@ -22,17 +22,22 @@ int is_check_mate(struct ChessBoard *board){
     // wen fifty move rule remie
     if(board->move_count > 0){
         if(board->fifty_move_rule[board->move_count-1] >= 50){
-            return 0.5;
+            *matt = 0.5;
+            return;
         }
     }
     // wenn 3 fold rep remie
     if(three_fold_repetition(board)){
-        return 0.5;
+        printf("returnt 2x");
+        *matt = 0.5;
+        return;
+
     }
     // wenn nicht 3 fold oder 50 move und legale züge kein ende
     for(int i = 0; i < move_count/5; i++){
         if(legal[i]){
-            return 0;
+            *matt = 0;
+            return;
         }
     }
     
@@ -44,12 +49,13 @@ int is_check_mate(struct ChessBoard *board){
     for(int i = 0; i < enemy_move_count; i+=5){
         if(!is_legal(board, move_from_enemy[i], move_from_enemy[i+1], move_from_enemy[i+2], move_from_enemy[i+3],move_from_enemy[i+4])){
             board->color_to_move = -board->color_to_move;
-            return 1;
+            *matt = 1;
+            return;
         }
     }
     board->color_to_move = -board->color_to_move;
     // sonst patt
-    return 0.5;
+    *matt = 0.5;
 }
 
 bool three_fold_repetition(struct ChessBoard *board){
@@ -89,7 +95,9 @@ bool three_fold_repetition(struct ChessBoard *board){
     //printf("3: color to move %d ,move_count %d \n", board->color_to_move, board->move_count);
     if(same_positions > 2){
         printf("MORE THAN 3 REPETITIONS");
+        return true;
     }else if(same_positions == 2){
+        printf("FOUND THE 2X");
         return true;
     }
     return false;
