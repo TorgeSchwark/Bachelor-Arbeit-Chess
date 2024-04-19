@@ -12,19 +12,105 @@ void undo_game(struct ChessBoard *board){
     }
 }
 
-bool is_check_mate(struct ChessBoard *board){
+int is_check_mate(struct ChessBoard *board){
 
     signed char moves[2000];
     short move_count = 0;
     find_all_moves(board, moves, &move_count);
     bool legal[400];
     legal_moves(board, move_count, moves, legal);
-    for(int i = 0; i < move_count/5; i++){
-        if(legal[i]){
-            return false;
+    // wen fifty move rule remie
+    if(board->move_count > 0){
+        if(board->fifty_move_rule[board->move_count-1] >= 50){
+            return 0.5;
         }
     }
-    return true;
+    // wenn 3 fold rep remie
+    if(three_fold_repetition(board)){
+        return 0.5;
+    }
+    // wenn nicht 3 fold oder 50 move und legale züge kein ende
+    for(int i = 0; i < move_count/5; i++){
+        if(legal[i]){
+            return 0;
+        }
+    }
+    
+    //wenn keine legale züge und bedrohung matt
+    signed char move_from_enemy[2000];
+    short enemy_move_count = 0;
+    board->color_to_move = -board->color_to_move;
+    find_all_moves(board, move_from_enemy, &enemy_move_count);
+    for(int i = 0; i < enemy_move_count; i+=5){
+        if(!is_legal(board, move_from_enemy[i], move_from_enemy[i+1], move_from_enemy[i+2], move_from_enemy[i+3],move_from_enemy[i+4])){
+            board->color_to_move = -board->color_to_move;
+            return 1;
+        }
+    }
+    board->color_to_move = -board->color_to_move;
+    // sonst patt
+    return 0.5;
+}
+
+bool three_fold_repetition(struct ChessBoard *board){
+    //printf("1: color to move %d ,move_count %d \n", board->color_to_move, board->move_count);
+    signed char current_board[20][20];
+    signed char all_moves[2000];
+    short current_move_count = 0;
+    current_move_count = board->move_count;
+    char current_fen[200];
+    board_to_fen(board, current_fen);
+    copy_moves_and_board(board, current_board, all_moves);
+    int same_positions = 0;
+    while(board->move_count > 0){
+        undo_last_move(board);
+        signed char compare_fen[200];
+        board_to_fen(board, compare_fen);
+        int spaces = 0;
+        int compare_ind = 0;
+        while(spaces <= 2){
+            if(compare_fen[compare_ind] != current_fen[compare_ind]){
+                break;
+            }
+            if(compare_fen[compare_ind] == ' '){
+                spaces += 1;
+                continue;
+            }
+            compare_ind += 1;
+        }
+        if(spaces == 3){
+            same_positions += 1;
+        }
+    }
+    //printf("2 :color to move %d ,move_count %d \n", board->color_to_move, board->move_count);
+    for(int i = 0; i < current_move_count*5; i+= 5){
+        make_move(board, all_moves[i], all_moves[i+1], all_moves[i+2], all_moves[i+3], all_moves[i+4]);
+    }
+    //printf("3: color to move %d ,move_count %d \n", board->color_to_move, board->move_count);
+    if(same_positions > 2){
+        printf("MORE THAN 3 REPETITIONS");
+    }else if(same_positions == 2){
+        return true;
+    }
+    return false;
+}
+
+void copy_moves_and_board(struct ChessBoard *board, signed char current_board[20][20], signed char *all_moves){
+    for(int i = 0; i < board->size; i++){
+        for(int m = 0; m < board->size; m++){
+            current_board[i][m] = board->board[i][m];
+        }
+    }
+    for(int i = 0; i < board->move_count*5; i++){
+        all_moves[i] = board->past_moves[i];
+    }
+}
+
+bool same_move(struct ChessBoard *board, int ind, int ind_past){
+    if(board->past_moves[ind] == board->past_moves[ind_past] && board->past_moves[ind+1] == board->past_moves[ind_past+1] && board->past_moves[ind+2] == board->past_moves[ind_past+2] && board->past_moves[ind+3] == board->past_moves[ind_past+3] && board->past_moves[ind+4] == board->past_moves[ind_past+4]){
+        return true;
+    }
+    return false;
 }
 
 void legal_moves(struct ChessBoard *board, short move_count, char *moves, bool *legal){
@@ -61,7 +147,6 @@ void test_engine(struct ChessBoard *board, int depth){
         make_move(board, moves_pos[i], moves_pos[i+1], moves_pos[i+2], moves_pos[i+3], moves_pos[i+4]);
 
         if(board->color_to_move == color){
-            printf("wtf move_count %d", i /5);
             wrong = true;
         }
         if(wrong){
@@ -69,11 +154,9 @@ void test_engine(struct ChessBoard *board, int depth){
         }
         for(int ind = 0; ind < MAX_PIECES; ind++){
             if(board->white_piece_alive[ind] && board->board[board->white_piece_pos[ind*2]][board->white_piece_pos[ind*2+1]] != ind +1){
-                printf("hier ist was falsch gegangen");
                 wrong = true;
             }
             if(board->black_piece_alive[ind] && board->board[board->black_piece_pos[ind*2]][board->black_piece_pos[ind*2+1]] != -(ind +1)){
-                printf("hier ist was falsch gegangen schwarz ");
                 wrong = true;
             }
         }
@@ -102,7 +185,6 @@ void count_for_each_move(struct ChessBoard *board, int depth, long long *counts)
     }
     short move_count = 0;
     find_all_moves(board, moves, &move_count);
-    printf( "moves %d \n", move_count);
 
     for(short i = 0; i < move_count; i+=5){
         
@@ -110,9 +192,6 @@ void count_for_each_move(struct ChessBoard *board, int depth, long long *counts)
         if(moves[i] == 4 && moves[i+1] == 0 && moves[i+2] == 4 && moves[i+3] == 3){
             printChessBoard(board);
             find_all_moves(board, debug_moves, &move_count_debug);
-            for(int m = 0; m < move_count_debug; m +=5){
-                 printf(" move (%c, %d) -> (%c,%d) %d \n",  chess_not[debug_moves[m]], debug_moves[m+1]+1, chess_not[debug_moves[m+2]], debug_moves[m+3]+1, debug_moves[m+4]);
-            }
             break;
         }
         test_engine_all_moves(board, depth-1, &counts[i/5]);
@@ -124,9 +203,8 @@ void count_for_each_move(struct ChessBoard *board, int depth, long long *counts)
 
     for(short i = 0; i < move_count; i+=5){
         sum += counts[i/5];
-        printf("after move (%c, %d) -> (%c,%d) %d there are %d moves \n",  chess_not[moves[i]], moves[i+1]+1, chess_not[moves[i+2]], moves[i+3]+1, moves[i+4], counts[i/5]);
     }
-    printf("all moves %d\n", sum);
+    
 
 }
 

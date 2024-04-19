@@ -92,13 +92,14 @@ class PlayGameView(View):
     def get_elo(self):
 
         for i in range(10):
-            stockfish.set_elo_rating(2000 +100*i)
+            stockfish.set_elo_rating(1200 +100*i)
             won_games = 0
             for m in range(5):
                 value = self.play_game_stock()
+                print("game ended",value)
                 chess_lib.undo_game(ctypes.byref(self.chess_board_instance))
                 won_games += value
-            print("elo ", 2000+100*i ," won ", won_games, " form " , 5)
+            print("elo ", 1500+100*i ," won ", won_games, " form " , 5)
 
     def play_game_stock(self):
         chess_lib.find_all_moves(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
@@ -106,16 +107,16 @@ class PlayGameView(View):
 
         fen = get_fen_string(self.chess_board_instance)
         while stockfish.is_fen_valid(fen):
-            time.sleep(1)
+            
             self.neg_max_engine()
             self.master.update()
-            if(chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance))):
-                return 1
-            time.sleep(1)
+            if(chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance)) != 0):
+                return chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance)) 
+           
             self.stockfish_go()
             self.master.update()
-            if (chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance))):
-                return 0
+            if (chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance))) != 0:
+                return 1-chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance))
             
             fen = get_fen_string(self.chess_board_instance)
 
@@ -133,12 +134,15 @@ class PlayGameView(View):
         #chess_lib.neg_max(ctypes.byref(self.chess_board_instance),ctypes.c_int(5),ctypes.c_int(5), ctypes.byref(score))
         
         chess_lib.alpha_beta_basic(ctypes.byref(self.chess_board_instance),ctypes.c_int(6), ctypes.c_int(6), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score))
+        
         self.make_move([],score.value)
 
     def stockfish_go(self):
         fen = get_fen_string(self.chess_board_instance)
         if(stockfish.is_fen_valid(fen)):
+            
             stockfish.set_fen_position(fen)
+            print(stockfish.get_board_visual(fen))
         else:
             print("wrong")
             

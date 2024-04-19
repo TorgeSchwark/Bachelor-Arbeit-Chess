@@ -9,7 +9,13 @@
 
 void undo_game(struct ChessBoard *board);
 
-bool is_check_mate(struct ChessBoard *board);
+int is_check_mate(struct ChessBoard *board);
+
+bool three_fold_repetition(struct ChessBoard *board);
+
+void copy_moves_and_board(struct ChessBoard *board, signed char current_board[20][20], signed char *all_moves);
+
+bool same_move(struct ChessBoard *board, int ind, int ind_past);
 
 void count_for_each_move(struct ChessBoard *board, int depth, long long *counts);
 
