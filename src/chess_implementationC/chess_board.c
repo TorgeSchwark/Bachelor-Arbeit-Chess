@@ -438,8 +438,23 @@ void board_to_fen(struct ChessBoard *board, char *fen){
 
 }
 
+void copyBoards(struct ChessBoard *board){
+    struct ChessBoard copys[20];
+    int amount = 20;
+    copyBoard(board, &copys[0], amount);
+    printChessBoard(&copys[0]);
 
-void copyBoard(struct ChessBoard *board, struct ChessBoard *copies[], int amount){
+}
+
+void copyBoard(struct ChessBoard *board, struct ChessBoard *copies, int amount){
+
+    
+    for(int x = 0; x < BOARD_SIZE; x++){
+        for(int y = 0; y < BOARD_SIZE; y++){
+            copies->board[x][y] = board->board[x][y];
+        }
+    }
+    
 
     return;
 }

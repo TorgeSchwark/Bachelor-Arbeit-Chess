@@ -73,6 +73,7 @@ void create_chess(struct ChessBoard *board);
 // Funktion zum Drucken eines ChessBoard-Objekts
 void printChessBoard(struct ChessBoard *board);
 
-void copyBoard(struct ChessBoard *board, struct ChessBoard *copies[], int amount);
+void copyBoard(struct ChessBoard *board, struct ChessBoard *copies, int amount);
+void copyBoards(struct ChessBoard *board);
 
 #endif // CHESS_BOARD_H

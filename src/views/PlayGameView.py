@@ -91,15 +91,15 @@ class PlayGameView(View):
 
     def get_elo(self):
 
-        for i in range(10):
-            stockfish.set_elo_rating(1600 +100*i)
+        for i in range(6):
+            stockfish.set_elo_rating(1700 +100*i)
             won_games = 0
-            for m in range(5):
+            for m in range(10):
                 value = self.play_game_stock()
                 print("game ended",value)
                 chess_lib.undo_game(ctypes.byref(self.chess_board_instance))
                 won_games += value
-            print("elo ", 1600+100*i ," won ", won_games, " form " , 5)
+            print("elo ", 1700+100*i ," won ", won_games, " form " , 10)
 
     def play_game_stock(self):
         chess_lib.find_all_moves(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
@@ -120,7 +120,7 @@ class PlayGameView(View):
             self.master.update()
             chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance), ctypes.byref(matt) )
             if matt.value != 0:
-                return matt.value 
+                return 1-matt.value 
             
             fen = get_fen_string(self.chess_board_instance)
 
@@ -136,9 +136,14 @@ class PlayGameView(View):
         score = ctypes.c_int(0)
         score2 = ctypes.c_int(0)
         #chess_lib.neg_max(ctypes.byref(self.chess_board_instance),ctypes.c_int(5),ctypes.c_int(5), ctypes.byref(score))
-        
+        start = time.time()
+        chess_lib.advanced_apha_beta_engine(ctypes.byref(self.chess_board_instance),ctypes.c_int(7), ctypes.c_int(7), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
+        end = time.time()
+        print("took ", end-start, " seconds. move is: ", score2.value)
+        start = time.time()
         chess_lib.alpha_beta_basic(ctypes.byref(self.chess_board_instance),ctypes.c_int(6), ctypes.c_int(6), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score))
-        
+        end = time.time()
+        print("took ", end-start, " seconds. move is: ", score.value)
         self.make_move([],score.value)
 
     def stockfish_go(self):
