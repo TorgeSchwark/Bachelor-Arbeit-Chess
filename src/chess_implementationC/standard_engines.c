@@ -68,7 +68,9 @@ void alpha_beta_basic(struct ChessBoard *board, int depth,int original_depth, in
     }
 }
 
+void tread_test(struct ChessBoard *board, int depth,int original_depth, int alpha, int beta, int *score){
 
+}
 
 
 void advanced_apha_beta_engine(struct ChessBoard *board, int depth,int original_depth, int alpha, int beta, int *score){

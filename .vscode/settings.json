@@ -14,6 +14,7 @@
         "standard_engines.h": "c",
         "chrono": "c",
         "limits": "c",
-        "utility": "c"
+        "utility": "c",
+        "cmath": "c"
     }
 }

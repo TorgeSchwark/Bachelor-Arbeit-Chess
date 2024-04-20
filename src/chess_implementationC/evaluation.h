@@ -5,6 +5,7 @@
 #include "chess_board.h"
 #include "find_moves.h"
 #include "make_moves.h"
+#include "test_engin.h"
 
 #define PAWN   0
 #define KNIGHT 1
@@ -31,6 +32,8 @@
 #define EMPTY           (BLACK_KING + 1)
 
 void eval(struct ChessBoard *pos_board, int *score);
+
+bool direct_repetition(struct ChessBoard *board);
 
 int piece_black(signed char ind, struct ChessBoard *pos_board);
 

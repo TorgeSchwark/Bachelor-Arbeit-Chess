@@ -446,16 +446,38 @@ void copyBoards(struct ChessBoard *board){
 
 }
 
-void copyBoard(struct ChessBoard *board, struct ChessBoard *copies, int amount){
+void copyBoard(struct ChessBoard *board, struct ChessBoard *copies){
 
-    
-    for(int x = 0; x < BOARD_SIZE; x++){
-        for(int y = 0; y < BOARD_SIZE; y++){
-            copies->board[x][y] = board->board[x][y];
-        }
-    }
-    
+    copies->color_to_move = board->color_to_move;
+    copies->size = board->size;
+    copies->has_king = board->has_king;
+    copies->king_pos = board->king_pos;
+    copies->move_count = board->move_count;
+    copies->piece_count = board->piece_count;
 
+    memcpy(copies->fifty_move_rule, board->fifty_move_rule, sizeof(board->fifty_move_rule));
+    memcpy(copies->non_pawn_pieces, board->non_pawn_pieces, sizeof(board->non_pawn_pieces));
+    memcpy(copies->past_moves, board->past_moves, sizeof(board->past_moves));
+    memcpy(copies->board, board->board, sizeof(board->board));
+    memcpy(copies->white_piece_pos, board->white_piece_pos, sizeof(board->white_piece_pos));
+    memcpy(copies->white_piece_alive, board->white_piece_alive, sizeof(board->white_piece_alive));
+    memcpy(copies->white_piece_jump_moves, board->white_piece_jump_moves, sizeof(board->white_piece_jump_moves));
+    memcpy(copies->white_piece_move_directions, board->white_piece_move_directions, sizeof(board->white_piece_move_directions));
+    memcpy(copies->white_piece_first_move, board->white_piece_first_move, sizeof(board->white_piece_first_move));
+    memcpy(copies->white_piece_img, board->white_piece_img, sizeof(board->white_piece_img));
+    memcpy(copies->white_pawn, board->white_pawn, sizeof(board->white_pawn));
+    memcpy(copies->black_piece_pos, board->black_piece_pos, sizeof(board->black_piece_pos));
+    memcpy(copies->black_piece_alive, board->black_piece_alive, sizeof(board->black_piece_alive));
+    memcpy(copies->black_piece_jump_moves, board->black_piece_jump_moves, sizeof(board->black_piece_jump_moves));
+    memcpy(copies->black_piece_move_directions, board->black_piece_move_directions, sizeof(board->black_piece_move_directions));
+    memcpy(copies->black_piece_first_move, board->black_piece_first_move, sizeof(board->black_piece_first_move));
+    memcpy(copies->black_piece_img, board->black_piece_img, sizeof(board->black_piece_img));
+    memcpy(copies->black_pawn, board->black_pawn, sizeof(board->black_pawn));
+    memcpy(copies->boarder_x, board->boarder_x, sizeof(board->boarder_x));
+    memcpy(copies->boarder_y, board->boarder_y, sizeof(board->boarder_y));
+    memcpy(copies->king, board->king, sizeof(board->king));
+    memcpy(copies->castling, board->castling, sizeof(board->castling));
+    
     return;
 }
 

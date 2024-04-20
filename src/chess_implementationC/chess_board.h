@@ -74,6 +74,6 @@ void create_chess(struct ChessBoard *board);
 void printChessBoard(struct ChessBoard *board);
 
 void copyBoard(struct ChessBoard *board, struct ChessBoard *copies, int amount);
-void copyBoards(struct ChessBoard *board);
+void copyBoard(struct ChessBoard *board, struct ChessBoard *copies);
 
 #endif // CHESS_BOARD_H

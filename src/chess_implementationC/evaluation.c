@@ -9,7 +9,10 @@ int board[64];
 #define FLIP(sq) ((sq)^56)
 #define OTHER(side) ((side)^ 1)
 
-
+int isolated_pawn_reward = 17;
+int double_pawn_penalty = -13;
+int double_bishop_rewartd = 10;
+int double_knight_penalty = -5;
 int mg_value[6] = { 82, 337, 365, 477, 1025,  20000};
 int eg_value[6] = { 94, 281, 297, 512,  936,  20000};
 
@@ -217,11 +220,41 @@ int piece_black(signed char ind, struct ChessBoard *pos_board){
     }
 }
 
+bool direct_repetition(struct ChessBoard *board){
+    if(board->move_count >= 8){
+        if(same_move(board, board->move_count-1,  board->move_count-5) && same_move(board, board->move_count-3, board->move_count-7) && same_move(board, board->move_count-2, board->move_count-6) && same_move(board, board->move_count-4, board->move_count-8)){
+            return true;
+        }
+    }
+    return false;
+
+}
+
 void eval(struct ChessBoard *pos_board, int *score)
-{
+{   
+    if(direct_repetition(pos_board)){
+        *score = 0;
+        return;
+    }
     int mg[2];
     int eg[2];
     int gamePhase = 0;
+
+    unsigned char white_double_pawns = 0;
+    unsigned char black_double_pawns = 0;
+    
+    unsigned char white_pawns = 0;
+    unsigned char black_pawns = 0;
+    unsigned char white_isolated = 0;
+    int count_white_iso = 0;
+    unsigned char black_isolated = 0;
+    int count_black_iso = 0;
+    
+    unsigned char white_bishop = 0;
+    unsigned char black_bishop = 0;
+
+    unsigned char white_knight = 0;
+    unsigned char black_knight = 0;
 
     mg[WHITE] = 0;
     mg[BLACK] = 0;
@@ -237,20 +270,54 @@ void eval(struct ChessBoard *pos_board, int *score)
             mg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+((7-pos_board->white_piece_pos[(ind<<1)+1])<<3)];
             eg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+((7-pos_board->white_piece_pos[(ind<<1)+1])<<3)];
             gamePhase += gamephaseInc[pc_w];
+            if(pos_board->white_pawn[ind]){
+                if(white_pawns & (1<<pos_board->white_piece_pos[ind<<1])){
+                    white_double_pawns += 1;
+                }else{
+                    white_pawns += 1<<pos_board->white_piece_pos[ind<<1];
+                }
+            }else if(pc_w == WHITE_BISHOP){
+                white_bishop += 1;
+            }else if(pc_w == WHITE_KNIGHT){
+                white_knight += 1;
+            }
         }
         if(pos_board->black_piece_alive[ind]){
             mg[BLACK] += mg_table[pc_b][(7-pos_board->black_piece_pos[ind<<1])+((7-pos_board->black_piece_pos[(ind<<1)+1])<<3)];
             eg[BLACK] += mg_table[pc_b][(7-pos_board->black_piece_pos[ind<<1])+((7-pos_board->black_piece_pos[(ind<<1)+1])<<3)];
             gamePhase += gamephaseInc[pc_b];
+            if(pos_board->black_pawn[ind]){
+                if( black_pawns & (1<<pos_board->black_piece_pos[ind<<1])){
+                    black_double_pawns += 1;
+                }else{
+                    black_pawns += 1<<pos_board->black_piece_pos[ind<<1];
+                }
+            }else if(pc_b == BLACK_BISHOP){
+                black_bishop += 1;
+            }else if(pc_b == BLACK_KNIGHT){
+                black_knight +=  1;
+            }
         }
     }
-
+    
+    white_isolated = (((white_pawns) & !black_pawns) & !(black_pawns<<1)) & !(black_pawns>>1);
+    black_isolated = (((black_pawns) & !white_pawns) & !(white_pawns<<1)) & !(white_pawns>>1);
+    while (white_isolated) {
+        white_isolated &= (white_isolated - 1);
+        count_white_iso++;
+    }
+    while (black_isolated){
+        black_isolated &= (black_isolated -1);
+        count_black_iso++;
+    }
+    
     if(pos_board->color_to_move == 1){
         side2move = WHITE;
     }else{
         side2move = BLACK;
     }
-
+    int bonus = (((white_bishop == 2) - (black_bishop==2)) * double_bishop_rewartd) + (((white_knight == 2) - (black_knight==2)) * double_knight_penalty) + ((count_white_iso-count_black_iso) * isolated_pawn_reward) + ((white_double_pawns-black_double_pawns)*double_pawn_penalty);
+    bonus *= pos_board->color_to_move;
     int mgScore = mg[side2move] - mg[OTHER(side2move)];
     int egScore = eg[side2move] - eg[OTHER(side2move)];
     int mgPhase = gamePhase;
@@ -258,7 +325,6 @@ void eval(struct ChessBoard *pos_board, int *score)
         mgPhase = 24;
     } /* in case of early promotion */
     int egPhase = 24 - mgPhase;
-    *score = (mgScore * mgPhase + egScore * egPhase) / 24 ;
-    
+    *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + bonus;
     
 }

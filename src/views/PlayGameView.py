@@ -90,7 +90,7 @@ class PlayGameView(View):
         self.draw_pieces_on_position()
 
     def get_elo(self):
-
+        
         for i in range(6):
             stockfish.set_elo_rating(1700 +100*i)
             won_games = 0
