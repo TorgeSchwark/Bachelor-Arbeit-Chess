@@ -7,6 +7,8 @@
 #include "find_moves.h"
 #include "make_moves.h"
 
+int quick_over(struct ChessBoard *board);
+
 void undo_game(struct ChessBoard *board);
 
 void is_check_mate(struct ChessBoard *board, float *matt);

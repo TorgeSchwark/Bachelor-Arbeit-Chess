@@ -22,6 +22,7 @@ struct ChessBoard
     bool has_king;
     signed char king_pos;
     short move_count;
+    
     unsigned char fifty_move_rule[MAX_FIFTY_MOVE_RULE];
     unsigned char non_pawn_pieces[MAX_PIECES];
     signed char past_moves[MAX_MOVES];
@@ -73,7 +74,6 @@ void create_chess(struct ChessBoard *board);
 // Funktion zum Drucken eines ChessBoard-Objekts
 void printChessBoard(struct ChessBoard *board);
 
-void copyBoard(struct ChessBoard *board, struct ChessBoard *copies, int amount);
 void copyBoard(struct ChessBoard *board, struct ChessBoard *copies);
 
 #endif // CHESS_BOARD_H

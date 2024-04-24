@@ -10,6 +10,8 @@ import ctypes
 
 from testing.testing_chess_impl import test_engine
 from testing.play_game_testing import play_game_test
+from engines.mcts import monte_carlo_tree_search
+from supervised_engines.fill_db import fill_dbs
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
@@ -77,8 +79,14 @@ class PlayGameView(View):
         self.main_menu_button = ctk.CTkButton(master=self.settings_frame, text="Back to Menu", command=self.controller.main_menu)
         self.main_menu_button.pack(expand=False, padx=20, pady=5)
 
+        self.mcts = ctk.CTkButton(master=self.settings_frame, text="MCTS", command=self.mcts_engine)
+        self.mcts.pack(expand=False, padx=20, pady=5)
+
         self.play_game = ctk.CTkButton(master=self.settings_frame, text="play_game", command=self.get_elo)
         self.play_game.pack(expand=False, padx=20, pady=5)
+
+        self.fill_db_button = ctk.CTkButton(master=self.settings_frame, text="fill db", command=self.fill_db_button)
+        self.fill_db_button.pack(expand=False, padx=20, pady=5)
 
         self.initial_setup()
 
@@ -88,18 +96,25 @@ class PlayGameView(View):
         self.draw_board()
         self.draw_moves_on_board()
         self.draw_pieces_on_position()
+    
+    def fill_db_button(self):
+        fill_dbs(0)
+
+    def mcts_engine(self):
+        move =  monte_carlo_tree_search(self.chess_board_instance)
+        self.make_move([], move)
 
     def get_elo(self):
-        
-        for i in range(6):
-            stockfish.set_elo_rating(1700 +100*i)
+        chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
+        for i in range(8):
+            stockfish.set_elo_rating(500 +100*i)
             won_games = 0
             for m in range(10):
                 value = self.play_game_stock()
                 print("game ended",value)
                 chess_lib.undo_game(ctypes.byref(self.chess_board_instance))
                 won_games += value
-            print("elo ", 1700+100*i ," won ", won_games, " form " , 10)
+            print("elo ", 500+100*i ," won ", won_games, " form " , 10)
 
     def play_game_stock(self):
         chess_lib.find_all_moves(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
@@ -109,7 +124,7 @@ class PlayGameView(View):
         matt = ctypes.c_float(0)
         while stockfish.is_fen_valid(fen):
             
-            self.neg_max_engine()
+            self.mcts_engine()
             self.master.update()
 
             chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance), ctypes.byref(matt) )
@@ -133,18 +148,10 @@ class PlayGameView(View):
 
     def neg_max_engine(self):
         num = ctypes.c_int(0)
-        score = ctypes.c_int(0)
         score2 = ctypes.c_int(0)
         #chess_lib.neg_max(ctypes.byref(self.chess_board_instance),ctypes.c_int(5),ctypes.c_int(5), ctypes.byref(score))
-        start = time.time()
         chess_lib.advanced_apha_beta_engine(ctypes.byref(self.chess_board_instance),ctypes.c_int(7), ctypes.c_int(7), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
-        end = time.time()
-        print("took ", end-start, " seconds. move is: ", score2.value)
-        start = time.time()
-        chess_lib.alpha_beta_basic(ctypes.byref(self.chess_board_instance),ctypes.c_int(6), ctypes.c_int(6), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score))
-        end = time.time()
-        print("took ", end-start, " seconds. move is: ", score.value)
-        self.make_move([],score.value)
+        self.make_move([],score2.value)
 
     def stockfish_go(self):
         fen = get_fen_string(self.chess_board_instance)
@@ -155,7 +162,7 @@ class PlayGameView(View):
         else:
             print("wrong")
             print(fen)
-            
+        
         move = stockfish.get_best_move()
         ind = self.find_real_move(move)
         self.make_move([],ind)

@@ -28,7 +28,7 @@ void is_check_mate(struct ChessBoard *board, float *matt){
     }
     // wenn 3 fold rep remie
     if(three_fold_repetition(board)){
-        printf("returnt 2x");
+    
         *matt = 0.5;
         return;
 
@@ -97,7 +97,6 @@ bool three_fold_repetition(struct ChessBoard *board){
         printf("MORE THAN 3 REPETITIONS");
         return true;
     }else if(same_positions == 2){
-        printf("FOUND THE 2X");
         return true;
     }
     return false;
@@ -312,6 +311,15 @@ bool all_legal(struct ChessBoard *board, signed char *moves, short *move_count){
 
     }
     return true;
+}
+
+int quick_over(struct ChessBoard *board){
+    if(!board->white_piece_alive[board->king_pos]){
+        return -1;
+    }else if(!board->black_piece_alive[board->king_pos]){
+        return 1;
+    }
+    return 0;
 }
 
 

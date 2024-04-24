@@ -360,12 +360,12 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     fen_ind += 1;
 
     if(board->white_piece_first_move[board->king_pos] == -1){
-        if(board->white_piece_first_move[9] == -1 && board->white_piece_alive[9]){
+        if(board->white_piece_first_move[1] == -1 && board->white_piece_alive[1]){
             fen[fen_ind] = 'K';
             fen_ind += 1;
             castling = true;
         }
-        if(board->white_piece_first_move[10] == -1 && board->white_piece_alive[10]){
+        if(board->white_piece_first_move[2] == -1 && board->white_piece_alive[2]){
             fen[fen_ind] = 'Q';
             fen_ind += 1;
             castling = true;
@@ -373,12 +373,12 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     }
 
     if(board->black_piece_first_move[board->king_pos] == -1){
-        if (board->black_piece_first_move[9] == -1 && board->black_piece_alive[9]){
+        if (board->black_piece_first_move[1] == -1 && board->black_piece_alive[1]){
             fen[fen_ind] = 'k';
             fen_ind += 1;
             castling = true;
         }
-        if(board->black_piece_first_move[10] == -1 && board->black_piece_alive[9]){
+        if(board->black_piece_first_move[2] == -1 && board->black_piece_alive[2]){
             fen[fen_ind] = 'q';
             fen_ind += 1;
             castling = true;
@@ -438,13 +438,6 @@ void board_to_fen(struct ChessBoard *board, char *fen){
 
 }
 
-void copyBoards(struct ChessBoard *board){
-    struct ChessBoard copys[20];
-    int amount = 20;
-    copyBoard(board, &copys[0], amount);
-    printChessBoard(&copys[0]);
-
-}
 
 void copyBoard(struct ChessBoard *board, struct ChessBoard *copies){
 
@@ -454,29 +447,65 @@ void copyBoard(struct ChessBoard *board, struct ChessBoard *copies){
     copies->king_pos = board->king_pos;
     copies->move_count = board->move_count;
     copies->piece_count = board->piece_count;
+    
+    for(int i = 0; i < board->move_count; i++){
+        copies->fifty_move_rule[i] = board->fifty_move_rule[i];
+        copies->captured_piece[i] = board->captured_piece[i];
+    }
 
-    memcpy(copies->fifty_move_rule, board->fifty_move_rule, sizeof(board->fifty_move_rule));
-    memcpy(copies->non_pawn_pieces, board->non_pawn_pieces, sizeof(board->non_pawn_pieces));
-    memcpy(copies->past_moves, board->past_moves, sizeof(board->past_moves));
-    memcpy(copies->board, board->board, sizeof(board->board));
-    memcpy(copies->white_piece_pos, board->white_piece_pos, sizeof(board->white_piece_pos));
-    memcpy(copies->white_piece_alive, board->white_piece_alive, sizeof(board->white_piece_alive));
-    memcpy(copies->white_piece_jump_moves, board->white_piece_jump_moves, sizeof(board->white_piece_jump_moves));
-    memcpy(copies->white_piece_move_directions, board->white_piece_move_directions, sizeof(board->white_piece_move_directions));
-    memcpy(copies->white_piece_first_move, board->white_piece_first_move, sizeof(board->white_piece_first_move));
-    memcpy(copies->white_piece_img, board->white_piece_img, sizeof(board->white_piece_img));
-    memcpy(copies->white_pawn, board->white_pawn, sizeof(board->white_pawn));
-    memcpy(copies->black_piece_pos, board->black_piece_pos, sizeof(board->black_piece_pos));
-    memcpy(copies->black_piece_alive, board->black_piece_alive, sizeof(board->black_piece_alive));
-    memcpy(copies->black_piece_jump_moves, board->black_piece_jump_moves, sizeof(board->black_piece_jump_moves));
-    memcpy(copies->black_piece_move_directions, board->black_piece_move_directions, sizeof(board->black_piece_move_directions));
-    memcpy(copies->black_piece_first_move, board->black_piece_first_move, sizeof(board->black_piece_first_move));
-    memcpy(copies->black_piece_img, board->black_piece_img, sizeof(board->black_piece_img));
-    memcpy(copies->black_pawn, board->black_pawn, sizeof(board->black_pawn));
-    memcpy(copies->boarder_x, board->boarder_x, sizeof(board->boarder_x));
-    memcpy(copies->boarder_y, board->boarder_y, sizeof(board->boarder_y));
-    memcpy(copies->king, board->king, sizeof(board->king));
-    memcpy(copies->castling, board->castling, sizeof(board->castling));
+    for(int i = 0; i < board->piece_count; i++){
+        copies->white_piece_alive[i] = board->white_piece_alive[i];
+        copies->black_piece_alive[i] = board->black_piece_alive[i];
+
+        copies->white_piece_first_move[i] = board->white_piece_first_move[i];
+        copies->black_piece_first_move[i] = board->black_piece_first_move[i];
+
+        copies->white_piece_img[i] = board->white_piece_img[i];
+        
+        copies->white_piece_pos[i<<1] = board->white_piece_pos[i<<1];
+        copies->white_piece_pos[(i<<1)+1] = board->white_piece_pos[(i<<1)+1];
+
+        copies->black_piece_pos[i<<1] = board->black_piece_pos[i<<1];
+        copies->black_piece_pos[(i<<1)+1] = board->black_piece_pos[(i<<1)+1];
+
+        copies->white_pawn[i] = board->white_pawn[i];
+        copies->black_pawn[i] = board->black_pawn[i];
+
+        copies->boarder_x[i] = board->boarder_x[i];
+        copies->boarder_y[i] = board->boarder_y[i];
+        copies->king[i] = board->king[i];
+        copies->castling[i] = board->castling[i];
+    }
+
+    for(int i = 0; i < board->size; i++){
+        for(int m = 0; m < board->size; m++){
+            copies->board[i][m] = board->board[i][m];
+        }
+    }
+
+    for(int i = 0; i < board->move_count*5; i++){
+        copies->past_moves[i] = board->past_moves[i];
+    }
+
+    for(int i = 0; i < board->non_pawn_pieces[0]; i++){
+        copies->non_pawn_pieces[i] = board->non_pawn_pieces[i];
+    }
+
+    for(int i = 0; i < board->piece_count; i++){
+        for(int m = 0; m < board->white_piece_jump_moves[i][0]; m++){
+            copies->white_piece_jump_moves[i][m] = board->white_piece_jump_moves[i][m];
+        }
+        for(int m = 0; m < board->black_piece_jump_moves[i][0]; m++){
+            copies->black_piece_jump_moves[i][m] = board->black_piece_jump_moves[i][m];
+        }
+
+        for(int m = 0; m < board->white_piece_move_directions[i][0]; m++){
+            copies->white_piece_move_directions[i][m] = board->white_piece_move_directions[i][m];
+        }
+        for(int m = 0; m < board->black_piece_move_directions[i][0]; m++){
+            copies->black_piece_move_directions[i][m] = board->black_piece_move_directions[i][m];
+        }
+    }
     
     return;
 }

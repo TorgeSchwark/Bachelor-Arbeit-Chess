@@ -15,6 +15,7 @@
         "chrono": "c",
         "limits": "c",
         "utility": "c",
-        "cmath": "c"
+        "cmath": "c",
+        "make_moves.h": "c"
     }
 }

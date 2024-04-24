@@ -29,7 +29,7 @@ void neg_max(struct ChessBoard *board, int depth, int original_depth, int *score
     }
 }
 
-void alpha_beta_basic(struct ChessBoard *board, int depth,int original_depth, int alpha, int beta, int *score){
+void alpha_beta_basic(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score){
     // printf("222");
     if(depth == 0){
         return eval(board, score);
@@ -61,16 +61,16 @@ void alpha_beta_basic(struct ChessBoard *board, int depth,int original_depth, in
             }
         }
     }
-    if (depth != original_depth){
-        *score = maxWert;
-    }else{
-        *score = best_move;
-    }
+    // if (depth != original_depth){
+    *score = maxWert;
+    // }
+    // coment in for use just for db ...
+    // }else{
+    //     *score = best_move;
+    // }
 }
 
-void tread_test(struct ChessBoard *board, int depth,int original_depth, int alpha, int beta, int *score){
 
-}
 
 
 void advanced_apha_beta_engine(struct ChessBoard *board, int depth,int original_depth, int alpha, int beta, int *score){
