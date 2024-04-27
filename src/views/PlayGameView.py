@@ -11,7 +11,7 @@ import ctypes
 from testing.testing_chess_impl import test_engine
 from testing.play_game_testing import play_game_test
 from engines.mcts import monte_carlo_tree_search
-from supervised_engines.fill_db import fill_dbs
+from supervised_engines.fill_db import fill_dbs, thread_call
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
@@ -47,9 +47,6 @@ class PlayGameView(View):
         chess_lib.eval(ctypes.byref(self.chess_board_instance),ctypes.byref(test))
 
         print("hier", test.value)
-
-
-        #chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
 
         self.place_main_objects()
 
@@ -98,7 +95,7 @@ class PlayGameView(View):
         self.draw_pieces_on_position()
     
     def fill_db_button(self):
-        fill_dbs(0)
+        fill_dbs()
 
     def mcts_engine(self):
         move =  monte_carlo_tree_search(self.chess_board_instance)

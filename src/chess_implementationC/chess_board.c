@@ -360,12 +360,12 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     fen_ind += 1;
 
     if(board->white_piece_first_move[board->king_pos] == -1){
-        if(board->white_piece_first_move[1] == -1 && board->white_piece_alive[1]){
+        if(board->white_piece_first_move[9] == -1 && board->white_piece_alive[9]){
             fen[fen_ind] = 'K';
             fen_ind += 1;
             castling = true;
         }
-        if(board->white_piece_first_move[2] == -1 && board->white_piece_alive[2]){
+        if(board->white_piece_first_move[10] == -1 && board->white_piece_alive[10]){
             fen[fen_ind] = 'Q';
             fen_ind += 1;
             castling = true;
@@ -373,12 +373,12 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     }
 
     if(board->black_piece_first_move[board->king_pos] == -1){
-        if (board->black_piece_first_move[1] == -1 && board->black_piece_alive[1]){
+        if (board->black_piece_first_move[9] == -1 && board->black_piece_alive[9]){
             fen[fen_ind] = 'k';
             fen_ind += 1;
             castling = true;
         }
-        if(board->black_piece_first_move[2] == -1 && board->black_piece_alive[2]){
+        if(board->black_piece_first_move[10] == -1 && board->black_piece_alive[10]){
             fen[fen_ind] = 'q';
             fen_ind += 1;
             castling = true;

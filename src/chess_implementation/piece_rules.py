@@ -1,5 +1,4 @@
 import numpy as np
-from numba import jit 
 
 #contains piece information that wont be changed
 

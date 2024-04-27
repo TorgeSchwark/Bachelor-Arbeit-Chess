@@ -4,7 +4,7 @@ import numpy as np
 
 from chess_implementation.piece import Piece
 from chess_implementation.piece_rules import PieceRules
-from numba import jit 
+
 
 
 class ChessBoard:

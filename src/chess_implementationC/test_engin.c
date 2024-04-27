@@ -13,6 +13,10 @@ void undo_game(struct ChessBoard *board){
 }
 
 void is_check_mate(struct ChessBoard *board, float *matt){
+    if( board->move_count > 100){
+        *matt = 1;
+        return;
+    }
 
     signed char moves[2000];
     short move_count = 0;

@@ -4,7 +4,6 @@ from chess_implementation.piece import Piece
 from chess_implementation.move_stack import MoveStack
 import numpy as np
 from chess_implementation.chess_variables import *
-from numba import jit 
 import time
 
 def find_all_moves(chess_board: ChessBoard):

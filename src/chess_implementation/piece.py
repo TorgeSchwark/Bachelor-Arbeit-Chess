@@ -1,6 +1,6 @@
 from chess_implementation.piece_rules import PieceRules
 import numpy as np 
-from numba import jit 
+
 
 
 class Piece:
