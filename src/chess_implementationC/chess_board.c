@@ -250,6 +250,40 @@ void printChessBoard(struct ChessBoard *board) {
     printf("\n");
 }
 
+void get_piece_type_for_db(struct ChessBoard *board,int *piece_ind, signed char color){
+    *piece_ind = abs(*piece_ind)-1;
+    if(color == 1){
+        if(board->white_pawn[*piece_ind]){
+            *piece_ind = 10;
+        }else if(board->white_piece_jump_moves[*piece_ind][0] == 17 && board->king[*piece_ind] == false){
+            *piece_ind = 30;
+        }else if(board->white_piece_jump_moves[*piece_ind][0] == 17){
+            *piece_ind = 1000;
+        }else if(board->white_piece_move_directions[*piece_ind][0]  == 25 ){
+            *piece_ind = 90;
+        }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && (abs(board->white_piece_move_directions[*piece_ind][1]) == abs(board->white_piece_move_directions[*piece_ind][2]))){
+            *piece_ind = 31;
+        }else{
+            *piece_ind = 50;
+        }
+    }else{
+        if(board->black_pawn[*piece_ind]){
+            *piece_ind = -10;
+        }else if(board->black_piece_jump_moves[*piece_ind][0] == 17 && board->king[*piece_ind] == false){
+            *piece_ind = -30;
+        }else if(board->black_piece_jump_moves[*piece_ind][0] == 17){
+            *piece_ind = -1000;
+        }else if(board->black_piece_move_directions[*piece_ind][0]  == 25){
+            *piece_ind = -90;
+        }else if(board->black_piece_move_directions[*piece_ind][0] == 13 && (abs(board->black_piece_move_directions[*piece_ind][1]) == abs(board->black_piece_move_directions[*piece_ind][2]))) {
+            *piece_ind = -31;
+        }else{
+            *piece_ind = -50;
+        }
+    }
+}
+
+
 void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char color){
     if(color == 1){
         if(board->white_pawn[*piece_ind]){
@@ -280,8 +314,6 @@ void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char
             *piece_ind = 10;
         }
     }
-
-
 }
 
 

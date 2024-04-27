@@ -63,6 +63,8 @@ void add_knight(struct ChessBoard *board);
 void add_bishop(struct ChessBoard *board);
 void add_queen(struct ChessBoard *board);
 
+void get_piece_type_for_db(struct ChessBoard *board,int *piece_ind, signed char color);
+
 void board_to_fen(struct ChessBoard *board, char *fen);
 
 // Funktion zum Initialisieren eines normalen Schachbretts

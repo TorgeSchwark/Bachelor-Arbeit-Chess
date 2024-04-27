@@ -326,5 +326,5 @@ void eval(struct ChessBoard *pos_board, int *score)
     } /* in case of early promotion */
     int egPhase = 24 - mgPhase;
     *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + bonus;
-    
+    //printf(" %d %d %d %d %d \n", mgScore, mgPhase, egScore, egPhase, bonus);
 }

@@ -1,6 +1,7 @@
 # -*- encoding:utf-8 -*-
 from core.Core import Core
 # from chess_implementationC.test import run
+from supervised_engines.fill_db import thread_call
 
 """
     Main class. Responsible for running the application.
@@ -16,7 +17,7 @@ class Main:
 
 if __name__ == '__main__':
     #run()
-    Main.run()
+    thread_call()
 
 
 #error in normal move or double pawn

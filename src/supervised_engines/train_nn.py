@@ -12,6 +12,43 @@ from train_variables import *
 from data_parser import data_generator_threaded
 from multiprocessing import Pool
 
+def setup_model_conv_1d():
+  input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS), name='input')
+
+  dp = 0.4
+  x = tf.keras.layers.Conv1D(64, kernel_size=3, activation='relu', padding='same')(input)
+  x = tf.keras.layers.Dropout(dp)(x)
+  x = tf.keras.layers.Conv1D(64, kernel_size=3, activation='relu', padding='same')(x)
+  x = tf.keras.layers.Dropout(dp)(x)
+  x = tf.keras.layers.Conv1D(64, kernel_size=3, activation='relu', padding='same')(x)
+  x = tf.keras.layers.Dropout(dp)(x)  
+  x = tf.keras.layers.GlobalAveragePooling1D()(x)
+
+  x = tf.keras.layers.Dense(128, activation='relu')(x)  
+  x = tf.keras.layers.Dense(SEQ_LEN_FUTURE * NUM_OUTPUT_PARAMETERS, activation='linear')(x)
+  x = tf.keras.layers.Reshape((SEQ_LEN_FUTURE, NUM_OUTPUT_PARAMETERS))(x)
+
+  model = tf.keras.models.Model(input, x)
+  return model  
+
+
+def transformer_encoder(inputs, dropout=0.25, head_size=256, num_heads=32, ff_dim=4):
+
+    # Normalization and Attention
+    x = tf.keras.layers.LayerNormalization(epsilon=1e-6)(inputs)
+    x = tf.keras.layers.MultiHeadAttention(key_dim=head_size, num_heads=num_heads, dropout=dropout)(x, x)
+    x = tf.keras.layers.Dropout(dropout)(x)
+
+    res = x + inputs
+
+    # Feed Forward Part
+    x = tf.keras.layers.LayerNormalization(epsilon=1e-6)(res)
+    x = tf.keras.layers.Conv1D(filters=ff_dim, kernel_size=1, activation="relu")(x)
+    x = tf.keras.layers.Dropout(dropout)(x)
+    x = tf.keras.layers.Conv1D(filters=inputs.shape[-1], kernel_size=1)(x)
+    return x + res
+
+
 def setup_model_mlp():
   
   input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS), name='input')
@@ -78,7 +115,7 @@ def run():
 
   model = setup_model_mlp()
 
-  train("test", model, 0.00001)
+  train("test", model, 0.000005)
 
 if __name__== "__main__":
   run()

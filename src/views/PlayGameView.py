@@ -95,7 +95,7 @@ class PlayGameView(View):
         self.draw_pieces_on_position()
     
     def fill_db_button(self):
-        fill_dbs()
+        thread_call()
 
     def mcts_engine(self):
         move =  monte_carlo_tree_search(self.chess_board_instance)
