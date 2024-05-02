@@ -2,3 +2,5 @@ https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
 https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
 https://en.wikipedia.org/wiki/Fifty-move_rule#:~:text=The%20fifty-move%20rule%20in,the%20opponent%20completing%20a%20turn
 https://www.chessprogramming.org/Negamax
+
+Tensorboard

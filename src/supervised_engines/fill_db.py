@@ -9,11 +9,16 @@ import sqlite3
 import threading
 import time
 
-num_threads = 24
-entries_per_thread = 20000
+# 1000*24
+# further 1000 *24 max game length 100 moves
+# 10000*24 random games expected 4 gb each 5 locks
+
+num_threads = 1
+entries_per_thread = 1
 
 DB_SF = ".\src\supervised_engines\stockfish_DB.db"
 DB_AB = ".\src\supervised_engines\lpha_beta_DB.db"
+
 
 
 def thread_call():
@@ -30,9 +35,95 @@ def thread_call():
     print("Alle Threads haben ihre Arbeit abgeschlossen.")
 
 def thread_task():
-    fill_dbs(entries_per_thread)
+    fill_dbs_by_stock(entries_per_thread)
 
-def fill_dbs(amount):
+
+def fill_dbs_by_stock(amount):
+    """ Fills the two databases one with positions and evaluations from the AB engine one with the evaluations of SF the positions are created via chosing one of the top SF moves"""
+    print(threading.get_ident())
+    conn_ab = sqlite3.connect(DB_AB)
+    cursor_ab = conn_ab.cursor()
+    conn_sf = sqlite3.connect(DB_SF)
+    cursor_sf = conn_sf.cursor()
+
+    stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-windows-x86-64.exe")
+    stockfish.set_depth(8)
+    #setup the chessBoard
+    create_database()
+    board = ChessBoard()
+    chess_lib.setup_normals(ctypes.byref(board))
+    chess_lib.create_chess(ctypes.byref(board)) 
+    chess_lib.init_tables()
+    fen = get_fen_string(board)
+    matt = ctypes.c_float(0)
+
+    # List to store the values to be inserted
+    sf_values = []
+    ab_values = []
+    boards = []
+    depths = []
+    
+    while amount > 0:
+        
+        chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt)) 
+        count = 0
+        while matt.value == 0:
+            count += 1
+            fen = get_fen_string(board)
+            stockfish.set_fen_position(fen)
+            sf_val = stockfish.get_evaluation()['value']
+               
+            score = ctypes.c_int(0)
+            chess_lib.alpha_beta_basic(ctypes.byref(board),ctypes.c_int(3), ctypes.c_int(3), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score))
+                
+            sf_values.append(sf_val)
+            ab_values.append(score.value)
+            boards.append(to_str(board, fen))
+            depths.append(board.move_count)
+
+            moves = (ctypes.c_byte * 2024)()
+            move_count = ctypes.c_short(0)
+            chess_lib.find_all_moves(ctypes.byref(board), moves, ctypes.byref(move_count))
+
+            if count < 5:
+                randomnes = 15
+            elif count < 10:
+                randomnes = 8
+            else:
+                randomnes = 3
+            moves_dict = stockfish.get_top_moves(randomnes)
+            move_ind = random.randint(0,len(moves_dict)-1)
+    
+            move = moves_dict[move_ind]['Move']
+            ind = find_real_move(move, board, move_count, moves)
+            chess_lib.make_move(ctypes.byref(board), moves[ind],  moves[ind+1],  moves[ind+2],  moves[ind+3],  moves[ind+4])
+            
+            chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt)) 
+
+        chess_lib.undo_game(ctypes.byref(board))
+        amount -= 1
+    
+    # Use executemany to insert multiple values at once
+    try:
+        cursor_sf.executemany('''
+            INSERT INTO ChessData (board, value, depth)
+            VALUES (?, ?, ?)
+        ''', zip(boards, sf_values, depths))
+
+        cursor_ab.executemany('''
+            INSERT INTO ChessData (board, value, depth)
+            VALUES (?, ?, ?)
+        ''', zip(boards, ab_values, depths))
+
+        conn_sf.commit()
+        conn_ab.commit()
+
+    except Exception as e:
+        print("Fehler beim Einfügen in die Datenbank:", e)
+
+
+def fill_dbs_random(amount):
+    """ Fills the two databases one with positions and evaluations from the AB engine one with the evaluations of SF the positions are created via random play"""
     print(threading.get_ident())
     conn_ab = sqlite3.connect(DB_AB)
     cursor_ab = conn_ab.cursor()
@@ -40,11 +131,10 @@ def fill_dbs(amount):
     conn_sf = sqlite3.connect(DB_SF)
     cursor_sf = conn_sf.cursor()
     
-    # stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-windows-x86-64.exe")
-    # stockfish.set_depth(4)
-    #setup the chessBoard
+    stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-windows-x86-64.exe")
+    stockfish.set_depth(8)
     create_database()
-
+    #setup the chessBoard
     board = ChessBoard()
     chess_lib.setup_normals(ctypes.byref(board))
     chess_lib.create_chess(ctypes.byref(board)) 
@@ -58,37 +148,26 @@ def fill_dbs(amount):
     count = 0
 
     # List to store the values to be inserted
-    sf_values = []
     ab_values = []
+    sf_values = []
     boards = []
     depths = []
     fens = []
     
     while amount > 0:
-        print(amount)
+        
         chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt)) 
         count = 0
-        insert_time = 0
-        eval_time = 0
-        eval_time_stock = 0
-        start = time.time()
         while matt.value == 0:
             count += 1
             fen = get_fen_string(board)
-            if True:
                 
-                # eval_time_stock_start = time.time()
-                # stockfish.set_fen_position(fen)
-                # sf_val = stockfish.get_evaluation()['value']
-                # eval_time_stock_end = time.time()
-                # eval_time_stock += eval_time_stock_end-eval_time_stock_start
-                score = ctypes.c_int(0)
-                chess_lib.alpha_beta_basic(ctypes.byref(board),ctypes.c_int(3), ctypes.c_int(3), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score))
+            stockfish.set_fen_position(fen)
+            sf_val = stockfish.get_evaluation()['value']
+            score = ctypes.c_int(0)
+            chess_lib.alpha_beta_basic(ctypes.byref(board),ctypes.c_int(3), ctypes.c_int(3), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score))
                 
-            else:
-                print("hier")
-                print(fen)
-
+            sf_values.append(sf_val)
             ab_values.append(score.value)
             boards.append(to_str(board, fen))
             depths.append(board.move_count)
@@ -103,7 +182,6 @@ def fill_dbs(amount):
             random_move_ind = generate_random_true_index(legal_list)
             
             chess_lib.make_move(ctypes.byref(board), moves[random_move_ind*5], moves[random_move_ind*5+1], moves[random_move_ind*5+2], moves[random_move_ind*5+3], moves[random_move_ind*5+4])
-
             chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt)) 
 
         chess_lib.undo_game(ctypes.byref(board))
@@ -113,10 +191,10 @@ def fill_dbs(amount):
     
     # Use executemany to insert multiple values at once
     try:
-        # cursor_sf.executemany('''
-        #     INSERT INTO ChessData (board, value, depth)
-        #     VALUES (?, ?, ?)
-        # ''', zip(boards, sf_values, depths))
+        cursor_sf.executemany('''
+            INSERT INTO ChessData (board, value, depth)
+            VALUES (?, ?, ?)
+        ''', zip(boards, sf_values, depths))
 
         cursor_ab.executemany('''
             INSERT INTO ChessData (board, value, depth)
@@ -128,6 +206,7 @@ def fill_dbs(amount):
 
     except Exception as e:
         print("Fehler beim Einfügen in die Datenbank:", e)
+
 
 def get_fen_string(board):
     
@@ -203,7 +282,23 @@ def to_str(board, fen):
    
     return row_strings
     
-    
+    find_real_move(move, board, move_count, moves)
+def find_real_move(move, board, move_count, moves):
+        piece = ctypes.create_string_buffer(2)
+        piece[1] = b'\x00'
+        piece[0] = 'x'.encode('utf-8')
+        from_x = 7-(ord(move[0])- ord('a'))
+        from_y = int(move[1]) -1
+
+        to_x = 7-(ord(move[2])- ord('a'))
+        to_y = int(move[3])-1
+        if(len(move) > 4):
+            piece[0] = move[4].encode('utf-8')
+        ind = ctypes.c_int(0)
+        
+        chess_lib.real_move(ctypes.byref(board), ctypes.c_byte(from_x), ctypes.c_byte(from_y), ctypes.c_byte(to_x), ctypes.c_byte(to_y), piece, moves, move_count, ctypes.byref(ind))
+        
+        return ind.value
     
 
 def create_database():

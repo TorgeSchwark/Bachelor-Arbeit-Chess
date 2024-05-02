@@ -1,7 +1,8 @@
 125.000 moves per second. at 40% Ram utilisation and 10% CPU usage
 -> np.int8 -> 60.000 moves per second at same utilisation !!
 140942.5660928939 moves per second after optimisation ... 
-
+about 1.2 Million with Multithreading
+about 20 Million in C on one thread !
 
 undo_last_move duration: 4.291534423828125e-06
 make_move duration: 5.4836273193359375e-06
