@@ -17,8 +17,8 @@ class Main:
 
 if __name__ == '__main__':
     #run()
-    #thread_call()
+    thread_call()
 
-    Main.run()
+    #Main.run()
 
 #error in normal move or double pawn

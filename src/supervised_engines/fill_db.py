@@ -8,13 +8,13 @@ import os
 import sqlite3
 import threading
 import time
-
+import traceback
 # 1000*24
 # further 1000 *24 max game length 100 moves
 # 10000*24 random games expected 4 gb each 5 locks
 
-num_threads = 1
-entries_per_thread = 1
+num_threads = 20
+entries_per_thread = 2
 
 DB_SF = ".\src\supervised_engines\stockfish_DB.db"
 DB_AB = ".\src\supervised_engines\lpha_beta_DB.db"
@@ -25,7 +25,7 @@ def thread_call():
     create_database()
     threads = []
     for _ in range(num_threads):
-        thread = threading.Thread(target=thread_task)
+        thread = threading.Thread(target=thread_task_with_retry)
         thread.start()
         threads.append(thread)
 
@@ -34,9 +34,17 @@ def thread_call():
 
     print("Alle Threads haben ihre Arbeit abgeschlossen.")
 
-def thread_task():
-    fill_dbs_by_stock(entries_per_thread)
-
+def thread_task_with_retry():
+    while True:
+        try:
+            fill_dbs_by_stock(entries_per_thread)
+        except Exception as e:
+            print("Fehler in Thread:", e)
+            print(traceback.format_exc())  # Drucken Sie die Fehlermeldung und den Traceback
+            # Warten für einen neuen Versuch
+            time.sleep(1)
+            continue
+        
 
 def fill_dbs_by_stock(amount):
     """ Fills the two databases one with positions and evaluations from the AB engine one with the evaluations of SF the positions are created via chosing one of the top SF moves"""
@@ -56,6 +64,7 @@ def fill_dbs_by_stock(amount):
     chess_lib.init_tables()
     fen = get_fen_string(board)
     matt = ctypes.c_float(0)
+    #chess_lib.printChessBoard(ctypes.byref(board))
 
     # List to store the values to be inserted
     sf_values = []
@@ -64,42 +73,51 @@ def fill_dbs_by_stock(amount):
     depths = []
     
     while amount > 0:
-        
+        print("amount", amount)
         chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt)) 
         count = 0
+        avg_time = 0
+        randomnes = 5
+        
         while matt.value == 0:
             count += 1
             fen = get_fen_string(board)
-            stockfish.set_fen_position(fen)
-            sf_val = stockfish.get_evaluation()['value']
-               
-            score = ctypes.c_int(0)
-            chess_lib.alpha_beta_basic(ctypes.byref(board),ctypes.c_int(3), ctypes.c_int(3), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score))
+           
+            if True:
                 
-            sf_values.append(sf_val)
-            ab_values.append(score.value)
-            boards.append(to_str(board, fen))
-            depths.append(board.move_count)
+                stockfish.set_fen_position(fen)
+                
+                sf_val = stockfish.get_evaluation()['value']
+                
+                score = ctypes.c_int(0)
+                chess_lib.alpha_beta_basic(ctypes.byref(board),ctypes.c_int(3), ctypes.c_int(3), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score))
+                    
+                sf_values.append(sf_val)
+                ab_values.append(score.value)
+                boards.append(to_str(board, fen))
+                depths.append(board.move_count)
 
-            moves = (ctypes.c_byte * 2024)()
-            move_count = ctypes.c_short(0)
-            chess_lib.find_all_moves(ctypes.byref(board), moves, ctypes.byref(move_count))
+                moves = (ctypes.c_byte * 2024)()
+                move_count = ctypes.c_short(0)
+                chess_lib.find_all_moves(ctypes.byref(board), moves, ctypes.byref(move_count))
 
-            if count < 5:
-                randomnes = 15
-            elif count < 10:
-                randomnes = 8
+                
+
+                
+                moves_dict = stockfish.get_top_moves(randomnes)
+                
+                move_ind = random.randint(0,len(moves_dict)-1)
+
+                move = moves_dict[move_ind]['Move']
+                ind = find_real_move(move, board, move_count, moves)
+                chess_lib.make_move(ctypes.byref(board), moves[ind],  moves[ind+1],  moves[ind+2],  moves[ind+3],  moves[ind+4])
+               
+                chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt))
+                
             else:
-                randomnes = 3
-            moves_dict = stockfish.get_top_moves(randomnes)
-            move_ind = random.randint(0,len(moves_dict)-1)
+                print(fen)
+                break
     
-            move = moves_dict[move_ind]['Move']
-            ind = find_real_move(move, board, move_count, moves)
-            chess_lib.make_move(ctypes.byref(board), moves[ind],  moves[ind+1],  moves[ind+2],  moves[ind+3],  moves[ind+4])
-            
-            chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt)) 
-
         chess_lib.undo_game(ctypes.byref(board))
         amount -= 1
     
@@ -124,7 +142,7 @@ def fill_dbs_by_stock(amount):
 
 def fill_dbs_random(amount):
     """ Fills the two databases one with positions and evaluations from the AB engine one with the evaluations of SF the positions are created via random play"""
-    print(threading.get_ident())
+    
     conn_ab = sqlite3.connect(DB_AB)
     cursor_ab = conn_ab.cursor()
 
@@ -282,7 +300,7 @@ def to_str(board, fen):
    
     return row_strings
     
-    find_real_move(move, board, move_count, moves)
+   
 def find_real_move(move, board, move_count, moves):
         piece = ctypes.create_string_buffer(2)
         piece[1] = b'\x00'

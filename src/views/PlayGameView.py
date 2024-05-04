@@ -11,7 +11,7 @@ import ctypes
 from testing.testing_chess_impl import test_engine
 from testing.play_game_testing import play_game_test
 from engines.mcts import monte_carlo_tree_search
-from supervised_engines.fill_db import fill_dbs, thread_call
+from supervised_engines.fill_db import fill_dbs_by_stock, thread_call
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *

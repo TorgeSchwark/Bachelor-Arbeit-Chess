@@ -23,11 +23,11 @@ def select_data(batch_size, is_train, split_index):
     selected_labels = np.array([[[row[1]]] for row in data])
     return selected_inputs, selected_labels
 
-def data_generator_threaded(batch_size, is_train, num_threads=15):
+def data_generator_threaded(batch_size, is_train, num_threads=5):
     path = DATA_PATH
     conn = sqlite3.connect(path)
     data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
-    
+    print("size" , data_size)
     chunk_size = math.ceil(((data_size) / 10) / num_threads)
     split_index = int(0.7 * chunk_size)
 

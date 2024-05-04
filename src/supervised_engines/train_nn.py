@@ -1,121 +1,66 @@
 import os
-import math
-import random
-import numpy as np
 import tensorflow as tf
-import glob
 from matplotlib import pyplot as plt
-import matplotlib
 from tensorflow.python.client import device_lib 
-import time
 from train_variables import *
 from data_parser import data_generator_threaded
+from setup_models import *
 from multiprocessing import Pool
+import datetime
 
-def setup_model_conv_1d():
-  input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS), name='input')
+def train(model_path, arch_name, model, lr, from_checkpoint=False):
+    batch_size = BATCH_SIZE
 
-  dp = 0.4
-  x = tf.keras.layers.Conv1D(64, kernel_size=3, activation='relu', padding='same')(input)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Conv1D(64, kernel_size=3, activation='relu', padding='same')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Conv1D(64, kernel_size=3, activation='relu', padding='same')(x)
-  x = tf.keras.layers.Dropout(dp)(x)  
-  x = tf.keras.layers.GlobalAveragePooling1D()(x)
+    train_gen = data_generator_threaded(batch_size, True) 
+    val_gen = data_generator_threaded(batch_size, False)
 
-  x = tf.keras.layers.Dense(128, activation='relu')(x)  
-  x = tf.keras.layers.Dense(SEQ_LEN_FUTURE * NUM_OUTPUT_PARAMETERS, activation='linear')(x)
-  x = tf.keras.layers.Reshape((SEQ_LEN_FUTURE, NUM_OUTPUT_PARAMETERS))(x)
-
-  model = tf.keras.models.Model(input, x)
-  return model  
-
-
-def transformer_encoder(inputs, dropout=0.25, head_size=256, num_heads=32, ff_dim=4):
-
-    # Normalization and Attention
-    x = tf.keras.layers.LayerNormalization(epsilon=1e-6)(inputs)
-    x = tf.keras.layers.MultiHeadAttention(key_dim=head_size, num_heads=num_heads, dropout=dropout)(x, x)
-    x = tf.keras.layers.Dropout(dropout)(x)
-
-    res = x + inputs
-
-    # Feed Forward Part
-    x = tf.keras.layers.LayerNormalization(epsilon=1e-6)(res)
-    x = tf.keras.layers.Conv1D(filters=ff_dim, kernel_size=1, activation="relu")(x)
-    x = tf.keras.layers.Dropout(dropout)(x)
-    x = tf.keras.layers.Conv1D(filters=inputs.shape[-1], kernel_size=1)(x)
-    return x + res
-
-
-def setup_model_mlp():
+    opt = tf.keras.optimizers.Adam(learning_rate=lr)
+    #eg: conv_mlp_big/logs/fit/lr:0.0004bz500
+    log_dir = model_path+ "/logs/fit/" + arch_name
   
-  input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS), name='input')
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(
+    log_dir=log_dir,
+    histogram_freq=1,  # Aufzeichnung von Histogrammen bei jeder Epoche
+    write_graph=True,  # Zeichne den Graph des Modells
+    write_images=True,  # Zeichne Grafiken von Aktivierungen und Gradienten
+    update_freq='epoch',  # Aktualisieren der Daten am Ende jeder Epoche
+    profile_batch=5  # Verwende Batch 5 für das Profiling
+)
+    
+    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        os.path.join(log_dir, 'best_model.h5'),
+        verbose=1, monitor='val_mae', save_best_only=True, mode='auto')
+    model.compile(loss='mse', optimizer=opt, metrics=["mse", "mae"])
+    model.summary()
 
-  dp = 0.0
-  x = tf.keras.layers.Flatten()(input)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(200, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dp)(x)
-  x = tf.keras.layers.Dense(SEQ_LEN_FUTURE * NUM_OUTPUT_PARAMETERS, activation='linear')(x)
-  x = tf.keras.layers.Reshape((SEQ_LEN_FUTURE, NUM_OUTPUT_PARAMETERS))(x)
+    history = model.fit(train_gen, steps_per_epoch=STEPS_PER_EPOCH, validation_steps=VALIDATION_STEPS, epochs=EPOCHS, 
+                        validation_data=val_gen, callbacks=[checkpoint_callback, tensorboard_callback], 
+                        shuffle=True, verbose='auto')
 
-  model = tf.keras.models.Model(input, x)
-  return model
+    # Laden des besten Modells und Hinzufügen des TensorBoard-Rückrufs
+    best_model_path = os.path.join(log_dir, 'best_model.h5')
+    best_model = tf.keras.models.load_model(best_model_path)
+    best_model.compile(loss='mse', optimizer=opt, metrics=["mse", "mae"])
 
-def train(model_path, model, lr, from_checkpoint=False):
-  batch_size = BATCH_SIZE
+    # Verwenden Sie die Methode evaluate(), um das Modell zu bewerten
+    best_model.evaluate(val_gen, steps=VALIDATION_STEPS)
 
-  train_gen = data_generator_threaded(batch_size, True) 
-  val_gen = data_generator_threaded(batch_size, False)
+def loop_train():
+    train_setup_model_conv_mlp_big()
 
-  opt = tf.keras.optimizers.Adam(learning_rate=lr)
-  checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(model_path + 'model-{epoch:03d}-mae{val_mae:.4f}.h5', verbose=1, monitor='val_mae', save_best_only=True, mode='auto')
-  model.compile(loss='mse', optimizer=opt, metrics=["mse", "mae"])
-  model.summary()
-
-  history = model.fit(train_gen, steps_per_epoch=STEPS_PER_EPOCH, validation_steps=VALIDATION_STEPS, epochs=EPOCHS, 
-                      validation_data=val_gen, callbacks=[checkpoint_callback], 
-                      shuffle=True, verbose='auto')
-  
+def train_setup_model_conv_mlp_big():
 
 def run():
-  physical_devices = tf.config.list_physical_devices('GPU')
-  print("\nGPUs: {}\n".format(physical_devices))
+    physical_devices = tf.config.list_physical_devices('GPU')
+    print("\nGPUs: {}\n".format(physical_devices))
 
-  model = setup_model_mlp()
+    model = setup_model_conv_mlp_big()
 
-  train("test", model, 0.000005)
+    # Pfad für die Modelle
+    model_path = "models/"
+
+    #loop_train()
+    train(model_path, , model, 0.000007)
 
 if __name__== "__main__":
-  run()
+    run()
