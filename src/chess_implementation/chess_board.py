@@ -52,7 +52,6 @@ class ChessBoard:
 
             new_piece = True
             for pos in start_pos:
-                print(offset, "offset")
                 x = pos[0] - offset
                 y = pos[1] - offset
                 
@@ -93,6 +92,7 @@ class ChessBoard:
                         self.black_pawn = black_piece_rules
 
     def set_size(self, size):
+        """ Sets the board size"""
         self.size = size
         self.board = np.zeros((size, size), dtype=int)
 
@@ -129,6 +129,7 @@ class ChessBoard:
     
 
     def equals(self, other):
+        """ Compares two boards """
         if not (self.size == other.size):
             return False
         if not self.has_king == other.has_king:
@@ -150,7 +151,6 @@ class ChessBoard:
 
         for ind in range(len(self.white_pieces)):
             if not self.white_pieces[ind].equals(other.white_pieces[ind]):
-                print("piece differnt !")
                 return False
             
         return True

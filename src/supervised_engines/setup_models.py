@@ -7,18 +7,14 @@ def setup_model_conv_mlp_big():
     # Convolutional-Teil
     conv_input = input[:, :64, :]
     x_conv_1 = tf.keras.layers.Reshape((8, 8, 1))(conv_input)
-    x_conv_1 = tf.keras.layers.Conv2D(256, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
-    x_conv_1 = tf.keras.layers.MaxPooling2D((2, 2))(x_conv_1)
-    x_conv_1 = tf.keras.layers.Conv2D(256, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
-    x_conv_1 = tf.keras.layers.MaxPooling2D((2, 2))(x_conv_1)
     x_conv_1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
-    x_conv_1 = tf.keras.layers.MaxPooling2D((2, 2))(x_conv_1)
+    x_conv_1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
+    x_conv_1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
+    x_conv_1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
+    x_conv_1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
     x_conv_1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
 
-    x_conv_2 = tf.keras.layers.Reshape((8, 8, 1))(conv_input)
-    x_conv_2 = tf.keras.layers.Conv2D(256, kernel_size=(5, 5), activation='relu', padding='same')(x_conv_2)
-    x_conv_2 = tf.keras.layers.Conv2D(128, kernel_size=(5, 5), activation='relu', padding='same')(x_conv_2)
-
+ 
     # MLP-Teil
     mlp_input = input[:, 64:, :]
     x_mlp = tf.keras.layers.Flatten()(mlp_input)
@@ -29,12 +25,10 @@ def setup_model_conv_mlp_big():
     x_mlp = tf.keras.layers.Dense(200, activation='relu')(x_mlp)
 
     # Kombinierte Ausgabe der Convolutional- und MLP-Teile
-    combined = tf.keras.layers.Concatenate()([tf.keras.layers.Flatten()(x_conv_1), 
-                                              tf.keras.layers.Flatten()(x_conv_2), 
-                                              x_mlp])
+    combined = tf.keras.layers.Concatenate()([tf.keras.layers.Flatten()(x_conv_1), x_mlp])
 
     # Fully-Connected-Layer
-    x = tf.keras.layers.Dense(400, activation='relu')(combined)
+    x = tf.keras.layers.Dense(200, activation='relu')(combined)
     x = tf.keras.layers.Dropout(0.5)(x)
     x = tf.keras.layers.Dense(200, activation='relu')(x)
     x = tf.keras.layers.Dropout(0.5)(x)
@@ -59,13 +53,6 @@ def setup_model_conv_mlp_small():
   x_conv_1 = tf.keras.layers.Flatten()(x_conv_1)
 
 
-  x_conv_2 = tf.keras.layers.Reshape((8, 8, 1))(conv_input)  
-  x_conv_2 = tf.keras.layers.Conv2D(32, kernel_size=(5, 5), activation='relu', padding='same')(x_conv_2)
-  x_conv_2 = tf.keras.layers.Dropout(dp)(x_conv_2)
-  x_conv_2 = tf.keras.layers.Conv2D(32, kernel_size=(5, 5), activation='relu', padding='same')(x_conv_2)
-  x_conv_2 = tf.keras.layers.Dropout(dp)(x_conv_2)
-  x_conv_2 = tf.keras.layers.Flatten()(x_conv_2)
-
   mlp_input = input[:, 64:, :]  
   x_mlp = tf.keras.layers.Flatten()(mlp_input)
   x_mlp = tf.keras.layers.Dense(50, activation='relu')(x_mlp)
@@ -75,7 +62,7 @@ def setup_model_conv_mlp_small():
   x_mlp = tf.keras.layers.Dense(50, activation='relu')(x_mlp)
   x_mlp = tf.keras.layers.Dropout(dp)(x_mlp)
 
-  combined = tf.keras.layers.Concatenate()([x_conv_1, x_mlp, x_conv_2])
+  combined = tf.keras.layers.Concatenate()([x_conv_1, x_mlp])
 
   x = tf.keras.layers.Dense(100, activation='relu')(combined)
   x = tf.keras.layers.Dropout(dp)(x)
@@ -189,16 +176,14 @@ def setup_model_lstm():
   
   input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS), name='input')
 
-  x = tf.keras.layers.LSTM(200, return_sequences=True)(input)
-  x = tf.keras.layers.LSTM(200, return_sequences=True)(x)
-  x = tf.keras.layers.LSTM(200, return_sequences=True)(x)
-  x = tf.keras.layers.LSTM(200, return_sequences=True)(x)
-  x = tf.keras.layers.LSTM(200, return_sequences=True)(x)
-  x = tf.keras.layers.LSTM(200)(x)
+  x = tf.keras.layers.LSTM(100, return_sequences=True)(input)
+  x = tf.keras.layers.LSTM(100, return_sequences=True)(x)
+  x = tf.keras.layers.LSTM(100, return_sequences=True)(x)
+  x = tf.keras.layers.LSTM(100)(x)
 
-  x = tf.keras.layers.Dense(2000, activation='relu')(x)
-  x = tf.keras.layers.Dense(1000, activation='relu')(x)
-  x = tf.keras.layers.Dense(700, activation='relu')(x)
+  x = tf.keras.layers.Dense(500, activation='relu')(x)
+  x = tf.keras.layers.Dense(500, activation='relu')(x)
+  x = tf.keras.layers.Dense(500, activation='relu')(x)
   x = tf.keras.layers.Dense(55, activation='relu')(x)
 
   x = tf.keras.layers.Dense(SEQ_LEN_FUTURE * NUM_OUTPUT_PARAMETERS, activation='linear')(x)
@@ -207,25 +192,46 @@ def setup_model_lstm():
   model = tf.keras.models.Model(input, x)
   return model  
 
-def setup_model_transformer(dropout=0, num_transformer_blocks=8, mlp_units=[256]):
-    inputs = tf.keras.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS))
-    x = inputs
+def setup_model_transformer(dropout=0, num_transformer_blocks=4, mlp_units=[128]):
+    
+    input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS), name='input')
+    mlp_board_input = input[:, :64, :]
+    mlp_input = input[:, 64:, :]
+    dp = 0.05
+    x_mlp = tf.keras.layers.Flatten()(mlp_input)
+    x_mlp = tf.keras.layers.Dense(500, activation='relu')(x_mlp)
+    x_mlp = tf.keras.layers.Dropout(dp)(x_mlp)
+    x_mlp = tf.keras.layers.Dense(500, activation='relu')(x_mlp)
+    x_mlp = tf.keras.layers.Dropout(dp)(x_mlp)
+    x_mlp = tf.keras.layers.Dense(500, activation='relu')(x_mlp)
+    x_mlp = tf.keras.layers.Dropout(dp)(x_mlp)
+
+    x = mlp_board_input
 
     for _ in range(num_transformer_blocks):
         x = transformer_encoder(x, dropout=dropout)
 
-    x = tf.keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
+    x = tf.keras.layers.Flatten(data_format="channels_first")(x)
 
     for dim in mlp_units:
         x = tf.keras.layers.Dense(dim, activation="relu")(x)
         x = tf.keras.layers.Dropout(dropout)(x)
 
-    outputs = tf.keras.layers.Dense(SEQ_LEN_FUTURE * NUM_OUTPUT_PARAMETERS)(x)
-    outputs = tf.keras.layers.Reshape((SEQ_LEN_FUTURE, NUM_OUTPUT_PARAMETERS))(outputs)
+  
+    combined = tf.keras.layers.Concatenate()([x, x_mlp])
 
-    return tf.keras.Model(inputs, outputs)
+    x = tf.keras.layers.Dense(200, activation='relu')(combined)
+    x = tf.keras.layers.Dropout(dp)(x)
+    x = tf.keras.layers.Dense(200, activation='relu')(x)
+    x = tf.keras.layers.Dropout(dp)(x)
+    x = tf.keras.layers.Dense(200, activation='relu')(x)
+    x = tf.keras.layers.Dropout(dp)(x)
+    x = tf.keras.layers.Dense(SEQ_LEN_FUTURE * NUM_OUTPUT_PARAMETERS, activation='linear')(x)
+    x = tf.keras.layers.Reshape((SEQ_LEN_FUTURE, NUM_OUTPUT_PARAMETERS))(x)
 
-def transformer_encoder(inputs, dropout=0, head_size=1000, num_heads=16, ff_dim=2):
+    return tf.keras.Model(input, x)
+
+def transformer_encoder(inputs, dropout=0, head_size=50, num_heads=8, ff_dim=2):
     x = tf.keras.layers.LayerNormalization(epsilon=1e-6)(inputs)
     
     x = tf.keras.layers.MultiHeadAttention(

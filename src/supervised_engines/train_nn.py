@@ -37,7 +37,7 @@ def train(model_path, arch_name, model, lr, from_checkpoint=False):
     # Definieren des Early Stopping Callbacks
     early_stopping_callback = tf.keras.callbacks.EarlyStopping(
         monitor='val_loss',  # Überwachen Sie die Validierungsverluste
-        patience=15,  # Anzahl der Epochen ohne Verbesserung, bevor das Training gestoppt wird
+        patience=20,  # Anzahl der Epochen ohne Verbesserung, bevor das Training gestoppt wird
         verbose=1, 
         restore_best_weights=True  # Stellen Sie die Gewichte des besten Modells wieder her
     )
@@ -61,30 +61,77 @@ def train(model_path, arch_name, model, lr, from_checkpoint=False):
     best_model = tf.keras.models.load_model(best_model_path)
     best_model.compile(loss='mse', optimizer=opt, metrics=["mse", "mae"])
 
-    best_model.evaluate(val_gen, steps=VALIDATION_STEPS)
+    val_loss, val_mse, val_mae = best_model.evaluate(val_gen, steps=VALIDATION_STEPS)
+
+    # Speichern des MAE in einer Textdatei
+    with open(os.path.join(log_dir, 'best_model_mae.txt'), 'w') as f:
+        f.write(f'Validation MAE of the best model: {val_mae}')
+
+    # Diagramm des Trainings- und Validierungsverlusts erstellen und speichern
+    plt.plot(history.history['loss'], label='train_loss')
+    plt.plot(history.history['val_loss'], label='val_loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig(os.path.join(log_dir, 'loss_plot.png'))
+    
 def loop_train():
     train_setup_model_conv_mlp_big()
+    train_setup_model_cov_mlp_small()
+    train_setup_model_mlp_mlp_small()
+    train_setup_model_mlp_mlp_deep()
+    train_setup_model_lstm()
+    train_setup_model_transformer()
+
+
+def train_setup_model_transformer():
+    lr = [0.0001, 0.0005, 0.001]
+    model = setup_model_transformer()
+    for i in lr:
+        train("transformer", "lr"+str(i)+",patience20", model, i) 
+
+def train_setup_model_lstm():
+    lr = [0.0001, 0.0005, 0.001]
+    model = setup_model_lstm()
+    for i in lr:
+        train("lstm", "lr"+str(i)+",patience20", model, i) 
+
+def train_setup_model_mlp_mlp_deep():
+    lr = [0.0001, 0.0005, 0.001]
+    model = setup_model_mlp_mlp_deep()
+    for i in lr:
+        train("mlp_mlp_deep", "lr"+str(i)+",patience20", model, i) 
+
+def train_setup_model_mlp_mlp_small():
+    lr = [0.0001, 0.0005, 0.001]
+    model = setup_model_mlp_mlp_small()
+    for i in lr:
+        train("mlp_mlp_small", "lr"+str(i)+",patience20", model, i) 
+
+def train_setup_model_cov_mlp_small():
+    lr = [0.00005, 0.00015, 0.001]
+    model = setup_model_conv_mlp_small()
+    for i in lr:
+        train("conv_mlp_small", "lr"+str(i)+",patience20", model, i) 
 
 def train_setup_model_conv_mlp_big():
-    lr = [0.000005,0.00001, 0.000015]
-    dp = [0, 0.05]
-    for d in dp:
-        model = setup_model_conv_mlp_big(d)
-        for i in lr:
-            train("conv_mlp_big", str(i), model, i)
+    lr = [0.00005, 0.00015, 0.001]
+    model = setup_model_conv_mlp_big()
+    for i in lr:
+        train("conv_mlp_big", "lr"+str(i)+",patience20", model, i)
 
 
 def run():
     physical_devices = tf.config.list_physical_devices('GPU')
     print("\nGPUs: {}\n".format(physical_devices))
 
-    model = setup_model_conv_mlp_big()
+    model = setup_model_transformer()
 
     # Pfad für die Modelle
     model_path = "models/"
 
     #loop_train()
-    train(model_path, "test", model, 0.000008)
+    train(model_path, "test", model, 0.001)
 
 if __name__== "__main__":
     run()

@@ -33,12 +33,9 @@ def add_castling(chess_board: ChessBoard, piece: Piece, moves):
         return
     else:
         if (piece.position[1] != chess_board.white_pieces[chess_board.king_pos].position[1] and chess_board.color_to_move == WHITE) or (piece.position[1] != chess_board.black_pieces[chess_board.king_pos].position[1] and chess_board.color_to_move == BLACK):
-            #print(chess_board.past_moves)  # wie kann das sein?????
+            
             print("moves: \n")
             chess_board.show_board()
-            # for i in range(chess_board.move_count):
-            #     ind = i*5
-            #     print("(",chess_board.past_moves[ind],",",chess_board.past_moves[ind+1],") -> (",chess_board.past_moves[ind+2],",", chess_board.past_moves[ind+3],") ", chess_board.past_moves[ind+4] )
             raise ValueError("Die figuren dürfen nicht in unterschiedlichen reihen sein ...")
         color = chess_board.color_to_move
         if color == WHITE:
@@ -46,8 +43,6 @@ def add_castling(chess_board: ChessBoard, piece: Piece, moves):
         else:
             king_pos = chess_board.black_pieces[chess_board.king_pos].position
 
-        #from king to piece
-        
         direction = -1 if piece.position[0] < king_pos[0] else 1
         field_x = king_pos[0] + direction
         field_y = king_pos[1]
@@ -74,8 +69,6 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
 
     move_directions = piece.rules.move_directions
     
-    #could also chose to make a backwards running pawn!
-    #Move directions double if pawn hasnt moved
     for ind in range(len(move_directions)//3):
         pos_ind = ind*3
         direction_x = move_directions[pos_ind]
@@ -92,7 +85,7 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
             if board[field_x][field_y] == 0:
                 if dist <= real_range and (not promotion(field_y, size, color)):
                     add_move(pos_x, pos_y, field_x, field_y, moves, NORMAL_MOVE)
-                elif dist >= real_range: #pawns cant promote in fist move!
+                elif dist >= real_range: 
                     add_move(pos_x, pos_y, field_x, field_y, moves, DOUBLE_PAWN)
                 elif promotion(field_y, color, size):
                     add_promotions(pos_x, pos_y, field_x, field_y, moves, chess_board)
@@ -111,7 +104,6 @@ def find_pawn_moves(chess_board: ChessBoard, piece: Piece, moves):
     min_move_on_board_attack =  on_board(to_min, size) and on_board(to_y, size) and board[to_min][to_y] != 0 and (board[to_min][to_y] < 0) != (board[pos_x][pos_y] < 0)
     plus_move_on_board_attack =  on_board(to_plus, size) and on_board(to_y, size) and board[to_plus][to_y] != 0 and (board[to_plus][to_y] < 0) !=  (board[pos_x][pos_y] < 0)
 
-    #diagonal capture Moves(on_board(x,y) and gegner and not_promotion field)
     if plus_move_on_board_attack and (not promotion(to_y,color, size)):
         add_move(pos_x, pos_y, to_plus,to_y, moves, NORMAL_MOVE)
     elif plus_move_on_board_attack and promotion(to_y,color, size):

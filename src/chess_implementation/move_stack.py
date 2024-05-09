@@ -3,7 +3,7 @@ import numpy as np
 
 
 class MoveStack:
-
+  """ Contains an array and an index to the last added element"""
   def __init__(self):
     self.stack = np.empty(1000,dtype=int)
     self.head = 0

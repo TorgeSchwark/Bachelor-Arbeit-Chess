@@ -5,7 +5,8 @@ import numpy as np
 import glob
 import pandas as pd
 from multiprocessing import Pool
-
+from multiprocessing.pool import ThreadPool
+import time
 import sqlite3
 
 def select_data(batch_size, min_rowid, max_rowid):
@@ -47,6 +48,22 @@ def data_generator_threaded(batch_size, is_train, num_threads_train=15, num_thre
         results = pool.starmap(select_data, args_list)
         for result in results:
             yield result
-    
-    pool.close()
-    pool.join()
+
+
+def test_dataloader_per_second(num_seconds):
+    dataloader = data_generator_threaded(BATCH_SIZE, True)
+    start_time = time.time()
+    end_time = start_time + num_seconds
+    total_data_generated = 0
+
+    while time.time() < end_time:
+        batch_inputs, batch_labels = next(dataloader)
+        total_data_generated += len(batch_inputs)
+
+    duration = time.time() - start_time
+    data_per_second = total_data_generated / duration
+    return data_per_second
+
+
+# if __name__ == "__main__":
+#     print(test_dataloader_per_second(20))

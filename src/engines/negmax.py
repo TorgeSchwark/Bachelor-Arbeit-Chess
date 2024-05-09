@@ -4,9 +4,8 @@ from chess_implementation.make_moves import make_move, undo_last_move
 from engines.evaluations import basic_relative_evaluation
 import ctypes
 
-
-
 def alpha_beta_basic(board_pointer, depth, original_depth, alpha, beta, score):
+    """ Basic alpha beta engine to test the influence of Neural Networks in Alpha Beta"""
     if depth == 0:
         return chess_lib.eval(board_pointer)
     

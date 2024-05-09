@@ -35,7 +35,7 @@ def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
 
     chess_board.board[from_x][from_y] = 0
     on_field = chess_board.board[to_x][to_y]
-    #if a piece gets captured
+    
     if on_field:
         chess_board.fifty_move_rule[chess_board.move_count] = 0
         chess_board.captured_pieces[chess_board.move_count] = on_field
@@ -46,20 +46,18 @@ def make_normal_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_t
         else:
             captured_piece:Piece = chess_board.white_pieces[pos_in_piece_list_captured]
         captured_piece.is_alive = False
-    else:  #if we dont overwright old captures will be put on the board
+    else: 
         chess_board.captured_pieces[chess_board.move_count] = 0
 
     if piece.first_move == -1:
         piece.first_move = chess_board.move_count
 
-    #save the move
     save_in_last_moves(chess_board, from_x, from_y, to_x, to_y, move_type)
-
-    #set piece on position update piece position
+    
     chess_board.board[to_x][to_y] = piece_number
     piece.position[0] = to_x
     piece.position[1] = to_y
-    #change color to move and move count
+    
     chess_board.color_to_move *= -1
     chess_board.move_count += 1
 
@@ -88,7 +86,6 @@ def make_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
     captured_piece.is_alive = False
     chess_board.board[to_x][from_y] = 0
 
-    #save the move
     save_in_last_moves(chess_board, from_x, from_y, to_x, to_y, move_type)
 
     #set piece on position update piece position
@@ -217,10 +214,7 @@ def undo_en_passant(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_ty
 
 def undo_castling_move(chess_board: ChessBoard, from_x, from_y, to_x, to_y, move_type):
     """Undoes the last move if it was an castling move"""
-    if from_x-to_x == 0:
-        print(from_x, from_y, to_x, to_y, move_type, "move")
-        print(chess_board.white_pieces[chess_board.king_pos].position, "white_king")
-        print(chess_board.black_pieces[chess_board.king_pos].position, "black_king")
+
     king_moving_direction = -2 if from_x > to_x else 2
 
     if chess_board.color_to_move == WHITE:
