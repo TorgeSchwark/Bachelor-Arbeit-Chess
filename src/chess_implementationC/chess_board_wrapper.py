@@ -10,6 +10,7 @@ BOARD_SIZE = 20
 
 # Definition der ctypes-Datentypen für den ChessBoard-Wrapper
 class ChessBoard(ctypes.Structure):
+    """ The warpper class for the c Struct ChessBoard contains the same attributes with equal data types"""
     _fields_ = [
         ("color_to_move", ctypes.c_byte),  # signed char
         ("size", ctypes.c_ubyte),          # unsigned char

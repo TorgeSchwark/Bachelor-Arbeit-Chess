@@ -5,7 +5,7 @@ from model.main_model import Model
 
 
 class PlayGameController(Controller):
-
+    """ The Play Game controller """
     def __init__(self, master, game_name):
         self.master = master
         self.game_name = game_name

@@ -5,7 +5,7 @@ from views.view_variables import *
 from model.main_model import Model
 
 class SetupNewGameController(Controller):
-
+    """ this is the Controller for to the create new game page. The implementaion is very view heavy most funkitonality is implemented there"""
     def __init__(self, master):
         self.master = master
         self.setup_new_game_view = self.loadView("SetupNewGame", master)
@@ -15,7 +15,6 @@ class SetupNewGameController(Controller):
         self.setup_new_game_view.destroy()
         Core.openController("MainMenu", self.master)
 
-    #call the DB to save the Game
     def save_game(self):
         if (self.model.save_game(self.setup_new_game_view.chess_board_instance, self.setup_new_game_view.game_name_var.get())):
             print("Saved Game successful")

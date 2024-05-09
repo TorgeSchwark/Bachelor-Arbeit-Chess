@@ -25,6 +25,7 @@ def test_stock_difference():
         
 
 def thread_call(depth):
+    """ calls multiple threads to play games and compare the stockfish in one depth against depth 16"""
     create_database()
     threads = []
     results = []  
@@ -41,6 +42,7 @@ def thread_call(depth):
     return average_result
     
 def thread_task_with_retry(depth, results_list):
+    """ starts the games """
     while True:
         try:
             result = fill_dbs_by_stock(entries_per_thread, depth)

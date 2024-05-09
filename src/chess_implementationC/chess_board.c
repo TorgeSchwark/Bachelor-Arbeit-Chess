@@ -1,10 +1,10 @@
 
 #include "chess_board.h"
 
-// pawns can only walk like normal pawns!
-
-
-// [-9999] [-1, -1, -1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1] [5, 4, 10, 4] False False False False False Knight.png 4
+/*
+Adds a piece to the board the piece will be added to the white and black halve mirrored. Also the move directions/jump moves will be mirrored
+Some illegal add_pieces are still possible e.g a pawn should only move one piece!
+*/
 void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset, unsigned char img){
     int len_start_pos = position[0]; 
     if ((king && board->has_king) || king && len_start_pos > 3){
@@ -34,7 +34,7 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
             // add the white piece information
             board->white_piece_pos[board->piece_count*2] = x;
             board->white_piece_pos[board->piece_count*2+1] = y;
-            //printf("%d", (sizeof(jump_moves) / sizeof(jump_moves[0])));
+            
             if (jump_moves[0] != -9999){
                 for (int ind_jm = 1; ind_jm < jump_moves[0]; ind_jm+=2){
                     board->white_piece_jump_moves[board->piece_count][ind_jm] = jump_moves[ind_jm];
@@ -58,9 +58,7 @@ void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, 
             board->white_piece_img[board->piece_count] = img;
             board->white_pawn[board->piece_count] = pawn;
 
-            
             // add the neutral information
-
             board->boarder_x[board->piece_count] = boarder_x;
             board->boarder_y[board->piece_count] = boarder_y;
             board->king[board->piece_count] = king;
@@ -117,7 +115,7 @@ void set_size(struct ChessBoard *board, int size){
     board->size = size;
 }
 
-// Funktion zum Drucken eines ChessBoard-Objekts
+// Funktion to print a ChessBoard-Object
 void printChessBoard(struct ChessBoard *board) {
     printf("color_to_move", board->color_to_move);
     printf("size: %u\n", board->size);
@@ -250,6 +248,8 @@ void printChessBoard(struct ChessBoard *board) {
     printf("\n");
 }
 
+
+/* Determains the number a piece i represented by in the database. */
 void get_piece_type_for_db(struct ChessBoard *board,int *piece_ind, signed char color){
     *piece_ind = abs(*piece_ind)-1;
     if(color == 1){
@@ -283,7 +283,7 @@ void get_piece_type_for_db(struct ChessBoard *board,int *piece_ind, signed char 
     }
 }
 
-
+/* determains the type of a piece for the to_fen function since the pieces can be arbatrary */
 void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char color){
     if(color == 1){
         if(board->white_pawn[*piece_ind]){
@@ -316,7 +316,7 @@ void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char
     }
 }
 
-
+/* Not implemented yet converts a fen_string to a ChessBoard struct */
 void fen_to_board(struct ChessBoard *board, char *fen, int fen_end){
 
     unsigned char row_count = 0;
@@ -331,7 +331,7 @@ void fen_to_board(struct ChessBoard *board, char *fen, int fen_end){
 
 }
 
-// work in progress 
+/* converts the current position into fen notation for stockfish evaluation */
 void board_to_fen(struct ChessBoard *board, char *fen){
     char white_pieces_to_fen[] = "PPPPPPPPKRRQNNBB";
     char black_pieces_to_fen[] = "ppppppppkrrqnnbb";
@@ -458,19 +458,9 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     fen[fen_ind] = num_to_num[num_to_save%10];
     fen_ind += 1;
 
-
-
-    
-    // 0:  1
-    // 1: 1
-    // 2 : 2
-    // 3 : 2
-    // 4 : 3 
-
-
 }
 
-
+/* Copies the data from one ChessBoard into a second one. Slow operation!*/
 void copyBoard(struct ChessBoard *board, struct ChessBoard *copies){
 
     copies->color_to_move = board->color_to_move;
@@ -542,6 +532,7 @@ void copyBoard(struct ChessBoard *board, struct ChessBoard *copies){
     return;
 }
 
+/* Adds a normal chess king to the board */
 void add_king(struct ChessBoard *board){
     int move_direction[1] = {-9999};
     int jump_moves[17] = {17,0,1,1,0,1,1,-1,0,-1,-1,-1,1,1,-1,0,-1};
@@ -556,6 +547,7 @@ void add_king(struct ChessBoard *board){
     add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, offset, 0);
 }
 
+/* ads a normal chess rock to the board */
 void add_rooks(struct ChessBoard *board){
     int move_direction[13] = {13,0,1,0,0,-1,0,-1,0,0,1,0,0};
     int jump_moves[1] = {-9999};
@@ -570,6 +562,7 @@ void add_rooks(struct ChessBoard *board){
     add_piece(board, move_direction, jump_moves, position, boarder_x, boarder_y, pawn, king ,castling, offset, 0);
 }
 
+/* adds a normal chess pawn to the board */
 void add_pawns(struct ChessBoard *board){
     int move_directions[4] = {4,0,1,1};
     int jump_moves[1] =  {-9999};
@@ -584,6 +577,7 @@ void add_pawns(struct ChessBoard *board){
     add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset, 0);
 }
 
+/* adds a normal chess knight to the board */
 void add_knight(struct ChessBoard* board){
     int move_directions[1] = {-9999};
     int jump_moves[17] = {17, 2,1 ,1,2 ,-1,2, 2,-1, -2,1, 1,-2, -1,-2, -2,-1};
@@ -598,6 +592,7 @@ void add_knight(struct ChessBoard* board){
     add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset, 0);
 } 
 
+/* adds a normal chess bishop to the board*/
 void add_bishop(struct ChessBoard *board){
     int move_directions[13] = {13, 1,1,0, 1,-1,0, -1,1,0 ,-1,-1,0};
     int jump_moves[1] = {-9999};
@@ -612,6 +607,7 @@ void add_bishop(struct ChessBoard *board){
     add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset, 0);
 }
 
+/* adds a normal chess queen to the board */
 void add_queen(struct ChessBoard *board){
     int move_directions[25] = {25, 0,1,0 ,1,0,0, 1,1,0, -1,0,0, -1,-1,0, -1,1,0, 1,-1,0, 0,-1,0};
     int jump_moves[1] = {-9999};
@@ -626,6 +622,7 @@ void add_queen(struct ChessBoard *board){
     add_piece(board, move_directions, jump_moves, position, boarder_x, boarder_y, pawn, king, castling, offset, 0);
 }
 
+/* initializes fields to 0 that which need to be initialy 0 */
 void setup_normals(struct ChessBoard *board){
     board->color_to_move = 1;
     board->size = 0;
@@ -676,6 +673,7 @@ void setup_normals(struct ChessBoard *board){
     }
 }
 
+/* creates the normal chess game (initilizes board with 0 and adds all pieces)*/
 void create_chess(struct ChessBoard *board){
     setup_normals(board);
     board->size = 8;
@@ -687,13 +685,13 @@ void create_chess(struct ChessBoard *board){
     add_bishop(board);
 }
 
+/* small test in main() */
 int main() {
-    // Erstellen einer Instanz der Struktur ChessBoard
+
     struct ChessBoard board;
 
     create_chess(&board);
     printChessBoard(&board);
 
-    
     return 0;
 }

@@ -14,7 +14,7 @@ from chess_implementationC.chess_board_wrapper import ChessBoard, chess_lib
 
 
 class SetupNewGameView(View):
-
+    """ This is the View to setup a new game most of the complexity is implemented in the view since most information is conataind in the board colors """
     def __init__(self, master, controller):
         
         self.controller = controller
@@ -30,7 +30,7 @@ class SetupNewGameView(View):
 
 
     def place_main_objects(self):
-
+        """ creates/ places the main objects in the GUI """
         self.main_frame = ctk.CTkFrame(master=self.master, border_width=2)
         self.main_frame.pack_propagate(False)
         self.main_frame.pack(expand=True, fill="both")
@@ -75,16 +75,16 @@ class SetupNewGameView(View):
         self.resize_board_button.pack(expand=False, padx=20, pady=5)
 
 
-    #detect choices made (controlled by rect colors not by states) left klicks
+    
     def field_clicked(self, x, y): 
+        """ changes the field color if a field is klicked """
 
         if self.piece_col-x != 0:
             direction_x = (x-self.piece_col) / abs(self.piece_col-x)
         else: 
             direction_x = 0
         if self.piece_row-y != 0:
-            direction_y = (y-self.piece_row) / abs(self.piece_row-y) #TODO: Division by zero problem
-        else:
+            direction_y = (y-self.piece_row) / abs(self.piece_row-y) 
             direction_y = 0
         
         if self.image_clicked and not (x == self.piece_col and y == self.piece_row):
@@ -122,16 +122,18 @@ class SetupNewGameView(View):
 
 
     def is_next_to_piece(self,x,y):
-            return (abs(self.piece_col-x) == 1 and abs(self.piece_row-y)) == 1 or (abs(self.piece_row-y) == 0 and abs(self.piece_col-x)) == 1 or (abs(self.piece_row-y) == 1 and abs(self.piece_col-x) == 0)
+        """ checks if the clicked square is next to the piece"""
+        return (abs(self.piece_col-x) == 1 and abs(self.piece_row-y)) == 1 or (abs(self.piece_row-y) == 0 and abs(self.piece_col-x)) == 1 or (abs(self.piece_row-y) == 1 and abs(self.piece_col-x) == 0)
 
 
     def correct_direction(self,x,y):
+        """ checks if the clicked field is next to a direction (increases the range of a direction)"""
         if self.piece_col-x != 0:
             direction_x = (self.piece_col-x) / abs(self.piece_col-x)
         else: 
             direction_x = 0
         if self.piece_row-y != 0:
-            direction_y = (self.piece_row-y) / abs(self.piece_row-y) #TODO: Division by zero problem
+            direction_y = (self.piece_row-y) / abs(self.piece_row-y) 
         else:
             direction_y = 0
 
@@ -145,8 +147,9 @@ class SetupNewGameView(View):
             return False      
 
 
-    #detect choices made (controlled by rect colors not by states) right klicks
+ 
     def field_clicked_r(self, x, y):
+        """ detecs if a field is clicked with a right klick marks the square as starting position """
         color = self.rectangles[(x, y)].cget("bg")
         bg_color = self.rectangles[(x, y)].cget("highlightbackground")
         if y < (self.board_size//2) and self.image_clicked and y >= self.real_board_y_min and x >= self.real_board_x_min and x < self.real_board_x_max:
@@ -166,8 +169,9 @@ class SetupNewGameView(View):
                     self.piece_start_pos.remove([x,y])
 
 
-    #sets board colors back to default
+   
     def update_board_colors(self):
+        """ changes board colors back to normal """
         self.image_clicked = False
         for position, canvas_obj in self.rectangles.items():
             i, j = position
@@ -184,14 +188,15 @@ class SetupNewGameView(View):
 
             self.rectangles[(black_piece_pos_x + offset, black_piece_pos_y + offset)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
 
-    #changes colors to red for one direction
-    def draw_direction(self,x,y, set): 
+    
+    def draw_direction(self,x,y, set):
+        """ draws the squeres in a chosen direction  """
         if self.piece_col-x != 0:
             direction_x = (x-self.piece_col) / abs(self.piece_col-x)
         else: 
             direction_x = 0
         if self.piece_row-y != 0:
-            direction_y = (y-self.piece_row) / abs(self.piece_row-y) #TODO: Division by zero problem
+            direction_y = (y-self.piece_row) / abs(self.piece_row-y) 
         else:
             direction_y = 0
         if set:
@@ -209,10 +214,10 @@ class SetupNewGameView(View):
                 y += direction_y
 
 
-    #changes one field back to original color
+    
     def change_to_normal_color(self, x, y):
+        """ changes a square back to the normal color """
         value = self.board_value
-        # of a rect has a black thickness it should stay since this is not optional and should stop one of chosing taken positions as starting position
         if self.rectangles[(x,y)].cget("highlightbackground") != REAL_BLACK:
             self.rectangles[(x,y)].configure(highlightthickness=1, highlightbackground="White")
         if (x + y) % 2 == 1:
@@ -226,11 +231,10 @@ class SetupNewGameView(View):
             else:
                 self.rectangles[(x,y)].configure(bg=WHITE)
 
-
-    #if a picture is chosen for the piece loads image in the center
     def on_image_click(self, event, image_path):
+        """ puts the piece in the middle of the board if the image of the piece is chosen """
 
-        self.update_board_colors()  # hier muss auf das rendern gewartet werden!
+        self.update_board_colors() 
 
         if   hasattr(self, "piece_lable") and self.piece_lable != None:
             self.piece_lable.destroy()
@@ -259,9 +263,8 @@ class SetupNewGameView(View):
 
         self.add_piece_options()
 
-
-    #searches the board to detect the settings for the piece by looking for rect colors
     def save_piece(self):
+        """ scans the board for the rules that are set (colors on the board) and tries to add this piece to the ChessBoard instance """
         
         if len(self.piece_start_pos) > 0:
             self.piece_start_pos = []
@@ -312,7 +315,6 @@ class SetupNewGameView(View):
             if self.board_size_slider.cget("state") == "normal":
                 self.board_size_slider.configure(state="disabled") #board size cant be switched now
                 self.chess_board_instance.size = math.ceil(self.board_size / 2)
-                print(math.ceil(self.board_size / 2), "halooo")
                 chess_lib.set_size(ctypes.byref(self.chess_board_instance), ctypes.c_int(math.ceil(self.board_size / 2)))
 
 
@@ -331,7 +333,6 @@ class SetupNewGameView(View):
                 self.piece_jump_moves = [len(self.piece_jump_moves)+1] + self.piece_jump_moves
             self.piece_start_pos = [len(self.piece_start_pos)+1] + self.piece_start_pos
             
-            print( self.piece_move_directions, self.piece_jump_moves, self.piece_start_pos, boarder_x, boarder_y, pawn, king, castling, self.piece_image_path, self.real_board_x_min, self.piece_image_path)
             chess_lib.add_piece(
                 ctypes.byref(self.chess_board_instance),  
                 (ctypes.c_int * len(self.piece_move_directions))(*self.piece_move_directions),  
@@ -345,13 +346,8 @@ class SetupNewGameView(View):
                 ctypes.c_int(self.real_board_x_min),
                 ctypes.c_byte(int(self.piece_image_path.split(".")[0]))
             )
-            # for i in range((len(self.piece_start_pos)-1)//2):
-            #     self.chess_board_instance.images += [self.piece_image_path]
-            
+    
             chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
-            # for i in self.chess_board_instance.images:
-            #     print(i)
-
             self.update_board_colors()
             self.piece_lable.destroy()
             if self.piece_image_path in self.image_labels:
@@ -365,8 +361,9 @@ class SetupNewGameView(View):
             print("piece needs start pos")
 
 
-    #adds the options for the pieces(Pawn, King, ...)
+    
     def add_piece_options(self):
+        """ adds the option buttons for the piece Castling, King , Pawn etc """
 
         if hasattr(self, "piece_options_frame"):
             self.piece_options_frame.destroy()
@@ -405,8 +402,9 @@ class SetupNewGameView(View):
         self.save_piece_button.pack_propagate(False)
 
 
-    #shange to new data_structure ...
+   
     def show_current_board(self):
+        """ shows the current setup of the game every piece on its starding position """
 
         if self.board_size_slider.cget("state") == "disabled":
             children = self.piece_settings_frame.winfo_children()
@@ -434,8 +432,6 @@ class SetupNewGameView(View):
         else:
             raise Exception("please configure one Piece first")
             
-      
-
     #loads images to chose from for the pieces
     def load_piece_images(self):
         self.draw_board(self.board_size_slider.get())
@@ -444,9 +440,7 @@ class SetupNewGameView(View):
             children = self.piece_settings_frame.winfo_children()
             for child in children:
                 child.destroy()
-
         self.image_frame = 0
-
         folder_path = "src/views/images/Chess_pieces/White_pieces/"
         num_columns = 4
         row = 0
@@ -462,9 +456,7 @@ class SetupNewGameView(View):
 
             my_label = ctk.CTkLabel(self.image_frame, text="", image=img)
             my_label.grid(row=row, column=col, padx=5, pady=5)
-
             self.image_labels[file] = my_label
-
             my_label.bind("<Button-1>", lambda event, image_path=(folder_path + file): self.on_image_click(event, image_path))
 
             col += 1
@@ -480,7 +472,6 @@ class SetupNewGameView(View):
 
         min_canvas_size = self.board_frame.winfo_height() - 100  
         cell_size = min_canvas_size / size
-
         self.canvas = ctk.CTkCanvas(master=self.board_frame, width=min_canvas_size, height=min_canvas_size)
         self.canvas.pack(expand=True)
         self.board_cell_size = cell_size
@@ -499,8 +490,9 @@ class SetupNewGameView(View):
                     self.rectangles[(i,j)].configure(bg=WHITE)
 
 
-    #draws the initial board with a frame to chose further jump moves
+    
     def draw_board(self, value, resize=False):
+        """ draws the initial board """
         if int(value) != self.board_size or resize:
             self.image_clicked = False
             self.board_size = int(value) * 2 - (int(value) %2 == 1)
@@ -546,19 +538,6 @@ class SetupNewGameView(View):
                 self.rectangles[(white_piece_pos_x + offset, white_piece_pos_y + offset)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
 
                 self.rectangles[(black_piece_pos_x + offset, black_piece_pos_y + offset)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-
-        
-            # for pos in range(len(self.chess_board_instance.white_pieces)):
-            #     piece = self.chess_board_instance.white_pieces[pos]
-            #     start_pos_x = piece.position[0]
-            #     start_pos_y = piece.position[1]
-            #     self.rectangles[(start_pos_x + self.real_board_x_min, start_pos_y +self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-            # for pos in range(len(self.chess_board_instance.black_pieces)):
-            #     piece = self.chess_board_instance.black_pieces[pos]
-            #     start_pos_x = piece.position[0]
-            #     start_pos_y = piece.position[1]
-            #     self.rectangles[(start_pos_x + self.real_board_x_min, start_pos_y+self.real_board_y_min)].configure(highlightthickness=self.board_cell_size//4, highlightbackground=REAL_BLACK)
-                    
 
     def destroy(self):
         self.main_frame.destroy()

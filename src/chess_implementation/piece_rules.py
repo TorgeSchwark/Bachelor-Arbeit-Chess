@@ -3,9 +3,9 @@ import numpy as np
 #contains piece information that wont be changed
 
 class PieceRules:
-
+    """ Saves Rules for a piece (everything that cant change in a game)"""
     def __init__(self):
-        self.move_directions = np.zeros(0, dtype=int)  #Triplets (x_direction,y_direction,how_far) how_far = 0 if no limits
+        self.move_directions = np.zeros(0, dtype=int)  
         self.jump_moves = np.zeros(0, dtype=int)
         self.boarder_x = False
         self.boarder_y = False 
@@ -14,7 +14,6 @@ class PieceRules:
         self.castling = False
         self.img_name = ""
 
-    #recommended to use set_functions for inserting
     def set_boarder_x(self, value):
         if not (self.king or self.pawn or self.castling):
             self.boarder_x = value

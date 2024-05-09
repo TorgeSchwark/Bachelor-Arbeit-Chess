@@ -35,6 +35,7 @@ game = [6,0,5,2,-1,
         4,2,5,1,-1]
 
 def play_game(chess_board):
+    """ plays the above defined game """
     for i in range(len(game)//5):
         ind = i*5
         if  game[ind] == 4 and game[ind+1] == 1 and game[ind+4] == -4:
@@ -42,7 +43,6 @@ def play_game(chess_board):
         print(game[ind],game[ind+1],game[ind+2],game[ind+3],game[ind+4])
         make_move(chess_board,game[ind],game[ind+1],game[ind+2],game[ind+3],game[ind+4])
         if chess_board.black_pieces[chess_board.king_pos].position[0] != 3 or chess_board.black_pieces[chess_board.king_pos].position[1] != 7:
-            #chess_board.show_board
             print(game[ind+4], "!!")
         
         

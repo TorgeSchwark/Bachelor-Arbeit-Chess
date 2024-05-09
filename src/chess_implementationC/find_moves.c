@@ -1,12 +1,13 @@
 #include "find_moves.h"
 
+/* this code is well tested for NORMAL chess rules via PERFT debugging */
+
 signed char NORMAL_MOVE = -1;
 signed char DOUBLE_PAWN = -2;
 signed char CASTLING = -3;
 signed char EN_PASSANT = -4;
 
-
-
+/* function that finds all moves in the current position. generates illegal moves: king can be captured/exposed. castling when squares are under atack but not if quare is not free*/
 void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_count){
     *moves_count = 0;
     short test = 0;
@@ -26,7 +27,6 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
                         find_move_directions(board, board->white_piece_pos, board->white_piece_move_directions[ind], moves, moves_count, ind);
                     }
                     if (board->castling[ind]){
-                        //continue;
                         add_castling(board, board->white_piece_pos, board->white_piece_first_move, ind,board->white_piece_alive, moves, moves_count);
                     }
                 }
@@ -54,12 +54,9 @@ void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_c
             } 
         }
     }
-    // ("move_count ------ %d", *moves_count);
-    // for(int i = 0; i < *moves_count; i+=5){
-    //     printf("\n ( %d , %d ) -> ( %d , %d ) %d", moves[i], moves[i+1], moves[i+2], moves[i+3], moves[i+4]);
-    // }
 }
 
+/* adds the castling if both the rook and the king didnt move this far and no piece stands in between*/
 void add_castling(struct ChessBoard *board, unsigned char *color_pos, short *color_first_move, unsigned char piece_ind, bool *color_alive, signed char *moves, short* moves_count){
     
     if(color_first_move[piece_ind] == -1 && color_first_move[board->king_pos] == -1 && color_alive[board->king_pos]){
@@ -78,14 +75,17 @@ void add_castling(struct ChessBoard *board, unsigned char *color_pos, short *col
     }
 }
 
+/* checks if a position is on the board */
 bool on_board(signed char x, unsigned char size){
     return (x >= 0 && x < size);
 }
 
+/* checks if a move goes to the last rank of the correct side*/
 bool promotion(signed char y, signed char color, unsigned char size){
     return (color == 1 && y == size-1) || (color == -1 && y == 0);
 }
 
+/* adds all jump moves from for one piece */
 void find_jump_moves(struct ChessBoard *board, unsigned char *color_pos, signed char *piece_jump_moves, signed char *moves, short *moves_count, unsigned char piece_ind){
     unsigned char piece_pos_ind = piece_ind << 1;
     
@@ -117,6 +117,7 @@ void find_jump_moves(struct ChessBoard *board, unsigned char *color_pos, signed 
 
 }
 
+/* adds all pawn moves also en passant promotion and double moves. promoting a pawn dosnt gain the right to move over edges! */
 void find_pawn_moves(struct ChessBoard *board, unsigned char *color_pos, signed char *piece_move_directions,short *color_first_moves, signed char *moves, short *moves_count, unsigned char piece_ind){
     unsigned char piece_pos_ind = piece_ind << 1;
     for(unsigned char ind_md = 1; ind_md < piece_move_directions[0]; ind_md+=3){
@@ -167,6 +168,7 @@ void find_pawn_moves(struct ChessBoard *board, unsigned char *color_pos, signed 
     }
 }
 
+/* adds a en_passant move if it is allowed */
 void add_en_passant(struct ChessBoard *board, unsigned char *color_pos,unsigned char piece_pos_ind, signed char *moves, short *moves_count){
     if (board->move_count > 0){
         if (board->past_moves[board->move_count*5-1] == DOUBLE_PAWN){
@@ -177,6 +179,7 @@ void add_en_passant(struct ChessBoard *board, unsigned char *color_pos,unsigned 
     }
 }
 
+/* finds the moves for all pieces that can move in a direction also resticted range */
 void find_move_directions(struct ChessBoard *board, unsigned char *color_pos, signed char *piece_move_directions, signed char *moves, short *move_counts, unsigned char piece_ind){
     unsigned char piece_pos_ind = piece_ind << 1;
    
@@ -219,6 +222,7 @@ void find_move_directions(struct ChessBoard *board, unsigned char *color_pos, si
     }
 }
 
+/* adds a move to the move stack and increases the move_count */
 void add_move(signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type, signed char* moves, short *moves_count){
     moves[*moves_count] = from_x;
     moves[(*moves_count) + 1] = from_y;
@@ -228,13 +232,14 @@ void add_move(signed char from_x, signed char from_y, signed char to_x, signed c
     (*moves_count) += 5;
 }  
 
+/* adds a promotion to the move stack (the move and every piece the pawn can evolve to)*/
 void add_promotion(signed char from_x, signed char from_y, signed char to_x, signed char to_y, unsigned char *non_pawn_pieces, signed char* moves, short *move_count){
     for(unsigned char ind = 1; ind < non_pawn_pieces[0]; ind++){
         add_move(from_x, from_y, to_x, to_y, ind, moves, move_count);
     }
 }
 
-
+/* finds the move in the move stack and returns the index of it */
 void real_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, char *piece, signed char* moves, short moves_count, int *ind){
     
     signed char move_type = -10;

@@ -3,12 +3,12 @@ from core.Core import Core
 from model.main_model import Model
 
 class LoadGameController(Controller):
+    """ Class for the load game menue wich contains the option to load and play a game this implementation is very view heavy """
 
     def __init__(self, master):
         self.master = master
         self.model = Model()
         self.load_game_view = self.loadView("LoadGame", master)
-    
     
     def select_game(self, game_name):
         print(f"Das ausgewählte Spiel ist: ", game_name)

@@ -1,6 +1,8 @@
 import tensorflow as tf
 from train_variables import *
 
+# sets up some test models for training
+
 def setup_model_conv_mlp_big():
     input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS), name='input')
 

@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 from views.View import View
 
 class MainMenuView(View):
+    """" this is the view for the main Menue """
     def __init__(self, master, controller):
        
         self.controller = controller

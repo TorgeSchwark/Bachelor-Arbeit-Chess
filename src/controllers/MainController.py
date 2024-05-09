@@ -3,7 +3,7 @@ from core.Controller import Controller
 from core.Core import Core
 
 class MainController(Controller):
-
+    """ The main controller sets up the main window and starts the MainMenue"""
     def __init__(self, master):
 
         widget_scale = 2

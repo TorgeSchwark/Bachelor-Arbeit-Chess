@@ -1,12 +1,9 @@
 #include "make_moves.h"
 
+/* this code is well tested for NORMAL chess rules via playing and undoing many games ont the same board without braking it as well as runing the chess engine based on this code */
 
+/* executes a move therefore calls the make move function wich is responsible for it*/
 void make_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
-    // if(board->white_pawn[abs(board->board[from_x][from_y])-1] && board->color_to_move == 1 && to_y == 7 && move_type < 0){
-    //     printf("DAS MUSS EINE PROMOTION SEIN");
-    // }else if(board->black_pawn[abs(board->board[from_x][from_y])-1] && board->color_to_move == -1 && to_y == 0 && move_type < 0){
-    //     printf("DAS MUSS EINE PROMOTION SEIN SCHWARZ");
-    // }
     switch (move_type){
         case -1:
         case -2:
@@ -25,24 +22,12 @@ void make_move(struct ChessBoard *board, signed char from_x, signed char from_y,
 
 }
 
+/* executes a normal move updating every thing in the ChessBoard needed */
 void make_normal_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
-    // if(from_x == 7 && from_y == 0 && to_x == 5 && to_y == 0 ){
-    //     printf("zug gefunden \n");
-    //     signed char moves[1000];
-    //     short move_count = 0;
-    //     find_all_moves(board, moves , &move_count);
-
-    //     for(int m = 0; m < move_count; m+=5){
-    //         printf("%d %d %d %d %d \n", moves[m], moves[m+1], moves[m+2], moves[m+3],moves[m+4]);
-    //     }
-    // }
+    
     signed char piece_number = board->board[from_x][from_y];
     signed char pos_in_piece_list = abs(piece_number)-1;
-    // if(from_x == 7 && from_y == 0 && to_x == 5 && to_y == 0 ){
-    //     printf("zug gefunden piecenum pos_in list color to_move %d %d %d \n", piece_number, pos_in_piece_list,board->color_to_move );
-    //     printf("auf dem brett: %d", board->board[from_x][from_y]);
-    // }
-
+   
     if ((board->color_to_move == 1 && board->white_pawn[pos_in_piece_list]) || (board->color_to_move == -1 && board->black_pawn[pos_in_piece_list])){
         board->fifty_move_rule[board->move_count] = 0;
     }else{
@@ -86,6 +71,7 @@ void make_normal_move(struct ChessBoard *board, signed char from_x, signed char 
     board->move_count += 1;
 }
 
+/* executes an en passant move */
 void make_en_passant(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
     board->board[to_x][to_y] = board->board[from_x][from_y];
     board->board[from_x][from_y] = 0;
@@ -110,6 +96,7 @@ void make_en_passant(struct ChessBoard *board, signed char from_x, signed char f
     
 }
 
+/* Executes a castling move */
 void make_castling_move(struct ChessBoard* board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
     signed char king_moving_direction = (from_x > to_x) ? 2 : -2;
 
@@ -129,8 +116,9 @@ void make_castling_move(struct ChessBoard* board, signed char from_x, signed cha
 
 }
 
+/* executes a promotion. Careful: pawns wont be able to walk over edges even after proming to a piece that can. The undo promotion makes the pawn to a normal Chess pawn !*/
 void make_promotion(struct ChessBoard* board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
-    // piece wont be able to walk over edges ...
+ 
     if(board->color_to_move == 1){
         signed char piece_to_ind = board->non_pawn_pieces[move_type];
         signed char piece_ind = board->board[from_x][from_y]-1;
@@ -171,6 +159,7 @@ void make_promotion(struct ChessBoard* board, signed char from_x, signed char fr
     make_normal_move(board, from_x, from_y, to_x, to_y, move_type);
 }
 
+/* undoes the last move therefor calls the last funktion responsible for it */
 void undo_last_move(struct ChessBoard *board){
    
     switch (board->past_moves[board->move_count*5-1]){
@@ -190,6 +179,7 @@ void undo_last_move(struct ChessBoard *board){
     }
 }
 
+/* undoes normal moves */
 void undo_normal_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
     
     board->board[from_x][from_y] = board->board[to_x][to_y];
@@ -222,6 +212,7 @@ void undo_normal_move(struct ChessBoard *board, signed char from_x, signed char 
     board->move_count -= 1;   
 }
 
+/* undoes en passant moves*/
 void undo_en_passant(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
     
     undo_normal_move(board, from_x, from_y, to_x, to_y, move_type);
@@ -240,6 +231,7 @@ void undo_en_passant(struct ChessBoard *board, signed char from_x, signed char f
     board->board[to_x][to_y] = 0;
 }
 
+/* undoes a castling move */
 void undo_castling_move(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
     signed char king_moving_direction = (from_x > to_x) ? -2 : 2;
 
@@ -258,6 +250,7 @@ void undo_castling_move(struct ChessBoard *board, signed char from_x, signed cha
     undo_normal_move(board, from_x, from_y, to_x, to_y, move_type);
 }
 
+/* undoes a promotion. Undoing a promotion the piece is turned into a NORMAL chess pawn */
 void  undo_promotion(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
     // there is no need to reset castling etc since pawn is checked first in find_moves also boarder_x, boarder_y is not enabled for pawn
     if(board->color_to_move == 1){
@@ -282,6 +275,7 @@ void  undo_promotion(struct ChessBoard *board, signed char from_x, signed char f
     undo_normal_move(board, from_x, from_y, to_x, to_y, move_type);
 }
 
+/* saves the last move in the last_moves list */
 void save_in_last_moves(struct ChessBoard *board, signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type){
     board->past_moves[board->move_count*5] = from_x;
     board->past_moves[board->move_count*5+1] = from_y;

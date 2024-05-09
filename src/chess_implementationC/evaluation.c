@@ -1,5 +1,7 @@
 // https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 // PeSTO evaluation funktion
+/* piece/sq tables */
+/* values from Rofchade: http://www.talkchess.com/forum3/viewtopic.php?f=2&t=68311&start=19 */
 #include "evaluation.h"
 
 int side2move;
@@ -16,8 +18,7 @@ int double_knight_penalty = -5;
 int mg_value[6] = { 82, 337, 365, 477, 1025,  20000};
 int eg_value[6] = { 94, 281, 297, 512,  936,  20000};
 
-/* piece/sq tables */
-/* values from Rofchade: http://www.talkchess.com/forum3/viewtopic.php?f=2&t=68311&start=19 */
+
 
 int mg_pawn_table[64] = {
       0,   0,   0,   0,   0,   0,  0,   0,
@@ -188,6 +189,7 @@ void init_tables()
     }
 }
 
+/* returns the piece type (number) in the pesto tables since they can be in a abitrary order in the ChessBoard struct */
 int piece_white(signed char ind, struct ChessBoard *pos_board){
     if(pos_board->white_pawn[ind]){
         return WHITE_PAWN;
@@ -204,6 +206,7 @@ int piece_white(signed char ind, struct ChessBoard *pos_board){
     }
 }
 
+/* returns the piece type (number) in the pesto tables since they can be in a abitrary order in the ChessBoard struct */
 int piece_black(signed char ind, struct ChessBoard *pos_board){
     if(pos_board->black_pawn[ind]){
         return BLACK_PAWN;
@@ -220,6 +223,7 @@ int piece_black(signed char ind, struct ChessBoard *pos_board){
     }
 }
 
+/* checking for any repititions is coputationaly expensive therefor this function checks if the last 3 moves where a direct repetition wich is mutch faster */
 bool direct_repetition(struct ChessBoard *board){
     if(board->move_count >= 8){
         if(same_move(board, board->move_count-1,  board->move_count-5) && same_move(board, board->move_count-3, board->move_count-7) && same_move(board, board->move_count-2, board->move_count-6) && same_move(board, board->move_count-4, board->move_count-8)){
@@ -230,6 +234,7 @@ bool direct_repetition(struct ChessBoard *board){
 
 }
 
+/* A PeSTO like evaluation funktion that only uses pieces tables with aditional information about pawn structure and double bishop/knight */
 void eval(struct ChessBoard *pos_board, int *score)
 {   
     if(direct_repetition(pos_board)){
@@ -266,7 +271,7 @@ void eval(struct ChessBoard *pos_board, int *score)
         int pc_w = piece_white(ind, pos_board);
         int pc_b = piece_black(ind, pos_board);
         
-        if(pos_board->white_piece_alive[ind]){ // boards are upside down left right swaped and indices between 0 and 63
+        if(pos_board->white_piece_alive[ind]){ // ChessBoards are upside down left right swaped and indices between 0 and 63
             mg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+((7-pos_board->white_piece_pos[(ind<<1)+1])<<3)];
             eg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+((7-pos_board->white_piece_pos[(ind<<1)+1])<<3)];
             gamePhase += gamephaseInc[pc_w];
@@ -323,8 +328,7 @@ void eval(struct ChessBoard *pos_board, int *score)
     int mgPhase = gamePhase;
     if (mgPhase > 24){
         mgPhase = 24;
-    } /* in case of early promotion */
+    } 
     int egPhase = 24 - mgPhase;
     *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + bonus;
-    //printf(" %d %d %d %d %d \n", mgScore, mgPhase, egScore, egPhase, bonus);
 }

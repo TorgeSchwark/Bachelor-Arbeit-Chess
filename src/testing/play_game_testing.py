@@ -11,7 +11,7 @@ import time
 import random
 
 def play_game_test(chess_board: ChessBoard, depth, legnth):
-
+    """ plays a number of games to test the implementation """
     for i in range(legnth):
         print("ein spiel")
         chess_board_mut = copy.deepcopy(chess_board)
@@ -20,7 +20,7 @@ def play_game_test(chess_board: ChessBoard, depth, legnth):
 
 
 def play_game(chess_board, depth):
-
+    """ executes one game on the python implementation """
     while legal_board(chess_board):
         moves = find_all_moves(chess_board)
 
@@ -33,7 +33,7 @@ def play_game(chess_board, depth):
         
 
 def engine(chess_board, depth):
-
+    """ test engine without evaluation just to test the implementation """
     if depth > 0 and legal_board(chess_board):
         moves = find_all_moves(chess_board)
 
@@ -52,6 +52,8 @@ def engine(chess_board, depth):
 
 
 def legal_board(chess_board: ChessBoard):
+    """ debugging function to look for illegal board positions """
+
     save_color = chess_board.color_to_move
     chess_board.color_to_move = WHITE
     white_moves = find_all_moves(chess_board)

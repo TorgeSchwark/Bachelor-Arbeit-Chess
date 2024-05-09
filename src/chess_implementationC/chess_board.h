@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Definition der Struktur ChessBoard
 #define MAX_MOVES 10000
 #define MAX_PIECES 32
 #define MAX_MOVE_DIRECTIONS 32
@@ -14,21 +13,22 @@
 #define BOARD_SIZE 20
 
 
-
+/* Definition of the Chessboard Struct containig all piece information and all metadata*/
 struct ChessBoard
 {
+    /* meta data */
     signed char color_to_move;
     unsigned char size;
     bool has_king;
     signed char king_pos;
     short move_count;
-    
     unsigned char fifty_move_rule[MAX_FIFTY_MOVE_RULE];
     unsigned char non_pawn_pieces[MAX_PIECES];
     signed char past_moves[MAX_MOVES];
     signed char captured_piece[MAX_FIFTY_MOVE_RULE];
     signed char board[BOARD_SIZE][BOARD_SIZE];
 
+    /* white piece information*/
     unsigned char white_piece_pos[2 * MAX_PIECES];
     bool white_piece_alive[MAX_PIECES];
     signed char white_piece_jump_moves[MAX_PIECES][MAX_JUMP_MOVES*2];
@@ -37,6 +37,7 @@ struct ChessBoard
     unsigned char white_piece_img[MAX_PIECES];
     bool white_pawn[MAX_PIECES];
 
+    /*black piece information*/
     unsigned char black_piece_pos[2 * MAX_PIECES];
     bool black_piece_alive[MAX_PIECES];
     signed char black_piece_jump_moves[MAX_PIECES][MAX_JUMP_MOVES *2];
@@ -45,6 +46,7 @@ struct ChessBoard
     unsigned char black_piece_img[MAX_PIECES];
     bool black_pawn[MAX_PIECES];
 
+    /*general piece information this cant change with a promotions !!*/
     unsigned char piece_count;
     bool boarder_x[MAX_PIECES];
     bool boarder_y[MAX_PIECES];
@@ -54,7 +56,6 @@ struct ChessBoard
 
 void set_size(struct ChessBoard *board, int size);
 
-// Funktionen zum Hinzufügen verschiedener Schachfiguren
 void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset,unsigned char img);
 void add_king(struct ChessBoard *board);
 void add_rooks(struct ChessBoard *board);
@@ -67,13 +68,10 @@ void get_piece_type_for_db(struct ChessBoard *board,int *piece_ind, signed char 
 
 void board_to_fen(struct ChessBoard *board, char *fen);
 
-// Funktion zum Initialisieren eines normalen Schachbretts
 void setup_normals(struct ChessBoard *board);
 
-// Funktion zum Erstellen eines Schachbretts mit Standardanordnung
 void create_chess(struct ChessBoard *board);
 
-// Funktion zum Drucken eines ChessBoard-Objekts
 void printChessBoard(struct ChessBoard *board);
 
 void copyBoard(struct ChessBoard *board, struct ChessBoard *copies);

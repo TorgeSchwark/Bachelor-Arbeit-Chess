@@ -9,9 +9,6 @@ import sqlite3
 import threading
 import time
 import traceback
-# 1000*24
-# further 1000 *24 max game length 100 moves
-# 10000*24 random games expected 4 gb each 5 locks
 
 num_threads = 12
 entries_per_thread = 1
@@ -19,9 +16,8 @@ entries_per_thread = 1
 DB_SF = ".\src\supervised_engines\stockfish_depth16_DB.db"
 DB_AB = ".\src\supervised_engines\lpha_beta_DB.db"
 
-
-
 def thread_call():
+    """ Calls the funktion to fill the database on multiple threads """
     create_database()
     threads = []
     for _ in range(num_threads):
@@ -31,24 +27,23 @@ def thread_call():
 
     for thread in threads:
         thread.join()
-
     print("Alle Threads haben ihre Arbeit abgeschlossen.")
 
 def thread_task_with_retry():
+    """ starts to fill the Database on multiple threads if a thread dies starts again"""
     while True:
         try:
             fill_dbs_by_stock(entries_per_thread)
         except Exception as e:
             print("Fehler in Thread:", e)
-            print(traceback.format_exc())  # Drucken Sie die Fehlermeldung und den Traceback
-            # Warten für einen neuen Versuch
+            print(traceback.format_exc()) 
             time.sleep(1)
             continue
         
 
 def fill_dbs_by_stock(amount):
     """ Fills the two databases one with positions and evaluations from the AB engine one with the evaluations of SF the positions are created via chosing one of the top SF moves"""
-    #print(threading.get_ident())
+    
     # conn_ab = sqlite3.connect(DB_AB)
     # cursor_ab = conn_ab.cursor()
     conn_sf = sqlite3.connect(DB_SF)

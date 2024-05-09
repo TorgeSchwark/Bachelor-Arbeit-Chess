@@ -4,7 +4,7 @@ from views.View import View
 from views.view_variables import RED, DARKRED
 
 class LoadGameView(View):
-
+    """ this is the view for the load game Menue where you can chose wich of the created games you want to play """
     def __init__(self, master, controller):
         self.master = master
         self.controller = controller

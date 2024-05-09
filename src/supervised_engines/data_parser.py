@@ -10,12 +10,11 @@ import time
 import sqlite3
 
 def select_data(batch_size, min_rowid, max_rowid):
-    
+    """ generates batch_size random indices in the range between min_rowid and max_rowid and queries those rows from the database """
     conn = sqlite3.connect(DATA_PATH)
     cursor = conn.cursor()
     random_rowids = [random.randint(min_rowid, max_rowid) for _ in range(batch_size)]
 
-    # SQL-Abfrage zusammenstellen, um Zeilen mit den zufälligen ROWIDs abzurufen
     placeholders = ','.join(['?'] * len(random_rowids))
     query = f"SELECT * FROM ChessData WHERE ROWID IN ({placeholders})"
     cursor.execute(query, random_rowids)
@@ -27,7 +26,8 @@ def select_data(batch_size, min_rowid, max_rowid):
     selected_labels = np.array([[[row[1]]] for row in data])
     return selected_inputs, selected_labels
 
-def data_generator_threaded(batch_size, is_train, num_threads_train=15, num_threads_val=5):
+def data_generator_threaded(batch_size, is_train, pool, num_threads_train=15, num_threads_val=5):
+    """ querries the data from the database therefore utilizes all threads in the pool """
     path = DATA_PATH
     conn = sqlite3.connect(path)
     data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
@@ -35,12 +35,10 @@ def data_generator_threaded(batch_size, is_train, num_threads_train=15, num_thre
     if is_train:
         max_ind = int(SPLIT* data_size)
         min_ind = 1
-        pool = Pool(num_threads_train)
         num_threads = num_threads_train
     else:
         min_ind = int(SPLIT * data_size)
         max_ind = data_size
-        pool = Pool(num_threads_val)
         num_threads = num_threads_val
 
     while True:
@@ -51,6 +49,7 @@ def data_generator_threaded(batch_size, is_train, num_threads_train=15, num_thre
 
 
 def test_dataloader_per_second(num_seconds):
+    """ tests the speed of the Dataloader for num_seconds of time returns the speed in rows per second """
     dataloader = data_generator_threaded(BATCH_SIZE, True)
     start_time = time.time()
     end_time = start_time + num_seconds

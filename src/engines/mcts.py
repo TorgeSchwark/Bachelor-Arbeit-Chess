@@ -5,6 +5,8 @@ import random
 from math import log, sqrt, e, inf
 import time
 
+
+# a basic very slow implementation of the MCTS only usefull to understand how MCTS works 
 class node():
     def __init__(self):
         self.state = ChessBoard()
@@ -107,7 +109,7 @@ def mcts_pred(curr_node, over, white, iterations=500):
         child.state = tmp_state
         child.parent = curr_node
         curr_node.child.add(child)
-        map_state_move[child] = i*5  #care could be wrong need to save the move
+        map_state_move[child] = i*5  
 
     while iterations > 0:
         start = time.time()
@@ -124,7 +126,6 @@ def mcts_pred(curr_node, over, white, iterations=500):
             curr_node = rollback(state, reward)
             iterations -= 1
         else:
-           # print("schwarz")
             min_ucb = inf
             sel_child = None
             for i in curr_node.child:
@@ -137,7 +138,6 @@ def mcts_pred(curr_node, over, white, iterations=500):
             curr_node = rollback(state, reward)
             iterations -=1
         end = time.time()
-        #print(end-start, "\n")
 
     if white:
         mx = -inf 

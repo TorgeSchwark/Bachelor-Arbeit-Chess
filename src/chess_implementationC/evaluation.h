@@ -31,12 +31,16 @@
 #define BLACK_KING      (2 * KING + BLACK)
 #define EMPTY           (BLACK_KING + 1)
 
+/* A PeSTO like evaluation funktion that only uses pieces tables with aditional information about pawn structure and double bishop/knight */
 void eval(struct ChessBoard *pos_board, int *score);
 
+/* checking for any repititions is coputationaly expensive therefor this function checks if the last 3 moves where a direct repetition wich is mutch faster */
 bool direct_repetition(struct ChessBoard *board);
 
+/* returns the piece type (number) in the pesto tables since they can be in a abitrary order in the ChessBoard struct */
 int piece_black(signed char ind, struct ChessBoard *pos_board);
 
+/* returns the piece type (number) in the pesto tables since they can be in a abitrary order in the ChessBoard struct */
 int piece_white(signed char ind, struct ChessBoard *pos_board);
 
 #endif

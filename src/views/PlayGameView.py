@@ -8,7 +8,6 @@ from chess_implementation.chess_variables import *
 from chess_implementationC.chess_board_wrapper import ChessBoard, chess_lib 
 import ctypes
 
-from testing.testing_chess_impl import test_engine
 from testing.play_game_testing import play_game_test
 from engines.mcts import monte_carlo_tree_search
 from supervised_engines.fill_db import fill_dbs_by_stock, thread_call
@@ -29,6 +28,8 @@ stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-wind
 stockfish.set_elo_rating(1300)
 
 class PlayGameView(View):
+    """ this is the view to play a game currently unsed for debugging """
+
     
     def __init__(self, master, controller):
         chess_lib.init_tables()
@@ -266,7 +267,7 @@ class PlayGameView(View):
             if self.is_move() == 1:
                 self.make_move([self.first_click[0],self.first_click[1],self.second_click[0], self.second_click[1],1], self.find_move_ind(1))
             elif self.is_move() > 1: 
-                self.make_move([self.first_click[0],self.first_click[1],self.second_click[0], self.second_click[1],1], self.find_move_ind(1)) # HIER MUSS STATT DER 1 ein engabefeld hin
+                self.make_move([self.first_click[0],self.first_click[1],self.second_click[0], self.second_click[1],1], self.find_move_ind(1))
                 
             self.first_click = (-1,-1)
             self.second_click = (-1,-1)
@@ -306,11 +307,6 @@ class PlayGameView(View):
         return self.main_frame.destroy()
     
 
-
-def thread_engine(args):
-    move_count = [-1]
-    test_engine(args[0], args[1], move_count)
-    return move_count
 
 def thread_testing(args):
     play_game_test(args[0],args[1],args[2])

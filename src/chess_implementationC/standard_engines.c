@@ -1,5 +1,6 @@
 #include "standard_engines.h"
 
+/* this is a standard implementation of the negmax algorithm */
 void neg_max(struct ChessBoard *board, int depth, int original_depth, int *score){
 
     if(depth == 0){
@@ -29,8 +30,8 @@ void neg_max(struct ChessBoard *board, int depth, int original_depth, int *score
     }
 }
 
+/* basic alpha beta implementation gives back the index of the best move in highest depth otherwise the best score */
 void alpha_beta_basic(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score){
-    // printf("222");
     if(depth == 0){
         return eval(board, score);
     }
@@ -61,18 +62,14 @@ void alpha_beta_basic(struct ChessBoard *board, int depth, int original_depth, i
             }
         }
     }
-    // if (depth != original_depth){
-    *score = maxWert;
-    // }
-    // coment in for use just for db ...
-    // }else{
-    //     *score = best_move;
-    // }
+    if (depth != original_depth){
+        *score = maxWert;
+    }else{
+        *score = best_move;
+    }
 }
 
-
-
-
+/* this is a optimisation of the alpha beta algorithm wich sorts the moves by the evaluation before executing them wich gains speed due to more cutoffs*/
 void advanced_apha_beta_engine(struct ChessBoard *board, int depth,int original_depth, int alpha, int beta, int *score){
 
     if(depth == 0){
@@ -124,6 +121,7 @@ void advanced_apha_beta_engine(struct ChessBoard *board, int depth,int original_
     }
 }
 
+/* puts the index of the moves sorted by the evaluation of the move in the sorted_ind array */
 void sort_moves(struct ChessBoard *board, char *moves, short move_count, int *sorted_ind, bool acurate){
     int evals[200];
     if(!acurate){
@@ -164,46 +162,3 @@ void sort_moves(struct ChessBoard *board, char *moves, short move_count, int *so
 
 }
 
-void new_alphaBeta(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score){
-
-    int bestscore = -999999;
-    if(depth == 0){
-        return eval(board, score);
-    } 
-    signed char moves[2000];
-    short move_count = 0;
-    bool legal[200];
-    int best_move = 0;
-    find_all_moves(board, moves, &move_count);
-    if(depth == original_depth){
-        legal_moves(board, move_count, moves, legal);
-    }
-    int next_eval = 0;
-    for(int i = 0; i < move_count; i+=5){
-        if(depth == original_depth && !legal[i/5]){
-            continue;
-        }
-        make_move(board, moves[i], moves[i+1], moves[i+2], moves[i+3], moves[i+4]);
-        new_alphaBeta(board, depth-1, original_depth, -beta, -alpha, &next_eval);
-        undo_last_move(board);
-        if(-next_eval >= beta){
-            bestscore = -next_eval;
-            *score = -next_eval;
-            break;
-        }
-        if(-next_eval  > bestscore){
-            bestscore = -next_eval;
-            best_move = i;
-            if(bestscore > alpha){
-                alpha = bestscore;
-            }
-        }
-    }
-    if (depth != original_depth){
-        *score = bestscore;
-    }else{
-        *score = best_move;
-    }
-
-
-}
