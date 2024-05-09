@@ -1,32 +1,40 @@
-from chess_implementation.chess_board import ChessBoard
+from chess_implementationC.chess_board_wrapper import ChessBoard, chess_lib 
 from chess_implementation.find_moves import find_all_moves
 from chess_implementation.make_moves import make_move, undo_last_move
 from engines.evaluations import basic_relative_evaluation
+import ctypes
 
 
-def negmax(chess_board: ChessBoard, depth, count):
-    """
-        this is a standart minmax engine 
-        :param chess_board: the board information
-        :depth the analys depth in half moves
-    """
-    count[0] += 1
-    move = [0,0,0,0,0]
-    if depth != 0:
-        max = -99999999
-        moves = find_all_moves(chess_board)
-        for ind in range(moves.head):
-            pos_ind = ind*5
-            make_move(chess_board, moves.stack[pos_ind], moves.stack[pos_ind+1], moves.stack[pos_ind+2], moves.stack[pos_ind+3], moves.stack[pos_ind+4])
-            score = -negmax(chess_board, depth-1, count)[0]
-            undo_last_move(chess_board)
-            if score > max:
-                max = score
-                move = [moves.stack[pos_ind], moves.stack[pos_ind+1], moves.stack[pos_ind+2], moves.stack[pos_ind+3], moves.stack[pos_ind+4]]
+
+def alpha_beta_basic(board_pointer, depth, original_depth, alpha, beta, score):
+    if depth == 0:
+        return chess_lib.eval(board_pointer)
+    
+    maxWert = alpha
+    moves = (ctypes.c_byte * 2024)()
+    move_count = ctypes.c_short(0)
+    chess_lib.find_all_moves(board_pointer, moves, ctypes.byref(move_count))
+    best_move = 0
+    score_next = [0]
+    legal = (ctypes.c_bool * 200)
+    
+    if depth == original_depth:
+        chess_lib.lega_moves(board_pointer, move_count, moves, legal)
+
+    for i in range(move_count//5):
+        ind = i*5
+        if depth == original_depth and not legal[i]:
+            continue
+        chess_lib.make_move(board_pointer, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4])
+        alpha_beta_basic(board_pointer, depth-1, original_depth, -beta, -maxWert, score_next)
+        chess_lib.undo_last_move(board_pointer)
+
+        if -score_next[0] > maxWert:
+            maxWert = -score_next[0]
+            best_move = ind
+            if maxWert >= beta:
+                break
+
+    score[0] = maxWert
+
         
-    else:
-        max = basic_relative_evaluation(chess_board)
-    return max, move
-            
-            
-

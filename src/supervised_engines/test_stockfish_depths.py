@@ -13,44 +13,57 @@ import traceback
 # further 1000 *24 max game length 100 moves
 # 10000*24 random games expected 4 gb each 5 locks
 
-num_threads = 12
-entries_per_thread = 1
+num_threads = 5
+entries_per_thread = 2
 
 DB_SF = ".\src\supervised_engines\stockfish_depth16_DB.db"
 DB_AB = ".\src\supervised_engines\lpha_beta_DB.db"
 
+def test_stock_difference():
+    for i in range(4,16):
+        val = thread_call(i)
+        print("difference between depth", i, " and " , 16 , " is ", val)
+        
 
-
-def thread_call():
+def thread_call(depth):
     create_database()
     threads = []
+    results = []  # Liste zum Sammeln der Ergebnisse der Threads
+
     for _ in range(num_threads):
-        thread = threading.Thread(target=thread_task_with_retry)
+        thread = threading.Thread(target=thread_task_with_retry, args=(depth, results,))
         thread.start()
         threads.append(thread)
 
     for thread in threads:
         thread.join()
 
+    # Berechnen Sie den Durchschnitt der Ergebnisse
+    print(results)
+    average_result = sum(results) / len(results)
+    return average_result
+    print("Durchschnitt der Werte:", average_result)
+
     print("Alle Threads haben ihre Arbeit abgeschlossen.")
 
-def thread_task_with_retry():
+def thread_task_with_retry(depth, results_list):
     while True:
         try:
-            fill_dbs_by_stock(entries_per_thread)
+            result = fill_dbs_by_stock(entries_per_thread, depth)
+            results_list.append(result)  # Ergebnis zur Liste hinzufügen
+            return  # Beende die Schleife nach erfolgreichem Abschluss
         except Exception as e:
-            print("Fehler in Thread:", e)
-            print(traceback.format_exc())  # Drucken Sie die Fehlermeldung und den Traceback
+            #print("Fehler in Thread:", e)
+            #print(traceback.format_exc())  # Drucken Sie die Fehlermeldung und den Traceback
             # Warten für einen neuen Versuch
             time.sleep(1)
             continue
-        
 
-def fill_dbs_by_stock(amount):
+def fill_dbs_by_stock(amount, sf_depth):
     """ Fills the two databases one with positions and evaluations from the AB engine one with the evaluations of SF the positions are created via chosing one of the top SF moves"""
-    #print(threading.get_ident())
-    # conn_ab = sqlite3.connect(DB_AB)
-    # cursor_ab = conn_ab.cursor()
+    # print(threading.get_ident())
+    #conn_ab = sqlite3.connect(DB_AB)
+    #cursor_ab = conn_ab.cursor()
     conn_sf = sqlite3.connect(DB_SF)
     cursor_sf = conn_sf.cursor()
 
@@ -68,25 +81,33 @@ def fill_dbs_by_stock(amount):
 
     # List to store the values to be inserted
     sf_values = []
-    ab_values = []
+    #ab_values = []
     boards = []
     depths = []
+    eval_test = 0
+    eval_count = 0
     
     while amount > 0:
-        #print("amount", amount)
+        
         chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt)) 
         count = 0
+        avg_time = 0
         randomnes = 5
         
         while matt.value == 0:
             count += 1
+            eval_count += 1
             fen = get_fen_string(board)
            
             if True:
-                
+            
                 stockfish.set_fen_position(fen)
-                
+                stockfish.set_depth(sf_depth)
+                sf_val_short = stockfish.get_evaluation()['value']
+                stockfish.set_depth(16)
                 sf_val = stockfish.get_evaluation()['value']
+                eval_test += abs(sf_val_short-sf_val)
+                #print(abs(sf_val_short-sf_val), sf_val_short, sf_val)
                 
                 #score = ctypes.c_int(0)
                 #chess_lib.alpha_beta_basic(ctypes.byref(board),ctypes.c_int(3), ctypes.c_int(3), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score))
@@ -130,10 +151,12 @@ def fill_dbs_by_stock(amount):
         # ''', zip(boards, ab_values, depths))
 
         conn_sf.commit()
-        # conn_ab.commit()
+        #conn_ab.commit()
 
     except Exception as e:
         print("Fehler beim Einfügen in die Datenbank:", e)
+
+    return eval_test/eval_count
 
 
 def fill_dbs_random(amount):

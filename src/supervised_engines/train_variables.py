@@ -10,6 +10,7 @@ EPOCHS = 300
 STEPS_PER_EPOCH = 100 # 30
 VALIDATION_STEPS = 30
 THREADS = 10
+SPLIT = 0.7
 
 #DATA_PATH = ".\src\supervised_engines\stockfish_DB.db"
-DATA_PATH = ".\src\supervised_engines\stockfish_DB.db"
+DATA_PATH = ".\src\supervised_engines\stockfish_depth16_DB.db"
