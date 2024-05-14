@@ -270,7 +270,7 @@ def to_str(board, fen):
             spaces += 1
         elif spaces == 2:
             if i in castling:
-                castling[i] == 1
+                castling[i] = 1
         elif spaces == 3:
             if i in chars:
                 doublex = chars.index(i)
@@ -281,6 +281,7 @@ def to_str(board, fen):
         elif spaces == 5:
             moves_count += i
     
+    print(castling)
     for key in castling:
         row_strings += " " +str(castling[key])
     

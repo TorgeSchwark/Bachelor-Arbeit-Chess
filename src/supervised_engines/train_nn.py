@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from tensorflow.python.client import device_lib 
 from train_variables import *
 from data_parser import data_generator_threaded
+from setup_models_variable import *
 from setup_models import *
 from multiprocessing import Pool
 import datetime
@@ -11,8 +12,8 @@ import datetime
 def train(model_path, arch_name, model, lr, from_checkpoint=False):
     """ the main train method defining the callbacks and starding the data_generators and finaly the training """
     batch_size = BATCH_SIZE
-    pool_train = Pool(5)
-    pool_val = Pool(5)
+    pool_train = Pool(10)
+    pool_val = Pool(10)
 
     train_gen = data_generator_threaded(batch_size, True, pool_train) 
     val_gen = data_generator_threaded(batch_size, False, pool_val)
@@ -39,7 +40,7 @@ def train(model_path, arch_name, model, lr, from_checkpoint=False):
 
     early_stopping_callback = tf.keras.callbacks.EarlyStopping(
         monitor='val_loss',  
-        patience=20,  
+        patience=30,  
         verbose=1, 
         restore_best_weights=True  
     )
@@ -83,6 +84,35 @@ def train(model_path, arch_name, model, lr, from_checkpoint=False):
     pool_val.join()
 
 
+def loop_train_two():
+    #no_split_setup()
+    train_conv_mlp_two()
+
+def train_lstm_two():
+    learning_rates = [0.001,0.0007]
+
+def no_split_setup():
+    # model = setup_no_split_lstm()
+    # train("models/lstm_split", "lstm_split_up", model, 0.001)
+    # model = setup_no_split_mlp()
+    # train("models/no_split_mlp", "mlp_no_split_up", model, 0.0008)
+    model = no_split_transformer()
+    train("models/no_split_transf", "transform_no_split", model,  0.0008)
+
+
+def train_conv_mlp_two():
+    learning_rates = [0.00005]
+    conv_archs = [[[32,3],[32,3],[32,3]],[[32,3],[32,3],[32,3],[32,3]],[[64,3],[64,3],[64,3]],[[32,2],[32,2],[32,2]],[[32,4],[32,4],[32,4]]]
+    conv_dp = [0, 0, 0, 0, 0]
+    mlp_archs = [[50,50,50],[50,50,50,50], [100,100,100],[50,50,50],[50,50,50]]
+    mlp_dp = [0, 0, 0, 0, 0]
+    combination_archs = [[100,100,100],[100,100,100,100], [200,200,200],[100,100,100],[100,100,100]]
+    combined_dp = [0, 0, 0, 0,0]
+    names = ["normal_with_dp0bz1000",  "one_more_layerbz1000", "more_perceptrons-filterbz1000", "smaller_filterbz1000", "bigger_filterbz1000"]
+
+    for i in range(len(conv_archs)):
+        model = setup_model_conv_mlp_small_vari(conv_archs[i], mlp_archs[i], combination_archs[i], conv_dp[i], mlp_dp[i], combined_dp[i])
+        train("models/conv_mlp_small", names[i], model, learning_rates[0])
 
 def loop_train():
     """ trains all neural networks defined in setup_models with different learning rate"""
@@ -134,8 +164,8 @@ def train_setup_model_conv_mlp_big():
 def run():
     physical_devices = tf.config.list_physical_devices('GPU')
     print("\nGPUs: {}\n".format(physical_devices))
-
-    loop_train()
+    loop_train_two()
+    #loop_train()
     
 
 if __name__== "__main__":

@@ -460,6 +460,90 @@ void board_to_fen(struct ChessBoard *board, char *fen){
 
 }
 
+void board_to_NN_input(struct ChessBoard *board, int* input){
+    int count = 0;
+    int piece_ind = 0;
+    signed char color = 0;
+    for(int row = 0; row < board->size; row++){
+        for( int col = 0; col < board->size; col++){
+            piece_ind = board->board[row][col];
+            if(piece_ind != 0){
+                color = 1;
+                if(piece_ind < 0){
+                    color = -1;
+                }
+                get_piece_type_for_db(board, &piece_ind, color);
+                input[count] = piece_ind;
+            }else{
+                input[count] = 0;
+            }
+            count += 1;
+        }
+    }
+    input[count] = board->color_to_move;
+    count += 1;
+
+    if(board->white_piece_first_move[board->king_pos] == -1){ // castling rights 0 because this was worng in database
+        if(board->white_piece_first_move[9] == -1 && board->white_piece_alive[9]){
+            input[count] = 0;
+        }else{
+            input[count] = 0;
+        }
+        count +=1;
+        if(board->white_piece_first_move[10] == -1 && board->white_piece_alive[10]){
+            input[count] = 0;
+        }else{
+            input[count] = 0;
+        }
+        count += 1;
+    }else{
+        input[count] = 0;
+        input[count+1] = 0;
+        count += 2;
+    }
+
+    if(board->black_piece_first_move[board->king_pos] == -1){
+        if (board->black_piece_first_move[9] == -1 && board->black_piece_alive[9]){
+            input[count] = 0;
+        }else{
+            input[count] = 0;
+        }
+        count += 1;
+        if(board->black_piece_first_move[10] == -1 && board->black_piece_alive[10]){
+            input[count] = 0;
+        }else{
+            input[count] = 0;
+        }
+        count += 1;
+    }else{
+        input[count] = 0;
+        input[count+1] = 0;
+        count += 2;
+    }
+    if(board->past_moves[board->move_count-1] == -2){
+        input[count] = board->past_moves[board->move_count-3];
+        input[count+1] = board->past_moves[board->move_count-2];
+    }else{
+        input[count] = -1;
+        input[count+1] = -1;
+    } 
+    count += 2;
+
+    input[count] = board->fifty_move_rule[board->move_count-1];
+    count += 1;
+    input[count] = (board->move_count+2)/2;
+    count += 1;
+
+    // printf("\n");
+    // for(int m = 0; m < count; m++){
+    //     if(m%8==0){
+    //         printf("\n");
+    //     }
+    //     printf("%d ", input[m]);
+    // }
+    // printf(" \n count: %d", count);
+}
+
 /* Copies the data from one ChessBoard into a second one. Slow operation!*/
 void copyBoard(struct ChessBoard *board, struct ChessBoard *copies){
 

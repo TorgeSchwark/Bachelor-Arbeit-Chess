@@ -234,6 +234,20 @@ bool direct_repetition(struct ChessBoard *board){
 
 }
 
+void quiesce(struct ChessBoard *pos_board, int alpha, int beta, int *score){
+    int stand_pat;
+    eval(pos_board, &stand_pat);
+    if( stand_pat >= beta ){
+        return beta;
+    }
+    if (alpha < stand_pat){
+        alpha = stand_pat;
+    }
+
+    
+
+}
+
 /* A PeSTO like evaluation funktion that only uses pieces tables with aditional information about pawn structure and double bishop/knight */
 void eval(struct ChessBoard *pos_board, int *score)
 {   
@@ -330,5 +344,67 @@ void eval(struct ChessBoard *pos_board, int *score)
         mgPhase = 24;
     } 
     int egPhase = 24 - mgPhase;
+    srand((unsigned int)clock()); 
+    int random_number = rand() % RANDOMNESS;
+    int random_sin = rand()%2;
+    if( random_sin){
+        random_number = -random_number;
+    }
     *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + bonus;
+}
+
+
+void eval_without_extra(struct ChessBoard *pos_board, int *score)
+{   
+    if(direct_repetition(pos_board)){
+        *score = 0;
+        return;
+    }
+    int mg[2];
+    int eg[2];
+    int gamePhase = 0;
+
+    mg[WHITE] = 0;
+    mg[BLACK] = 0;
+    eg[WHITE] = 0;
+    eg[BLACK] = 0;
+
+    /* evaluate each piece */
+    for(int ind = 0; ind < pos_board->piece_count; ind++){
+        int pc_w = piece_white(ind, pos_board);
+        int pc_b = piece_black(ind, pos_board);
+        
+        if(pos_board->white_piece_alive[ind]){ // ChessBoards are upside down left right swaped and indices between 0 and 63
+            mg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+((7-pos_board->white_piece_pos[(ind<<1)+1])<<3)];
+            eg[WHITE] += mg_table[pc_w][(7-pos_board->white_piece_pos[ind<<1])+((7-pos_board->white_piece_pos[(ind<<1)+1])<<3)];
+            gamePhase += gamephaseInc[pc_w];
+        }
+        if(pos_board->black_piece_alive[ind]){
+            mg[BLACK] += mg_table[pc_b][(7-pos_board->black_piece_pos[ind<<1])+((7-pos_board->black_piece_pos[(ind<<1)+1])<<3)];
+            eg[BLACK] += mg_table[pc_b][(7-pos_board->black_piece_pos[ind<<1])+((7-pos_board->black_piece_pos[(ind<<1)+1])<<3)];
+            gamePhase += gamephaseInc[pc_b];
+        }
+        
+    }
+    
+    if(pos_board->color_to_move == 1){
+        side2move = WHITE;
+    }else{
+        side2move = BLACK;
+    }
+    
+    int mgScore = mg[side2move] - mg[OTHER(side2move)];
+    int egScore = eg[side2move] - eg[OTHER(side2move)];
+    int mgPhase = gamePhase;
+    if (mgPhase > 24){
+        mgPhase = 24;
+    } 
+    int egPhase = 24 - mgPhase;
+    srand((unsigned int)clock()); 
+    int random_number = rand() % RANDOMNESS;
+    int random_sin = rand()%2;
+    if( random_sin){
+        random_number = -random_number;
+    }
+    *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + random_number;
 }

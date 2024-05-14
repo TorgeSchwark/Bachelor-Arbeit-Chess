@@ -20,4 +20,9 @@ void advanced_apha_beta_engine(struct ChessBoard *board, int depth,int original_
 /* puts the index of the moves sorted by the evaluation of the move in the sorted_ind array */
 void sort_moves(struct ChessBoard *board, char *moves, short move_count, int *sorted_ind, bool acurate);
 
+void alpha_beta_basic_other_eval(struct ChessBoard *board, int depth,int original_depth, int alpha, int beta, int *score);
+
+
+
+void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score);
 #endif

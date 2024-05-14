@@ -7,7 +7,9 @@ from chess_implementation.chess_variables import *
 # from chess_implementation.move_stack import MoveStack
 from chess_implementationC.chess_board_wrapper import ChessBoard, chess_lib 
 import ctypes
-
+from supervised_engines.enige_compare import compare_engines
+from supervised_engines.fill_db import to_str
+from engines.negmax import alpha_beta_basic, test
 from testing.play_game_testing import play_game_test
 from engines.mcts import monte_carlo_tree_search
 from supervised_engines.fill_db import fill_dbs_by_stock, thread_call
@@ -20,7 +22,6 @@ from copy import deepcopy
 import time
 from multiprocessing import Pool
 from testing.play_setup import play_game
-from engines.negmax import negmax
 import struct
 from stockfish import Stockfish
 
@@ -80,6 +81,12 @@ class PlayGameView(View):
         self.mcts = ctk.CTkButton(master=self.settings_frame, text="MCTS", command=self.mcts_engine)
         self.mcts.pack(expand=False, padx=20, pady=5)
 
+        self.super_engine = ctk.CTkButton(master=self.settings_frame, text="supervised_engine", command=self.supervised_engine)
+        self.super_engine.pack(expand=False, padx=20, pady=5)
+
+        self.compare_engine = ctk.CTkButton(master=self.settings_frame, text="compare_engine", command=self.compare_engines)
+        self.compare_engine.pack(expand=False, padx=20, pady=5)
+
         self.play_game = ctk.CTkButton(master=self.settings_frame, text="play_game", command=self.get_elo)
         self.play_game.pack(expand=False, padx=20, pady=5)
 
@@ -98,6 +105,23 @@ class PlayGameView(View):
     def fill_db_button(self):
         thread_call()
 
+    def compare_engines(self):
+        compare_engines(self.chess_board_instance, self)
+
+    def supervised_engine(self):
+        fen = get_fen_string(self.chess_board_instance)
+        string = to_str(self.chess_board_instance, fen)
+        print(string)
+        print(fen)
+        score = [0]
+        count = [0]
+        start = time.time()
+        move = test(ctypes.byref(self.chess_board_instance), 3, 3, -99999, 99999, score, count)
+        end = time.time()
+        
+        print("hier", score[0]," ", end-start, " for ", count[0], " moves")
+        self.make_move([], score[0])
+
     def mcts_engine(self):
         move =  monte_carlo_tree_search(self.chess_board_instance)
         self.make_move([], move)
@@ -105,14 +129,14 @@ class PlayGameView(View):
     def get_elo(self):
         chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
         for i in range(8):
-            stockfish.set_elo_rating(500 +100*i)
+            stockfish.set_elo_rating(1800 +100*i)
             won_games = 0
-            for m in range(10):
+            for m in range(50):
                 value = self.play_game_stock()
                 print("game ended",value)
                 chess_lib.undo_game(ctypes.byref(self.chess_board_instance))
                 won_games += value
-            print("elo ", 500+100*i ," won ", won_games, " form " , 10)
+            print("elo ", 2000+100*i ," won ", won_games, " form " , 10)
 
     def play_game_stock(self):
         chess_lib.find_all_moves(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
@@ -122,7 +146,7 @@ class PlayGameView(View):
         matt = ctypes.c_float(0)
         while stockfish.is_fen_valid(fen):
             
-            self.mcts_engine()
+            self.neg_max_engine()
             self.master.update()
 
             chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance), ctypes.byref(matt) )
@@ -148,7 +172,7 @@ class PlayGameView(View):
         num = ctypes.c_int(0)
         score2 = ctypes.c_int(0)
         #chess_lib.neg_max(ctypes.byref(self.chess_board_instance),ctypes.c_int(5),ctypes.c_int(5), ctypes.byref(score))
-        chess_lib.advanced_apha_beta_engine(ctypes.byref(self.chess_board_instance),ctypes.c_int(7), ctypes.c_int(7), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
+        chess_lib.advanced_apha_beta_engine(ctypes.byref(self.chess_board_instance),ctypes.c_int(6), ctypes.c_int(6), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
         self.make_move([],score2.value)
 
     def stockfish_go(self):

@@ -3,7 +3,7 @@ gcc -fPIC -shared -o find_moves.so find_moves.c
 gcc -fPIC -shared -o make_moves.so make_moves.c
 gcc -fPIC -shared -o test_engin.so test_engin.c
 gcc -fPIC -shared -o chess_library.so chess_board.c find_moves.c make_moves.c test_engin.c evaluation.c standard_engines.c
-tensorboard --logdir=logs/fit
+tensorboard --logdir=models
 
 
 

@@ -16,6 +16,17 @@
         "limits": "c",
         "utility": "c",
         "cmath": "c",
-        "make_moves.h": "c"
+        "make_moves.h": "c",
+        "array": "c",
+        "bitset": "c",
+        "deque": "c",
+        "format": "c",
+        "initializer_list": "c",
+        "list": "c",
+        "vector": "c",
+        "xhash": "c",
+        "xtree": "c",
+        "iterator": "c",
+        "xmemory": "c"
     }
 }

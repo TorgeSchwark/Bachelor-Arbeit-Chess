@@ -162,3 +162,88 @@ void sort_moves(struct ChessBoard *board, char *moves, short move_count, int *so
 
 }
 
+void alpha_beta_basic_other_eval(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score){
+    if(depth == 0){
+        return eval_without_extra(board, score);
+    }
+    
+    int maxWert = alpha;
+    signed char moves[2000];
+    short move_count = 0;
+    int best_move = 0;
+    int score_next = 0;
+    bool legal[200];
+    int sorted_ind[200];
+    find_all_moves(board, moves, &move_count);
+    if(depth == original_depth){
+        legal_moves(board, move_count, moves, legal);
+    }
+    for(int ind = 0; ind < move_count; ind += 5){
+        if(depth == original_depth && !legal[ind/5]){
+            continue;
+        }
+        make_move(board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
+        alpha_beta_basic_other_eval(board, depth-1, original_depth, -beta, -maxWert, &score_next);
+        undo_last_move(board);
+        if(-score_next > maxWert){
+            maxWert = -score_next;
+            best_move = ind;
+            if (maxWert >= beta){
+                break;
+            }
+        }
+    }
+    if (depth != original_depth){
+        *score = maxWert;
+    }else{
+        *score = best_move;
+    }
+}
+
+
+
+void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *best_positions_stack){
+    if(depth == 0){
+        return eval(board, score);
+    }
+    int maxWert = alpha;
+    signed char moves[2000];
+    short move_count = 0;
+    int best_move = 0;
+    int score_next = 0;
+    bool legal[200];
+    int ind;
+    int sorted_ind[200];
+    find_all_moves(board, moves, &move_count);
+    if(depth == original_depth){
+        legal_moves(board, move_count, moves, legal);
+    }
+    if(depth >= original_depth-3){
+        sort_moves(board, moves, move_count, sorted_ind, false); // sort moves just by evaluation
+    }
+    for(int i = 0; i < move_count; i += 5){
+        if(depth == original_depth && !legal[ind/5]){
+            continue;
+        }
+        if(depth >= original_depth-3){
+            ind = sorted_ind[i]*5;
+        }else{
+            ind = i*5;
+        }
+        make_move(board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
+        alpha_beta_basic(board, depth-1, original_depth, -beta, -maxWert, &score_next);
+        undo_last_move(board);
+        if(-score_next > maxWert){
+            maxWert = -score_next;
+            best_move = ind;
+            if (maxWert >= beta){
+                break;
+            }
+        }
+    }
+    if (depth != original_depth){
+        *score = maxWert;
+    }else{
+        *score = best_move;
+    }
+}

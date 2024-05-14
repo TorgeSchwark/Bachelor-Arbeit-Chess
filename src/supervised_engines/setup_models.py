@@ -15,29 +15,26 @@ def setup_model_conv_mlp_big():
     x_conv_1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
     x_conv_1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
     x_conv_1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu', padding='same')(x_conv_1)
+    x_conv_1 = tf.keras.layers.Flatten()(x_conv_1)
 
  
     # MLP-Teil
     mlp_input = input[:, 64:, :]
     x_mlp = tf.keras.layers.Flatten()(mlp_input)
     x_mlp = tf.keras.layers.Dense(200, activation='relu')(x_mlp)
-    x_mlp = tf.keras.layers.BatchNormalization()(x_mlp)
     x_mlp = tf.keras.layers.Dense(200, activation='relu')(x_mlp)
-    x_mlp = tf.keras.layers.BatchNormalization()(x_mlp)
     x_mlp = tf.keras.layers.Dense(200, activation='relu')(x_mlp)
 
     # Kombinierte Ausgabe der Convolutional- und MLP-Teile
-    combined = tf.keras.layers.Concatenate()([tf.keras.layers.Flatten()(x_conv_1), x_mlp])
+    combined = tf.keras.layers.Concatenate()([x_conv_1, x_mlp])
 
     # Fully-Connected-Layer
-    x = tf.keras.layers.Dense(200, activation='relu')(combined)
-    x = tf.keras.layers.Dropout(0.5)(x)
-    x = tf.keras.layers.Dense(200, activation='relu')(x)
-    x = tf.keras.layers.Dropout(0.5)(x)
-    x = tf.keras.layers.Dense(SEQ_LEN_FUTURE * NUM_OUTPUT_PARAMETERS, activation='linear')(x)
-    x = tf.keras.layers.Reshape((SEQ_LEN_FUTURE, NUM_OUTPUT_PARAMETERS))(x)
+    combined = tf.keras.layers.Dense(200, activation='relu')(combined)
+    combined = tf.keras.layers.Dense(200, activation='relu')(combined)
+    combined = tf.keras.layers.Dense(SEQ_LEN_FUTURE * NUM_OUTPUT_PARAMETERS, activation='linear')(combined)
+    combined = tf.keras.layers.Reshape((SEQ_LEN_FUTURE, NUM_OUTPUT_PARAMETERS))(combined)
 
-    model = tf.keras.models.Model(input, x)
+    model = tf.keras.models.Model(input, combined)
     return model
 
 def setup_model_conv_mlp_small():

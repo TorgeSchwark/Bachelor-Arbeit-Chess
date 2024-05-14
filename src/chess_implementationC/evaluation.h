@@ -2,6 +2,10 @@
 #define EVALUATION_H
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+
 #include "chess_board.h"
 #include "find_moves.h"
 #include "make_moves.h"
@@ -17,6 +21,7 @@
 #define WHITE  0
 #define BLACK  1
 
+#define RANDOMNESS 1
 #define WHITE_PAWN      (2 * PAWN + WHITE)
 #define BLACK_PAWN      (2 * PAWN + BLACK)
 #define WHITE_KNIGHT    (2 * KNIGHT + WHITE)
@@ -42,5 +47,7 @@ int piece_black(signed char ind, struct ChessBoard *pos_board);
 
 /* returns the piece type (number) in the pesto tables since they can be in a abitrary order in the ChessBoard struct */
 int piece_white(signed char ind, struct ChessBoard *pos_board);
+
+void eval_without_extra(struct ChessBoard *pos_board, int *score);
 
 #endif
