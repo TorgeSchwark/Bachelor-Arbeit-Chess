@@ -238,14 +238,32 @@ void quiesce(struct ChessBoard *pos_board, int alpha, int beta, int *score){
     int stand_pat;
     eval(pos_board, &stand_pat);
     if( stand_pat >= beta ){
-        return beta;
+        *score =  beta;
+        return;
     }
     if (alpha < stand_pat){
         alpha = stand_pat;
     }
+    signed char moves[2000];
+    short move_count;
+    find_all_captures(pos_board, moves, &move_count);
+    for(int ind = 0; ind < move_count; ind+=5){
+        int score_next = 0;
+        make_move(pos_board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
+        quiesce(pos_board, -beta, -alpha, &score_next);
+        undo_last_move(pos_board);
 
+        if(-score_next >= beta){
+            *score =  beta;
+            return;
+        }
+        if(score_next > alpha){
+            alpha = score_next;
+        }
+
+    }
+    *score = alpha;
     
-
 }
 
 /* A PeSTO like evaluation funktion that only uses pieces tables with aditional information about pawn structure and double bishop/knight */
@@ -350,7 +368,7 @@ void eval(struct ChessBoard *pos_board, int *score)
     if( random_sin){
         random_number = -random_number;
     }
-    *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + bonus;
+    *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + bonus+ random_number;
 }
 
 

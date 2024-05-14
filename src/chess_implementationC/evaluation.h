@@ -8,6 +8,7 @@
 
 #include "chess_board.h"
 #include "find_moves.h"
+#include "find_captures.h"
 #include "make_moves.h"
 #include "test_engin.h"
 
@@ -21,7 +22,7 @@
 #define WHITE  0
 #define BLACK  1
 
-#define RANDOMNESS 1
+#define RANDOMNESS 40
 #define WHITE_PAWN      (2 * PAWN + WHITE)
 #define BLACK_PAWN      (2 * PAWN + BLACK)
 #define WHITE_KNIGHT    (2 * KNIGHT + WHITE)

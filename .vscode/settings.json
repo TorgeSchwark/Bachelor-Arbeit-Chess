@@ -27,6 +27,9 @@
         "xhash": "c",
         "xtree": "c",
         "iterator": "c",
-        "xmemory": "c"
+        "xmemory": "c",
+        "find_captures.h": "c",
+        "stdio.h": "c",
+        "time.h": "c"
     }
 }

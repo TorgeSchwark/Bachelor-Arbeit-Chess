@@ -4,6 +4,10 @@
 #include "chess_board.h"
 /* this code is well tested for NORMAL chess rules via PERFT debugging */
 
+#define NORMAL_MOVE -1
+#define DOUBLE_PAWN -2
+#define CASTLING -3
+#define EN_PASSANT -4
 /* function that finds all moves in the current position. generates illegal moves: king can be captured/exposed. castling when squares are under atack but not if quare is not free*/
 void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_count);
 

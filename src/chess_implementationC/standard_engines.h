@@ -24,5 +24,5 @@ void alpha_beta_basic_other_eval(struct ChessBoard *board, int depth,int origina
 
 
 
-void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score);
+void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *best_positions_stack);
 #endif

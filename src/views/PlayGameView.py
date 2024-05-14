@@ -7,7 +7,7 @@ from chess_implementation.chess_variables import *
 # from chess_implementation.move_stack import MoveStack
 from chess_implementationC.chess_board_wrapper import ChessBoard, chess_lib 
 import ctypes
-from supervised_engines.enige_compare import compare_engines
+from supervised_engines.enige_compare import compare_engines, compare_engines_thread
 from supervised_engines.fill_db import to_str
 from engines.negmax import alpha_beta_basic, test
 from testing.play_game_testing import play_game_test
@@ -21,6 +21,7 @@ import random
 from copy import deepcopy
 import time
 from multiprocessing import Pool
+from copy import deepcopy
 from testing.play_setup import play_game
 import struct
 from stockfish import Stockfish
@@ -106,7 +107,7 @@ class PlayGameView(View):
         thread_call()
 
     def compare_engines(self):
-        compare_engines(self.chess_board_instance, self)
+        compare_engines_thread(self.chess_board_instance, self)
 
     def supervised_engine(self):
         fen = get_fen_string(self.chess_board_instance)
@@ -129,7 +130,7 @@ class PlayGameView(View):
     def get_elo(self):
         chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
         for i in range(8):
-            stockfish.set_elo_rating(1800 +100*i)
+            stockfish.set_elo_rating(2000 +100*i)
             won_games = 0
             for m in range(50):
                 value = self.play_game_stock()

@@ -1,11 +1,8 @@
 #include "find_moves.h"
 
-/* this code is well tested for NORMAL chess rules via PERFT debugging */
 
-signed char NORMAL_MOVE = -1;
-signed char DOUBLE_PAWN = -2;
-signed char CASTLING = -3;
-signed char EN_PASSANT = -4;
+
+/* this code is well tested for NORMAL chess rules via PERFT debugging */
 
 /* function that finds all moves in the current position. generates illegal moves: king can be captured/exposed. castling when squares are under atack but not if quare is not free*/
 void find_all_moves(struct ChessBoard *board, signed char *moves, short *moves_count){

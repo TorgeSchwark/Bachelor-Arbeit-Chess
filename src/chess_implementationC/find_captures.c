@@ -1,10 +1,5 @@
 # include "find_captures.h"
 
-signed char NORMAL_MOVE = -1;
-signed char DOUBLE_PAWN = -2;
-signed char CASTLING = -3;
-signed char EN_PASSANT = -4;
-
 void find_all_captures(struct ChessBoard *board, signed char *moves, short *moves_count){
     *moves_count = 0;
     short test = 0;
@@ -106,9 +101,8 @@ void find_pawn_captures(struct ChessBoard *board, unsigned char *color_pos, sign
     }
 }
 
-
 /* finds the moves for all pieces that can move in a direction also resticted range */
-void find_move_captures(struct ChessBoard *board, unsigned char *color_pos, signed char *piece_move_directions, signed char *moves, short *move_counts, unsigned char piece_ind){
+void find_captures_directions(struct ChessBoard *board, unsigned char *color_pos, signed char *piece_move_directions, signed char *moves, short *move_counts, unsigned char piece_ind){
     unsigned char piece_pos_ind = piece_ind << 1;
    
     for(unsigned char ind_md = 1; ind_md < piece_move_directions[0]; ind_md+=3){
@@ -148,32 +142,4 @@ void find_move_captures(struct ChessBoard *board, unsigned char *color_pos, sign
     }
 }
 
-/* adds a move to the move stack and increases the move_count */
-void add_move(signed char from_x, signed char from_y, signed char to_x, signed char to_y, signed char move_type, signed char* moves, short *moves_count){
-    moves[*moves_count] = from_x;
-    moves[(*moves_count) + 1] = from_y;
-    moves[(*moves_count) + 2] = to_x;
-    moves[(*moves_count) + 3] = to_y;
-    moves[(*moves_count) + 4] = move_type;
-    (*moves_count) += 5;
-}  
 
-void add_en_passant(struct ChessBoard *board, unsigned char *color_pos,unsigned char piece_pos_ind, signed char *moves, short *moves_count){
-    if (board->move_count > 0){
-        if (board->past_moves[board->move_count*5-1] == DOUBLE_PAWN){
-            if (color_pos[piece_pos_ind+1] == board->past_moves[board->move_count*5-2] && abs(color_pos[piece_pos_ind] - board->past_moves[board->move_count*5-3]) == 1){
-                add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], board->past_moves[board->move_count*5-3], board->past_moves[board->move_count*5-2] + board->color_to_move, EN_PASSANT, moves, moves_count);
-            }
-        }
-    }
-}
-
-/* checks if a position is on the board */
-bool on_board(signed char x, unsigned char size){
-    return (x >= 0 && x < size);
-}
-
-/* checks if a move goes to the last rank of the correct side*/
-bool promotion(signed char y, signed char color, unsigned char size){
-    return (color == 1 && y == size-1) || (color == -1 && y == 0);
-}
