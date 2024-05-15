@@ -4,17 +4,14 @@ import time
 from copy import deepcopy
 from multiprocessing import Pool
 
-board_all = None
+
 
 def compare_engines_thread(chess_board_instance, games_amount=5000):
       # Erstelle einen Pool von Threads
     num_threads = 20  # Anzahl der Threads
     pool = Pool(4)
-    board_all = chess_board_instance
-    print(type(board_all))
+    
     # Funktion, die in jedem Thread ausgeführt wird
-    def compare_engines_in_thread(_):
-        compare_engines( games_amount)
 
     # Starte die Threads
     pool.map(compare_engines,range(num_threads))

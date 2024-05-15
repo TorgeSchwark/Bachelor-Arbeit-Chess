@@ -25,6 +25,7 @@ from copy import deepcopy
 from testing.play_setup import play_game
 import struct
 from stockfish import Stockfish
+from engines.get_engine_elo import find_out_elo
 
 stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-windows-x86-64.exe")
 stockfish.set_elo_rating(1300)
@@ -35,7 +36,7 @@ class PlayGameView(View):
     
     def __init__(self, master, controller):
         chess_lib.init_tables()
-        self.legal_moves_c = (ctypes.c_char * 2024)()
+        self.legal_moves_c = (ctypes.c_char * 2048)()
         self.move_count = ctypes.c_short(0)
         self.moves_list = struct.unpack(f'{self.move_count.value}b', self.legal_moves_c.raw[:self.move_count.value])
         
@@ -128,16 +129,17 @@ class PlayGameView(View):
         self.make_move([], move)
 
     def get_elo(self):
-        chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
-        for i in range(8):
-            stockfish.set_elo_rating(2000 +100*i)
-            won_games = 0
-            for m in range(50):
-                value = self.play_game_stock()
-                print("game ended",value)
-                chess_lib.undo_game(ctypes.byref(self.chess_board_instance))
-                won_games += value
-            print("elo ", 2000+100*i ," won ", won_games, " form " , 10)
+        find_out_elo(self.chess_board_instance)
+        # chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
+        # for i in range(8):
+        #     stockfish.set_elo_rating(2000 +100*i)
+        #     won_games = 0
+        #     for m in range(50):
+        #         value = self.play_game_stock()
+        #         print("game ended",value)
+        #         chess_lib.undo_game(ctypes.byref(self.chess_board_instance))
+        #         won_games += value
+        #     print("elo ", 2000+100*i ," won ", won_games, " form " , 10)
 
     def play_game_stock(self):
         chess_lib.find_all_moves(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
@@ -216,7 +218,7 @@ class PlayGameView(View):
                 self.rectangles[(self.moves_list[ind*5+2],self.moves_list[ind*5+3])].configure(bg=LIGHTRED)
             
 
-    def make_move(self, move, ind): #not done
+    def make_move(self, move, ind): 
         if ind < 0:
             chess_lib.make_move(ctypes.byref(self.chess_board_instance), ctypes.c_byte(move[0]),ctypes.c_byte(move[1]), ctypes.c_byte(move[2]),ctypes.c_byte(move[3]), ctypes.c_byte(-1))
         else:
