@@ -9,7 +9,7 @@ from multiprocessing import Pool
 def compare_engines_thread(chess_board_instance, games_amount=5000):
       # Erstelle einen Pool von Threads
     num_threads = 20  # Anzahl der Threads
-    pool = Pool(4)
+    pool = Pool(20)
     
     # Funktion, die in jedem Thread ausgeführt wird
 
@@ -21,7 +21,8 @@ def compare_engines_thread(chess_board_instance, games_amount=5000):
     pool.join()
 
 def compare_engines(games_amount=100):
-    games_amount= 500
+    print("hey")
+    games_amount= 10000
     chess_board_instance = ChessBoard()
     chess_lib.setup_normals(ctypes.byref(chess_board_instance))
     chess_lib.create_chess(ctypes.byref(chess_board_instance))
@@ -45,20 +46,24 @@ def play_game_engines(chess_board_instance):
     while not is_over:
         
         score2 = ctypes.c_int(0)
-        chess_lib.alpha_beta_basic(chess_board_instance,ctypes.c_int(2), ctypes.c_int(2), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
+        count2 = ctypes.c_int(0)
+        chess_lib.alpha_beta_basic(chess_board_instance,ctypes.c_int(2), ctypes.c_int(2), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count2))
         make_move(score2.value, chess_board_instance)
+        
 
         matt = ctypes.c_float(0)
         chess_lib.is_check_mate(chess_board_instance, ctypes.byref(matt))
         
         if matt.value != 0:
             return (0, matt.value)
-
+      
         score2 = ctypes.c_int(0)
-        chess_lib.alpha_beta_basic(chess_board_instance ,ctypes.c_int(2), ctypes.c_int(2), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
+        count2 = ctypes.c_int(0)
+        chess_lib.alpha_beta_basic_other_eval(chess_board_instance ,ctypes.c_int(2), ctypes.c_int(2), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
         make_move(score2.value, chess_board_instance)
 
         matt = ctypes.c_float(0)
+
         chess_lib.is_check_mate(chess_board_instance, ctypes.byref(matt))
         if matt.value != 0:
             return (1, matt.value)

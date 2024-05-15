@@ -25,7 +25,7 @@ from copy import deepcopy
 from testing.play_setup import play_game
 import struct
 from stockfish import Stockfish
-from engines.get_engine_elo import find_out_elo
+from engines.get_engine_elo import find_out_elo_thread
 
 stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-windows-x86-64.exe")
 stockfish.set_elo_rating(1300)
@@ -73,9 +73,6 @@ class PlayGameView(View):
 
         self.neg_max = ctk.CTkButton(master=self.settings_frame, text="Neg Max Engine", command=self.neg_max_engine)
         self.neg_max.pack(expand=False, padx=20, pady=5)
-
-        self.stockfish_button = ctk.CTkButton(master=self.settings_frame, text="stockfish", command=self.stockfish_go)
-        self.stockfish_button.pack(expand=False, padx=20, pady=5)
 
         self.main_menu_button = ctk.CTkButton(master=self.settings_frame, text="Back to Menu", command=self.controller.main_menu)
         self.main_menu_button.pack(expand=False, padx=20, pady=5)
@@ -129,85 +126,12 @@ class PlayGameView(View):
         self.make_move([], move)
 
     def get_elo(self):
-        find_out_elo(self.chess_board_instance)
-        # chess_lib.printChessBoard(ctypes.byref(self.chess_board_instance))
-        # for i in range(8):
-        #     stockfish.set_elo_rating(2000 +100*i)
-        #     won_games = 0
-        #     for m in range(50):
-        #         value = self.play_game_stock()
-        #         print("game ended",value)
-        #         chess_lib.undo_game(ctypes.byref(self.chess_board_instance))
-        #         won_games += value
-        #     print("elo ", 2000+100*i ," won ", won_games, " form " , 10)
-
-    def play_game_stock(self):
-        chess_lib.find_all_moves(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
-        self.moves_list = struct.unpack(f'{self.move_count.value}b', self.legal_moves_c.raw[:self.move_count.value])
-
-        fen = get_fen_string(self.chess_board_instance)
-        matt = ctypes.c_float(0)
-        while stockfish.is_fen_valid(fen):
-            
-            self.neg_max_engine()
-            self.master.update()
-
-            chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance), ctypes.byref(matt) )
-            if(matt.value != 0):
-                return matt.value 
-           
-            self.stockfish_go()
-            self.master.update()
-            chess_lib.is_check_mate(ctypes.byref(self.chess_board_instance), ctypes.byref(matt) )
-            if matt.value != 0:
-                return 1-matt.value 
-            
-            fen = get_fen_string(self.chess_board_instance)
-
-        print("wrong fen", fen)
-        self.reset_color()
-        #self.draw_moves_on_board()
-        self.draw_pieces_on_position()
-        return 0.5
-
+        find_out_elo_thread(20, 20, 2400, 2500)
 
     def neg_max_engine(self):
-        num = ctypes.c_int(0)
         score2 = ctypes.c_int(0)
-        #chess_lib.neg_max(ctypes.byref(self.chess_board_instance),ctypes.c_int(5),ctypes.c_int(5), ctypes.byref(score))
-        chess_lib.advanced_apha_beta_engine(ctypes.byref(self.chess_board_instance),ctypes.c_int(6), ctypes.c_int(6), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
+        chess_lib.alpha_beta_basic_NN(ctypes.byref(self.chess_board_instance),ctypes.c_int(5), ctypes.c_int(5), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
         self.make_move([],score2.value)
-
-    def stockfish_go(self):
-        fen = get_fen_string(self.chess_board_instance)
-        if(stockfish.is_fen_valid(fen)):
-            
-            stockfish.set_fen_position(fen)
-            stockfish.get_board_visual(fen)
-        else:
-            print("wrong")
-            print(fen)
-        
-        move = stockfish.get_best_move()
-        ind = self.find_real_move(move)
-        self.make_move([],ind)
-    
-    def find_real_move(self, move):
-        piece = ctypes.create_string_buffer(2)
-        piece[1] = b'\x00'
-        piece[0] = 'x'.encode('utf-8')
-        from_x = 7-(ord(move[0])- ord('a'))
-        from_y = int(move[1]) -1
-
-        to_x = 7-(ord(move[2])- ord('a'))
-        to_y = int(move[3])-1
-        if(len(move) > 4):
-            piece[0] = move[4].encode('utf-8')
-        ind = ctypes.c_int(0)
-        
-        chess_lib.real_move(ctypes.byref(self.chess_board_instance), ctypes.c_byte(from_x), ctypes.c_byte(from_y), ctypes.c_byte(to_x), ctypes.c_byte(to_y), piece, self.legal_moves_c, self.move_count, ctypes.byref(ind))
-        
-        return ind.value
 
 
     def draw_moves_on_board(self):
@@ -339,9 +263,6 @@ def thread_testing(args):
     play_game_test(args[0],args[1],args[2])
 
 def get_fen_string(board):
-    
     fen_buffer = ctypes.create_string_buffer(556)
-    
     chess_lib.board_to_fen(ctypes.byref(board), fen_buffer)
-    
     return fen_buffer.value.decode('utf-8')  

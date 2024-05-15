@@ -247,9 +247,7 @@ void real_move(struct ChessBoard *board, signed char from_x, signed char from_y,
             move_type = 1;
         }else if(piece[0] == 'b'){
             move_type = 3;
-            printf("move_type %d", 3);
         }else{
-            printf("move_type %d", 2);
             move_type = 2;
         }
     }
