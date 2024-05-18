@@ -66,8 +66,9 @@ void find_jump_captures(struct ChessBoard *board, unsigned char *color_pos, sign
                 continue;
             }
         }
-        if((board->board[field_x][field_y] >= 0) != board->board[color_pos[piece_pos_ind]][color_pos[piece_pos_ind+1]] >= 0){
+        if((board->board[field_x][field_y] != 0) && ((board->board[field_x][field_y] >= 0) != board->board[color_pos[piece_pos_ind]][color_pos[piece_pos_ind+1]] >= 0)){
             add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], field_x, field_y, NORMAL_MOVE, moves, moves_count);
+            //printf("md %d \n", board->board[field_x][field_y]);
         }
     }
 }
@@ -75,30 +76,25 @@ void find_jump_captures(struct ChessBoard *board, unsigned char *color_pos, sign
 /* adds all pawn moves also en passant promotion and double moves. promoting a pawn dosnt gain the right to move over edges! */
 void find_pawn_captures(struct ChessBoard *board, unsigned char *color_pos, signed char *piece_move_directions,short *color_first_moves, signed char *moves, short *moves_count, unsigned char piece_ind){
     unsigned char piece_pos_ind = piece_ind << 1;
-    for(unsigned char ind_md = 1; ind_md < piece_move_directions[0]; ind_md+=3){
-        signed char field_x = color_pos[piece_pos_ind] + piece_move_directions[ind_md];
-        signed char field_y = color_pos[piece_pos_ind+1] + piece_move_directions[ind_md+1];
+    signed char to_y = color_pos[piece_pos_ind+1] + board->color_to_move; // must be on board pawn cant go over board because promotion!
+    signed char to_min_x = color_pos[piece_pos_ind]-1;
+    signed char to_plus_x = color_pos[piece_pos_ind]+1;
 
-        signed char to_y = color_pos[piece_pos_ind+1] + board->color_to_move; // must be on board pawn cant go over board because promotion!
-        signed char to_min_x = color_pos[piece_pos_ind]-1;
-        signed char to_plus_x = color_pos[piece_pos_ind]+1;
-
-        if (on_board(to_plus_x, board->size) && (board->board[to_plus_x][to_y] > 0) - (board->board[to_plus_x][to_y] < 0) == -board->color_to_move){
-            if (promotion(to_y, board->color_to_move, board->size)){
-                add_promotion(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], to_plus_x, to_y, board->non_pawn_pieces, moves, moves_count);
-            }else{
-                add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], to_plus_x, to_y, NORMAL_MOVE, moves,moves_count);
-            }
+    if (on_board(to_plus_x, board->size) && (board->board[to_plus_x][to_y] > 0) - (board->board[to_plus_x][to_y] < 0) == -board->color_to_move){
+        if (promotion(to_y, board->color_to_move, board->size)){
+            add_promotion(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], to_plus_x, to_y, board->non_pawn_pieces, moves, moves_count);
+        }else{
+            add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], to_plus_x, to_y, NORMAL_MOVE, moves,moves_count);
         }
-        if (on_board(to_min_x, board->size) && (board->board[to_min_x][to_y] > 0) - (board->board[to_min_x][to_y] < 0) == -board->color_to_move){
-            if (promotion(to_y, board->color_to_move, board->size)){
-                add_promotion(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], to_min_x, to_y, board->non_pawn_pieces, moves, moves_count);
-            }else{
-                add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], to_min_x, to_y, NORMAL_MOVE, moves,moves_count);
-            }
-        }
-        add_en_passant(board, color_pos, piece_pos_ind, moves, moves_count);
     }
+    if (on_board(to_min_x, board->size) && (board->board[to_min_x][to_y] > 0) - (board->board[to_min_x][to_y] < 0) == -board->color_to_move){
+        if (promotion(to_y, board->color_to_move, board->size)){
+            add_promotion(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], to_min_x, to_y, board->non_pawn_pieces, moves, moves_count);
+        }else{
+            add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], to_min_x, to_y, NORMAL_MOVE, moves,moves_count);
+        }
+    }
+    add_en_passant(board, color_pos, piece_pos_ind, moves, moves_count);
 }
 
 /* finds the moves for all pieces that can move in a direction also resticted range */
@@ -127,15 +123,17 @@ void find_captures_directions(struct ChessBoard *board, unsigned char *color_pos
                     break;
                 }
             }
-            if((board->board[field_x][field_y] >= 0) == (board->board[color_pos[piece_pos_ind]][color_pos[piece_pos_ind+1]] >= 0)){
+            if (board->board[field_x][field_y] == 0){
+                
+            }else if((board->board[field_x][field_y] >= 0) == (board->board[color_pos[piece_pos_ind]][color_pos[piece_pos_ind+1]] >= 0)){
                 break;
             }else{
+                //printf("cd %d \n", board->board[field_x][field_y]);
                 add_move(color_pos[piece_pos_ind], color_pos[piece_pos_ind+1], field_x, field_y, NORMAL_MOVE, moves, move_counts);
                 break;
             }
             field_x += piece_move_directions[ind_md];
             field_y += piece_move_directions[ind_md+1]; 
-            
             dist += 1;
         }    
         

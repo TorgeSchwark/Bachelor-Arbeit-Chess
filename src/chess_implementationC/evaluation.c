@@ -11,9 +11,9 @@ int board[64];
 #define FLIP(sq) ((sq)^56)
 #define OTHER(side) ((side)^ 1)
 
-int isolated_pawn_reward = 17;
-int double_pawn_penalty = -13;
-int double_bishop_rewartd = 10;
+int isolated_pawn_reward = 13;
+int double_pawn_penalty = -12;
+int double_bishop_rewartd = 7;
 int double_knight_penalty = -5;
 int mg_value[6] = { 82, 337, 365, 477, 1025,  20000};
 int eg_value[6] = { 94, 281, 297, 512,  936,  20000};
@@ -235,9 +235,11 @@ bool direct_repetition(struct ChessBoard *board){
 }
 
 void quiesce(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count){
+    //printf("%d %d \n", beta, alpha);
     *count += 1;
-    int stand_pat;
+    int stand_pat = 0;
     eval(pos_board, &stand_pat);
+    
     if( stand_pat >= beta ){
         *score = beta;
         return;
@@ -248,23 +250,24 @@ void quiesce(struct ChessBoard *pos_board, int alpha, int beta, int *score, int 
     signed char moves[2000];
     short move_count = 0;
     find_all_captures(pos_board, moves, &move_count);
+    //printf("%d %d \n", move_count, pos_board->color_to_move);
     for(int ind = 0; ind < move_count; ind+=5){
         int score_next = 0;
         make_move(pos_board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
         quiesce(pos_board, -beta, -alpha, &score_next, count);
         undo_last_move(pos_board);
-
         if(-score_next >= beta){
-            *score =  beta;
+            *score = beta;
             return;
         }
         if(-score_next > alpha){
             alpha = -score_next;
         }
-
     }
+    // if(alpha != stand_pat){
+    //     printf("makes a difference %d %d", alpha, stand_pat);
+    // }
     *score = alpha;
-    
 }
 
 /* A PeSTO like evaluation funktion that only uses pieces tables with aditional information about pawn structure and double bishop/knight */
@@ -356,9 +359,6 @@ void eval(struct ChessBoard *pos_board, int *score)
     }
     int bonus = (((white_bishop == 2) - (black_bishop==2)) * double_bishop_rewartd) + (((white_knight == 2) - (black_knight==2)) * double_knight_penalty) + ((count_white_iso-count_black_iso) * isolated_pawn_reward) + ((white_double_pawns-black_double_pawns)*double_pawn_penalty);
     bonus *= (pos_board->color_to_move);
-    if( bonus > 20){
-        printf("%d", bonus);
-    }
     int mgScore = mg[side2move] - mg[OTHER(side2move)];
     int egScore = eg[side2move] - eg[OTHER(side2move)];
     int mgPhase = gamePhase;
@@ -372,7 +372,7 @@ void eval(struct ChessBoard *pos_board, int *score)
     if( random_sin){
         random_number = -random_number;
     }
-    *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + bonus+ random_number;
+    *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + bonus + random_number;
 }
 
 
@@ -429,4 +429,36 @@ void eval_without_extra(struct ChessBoard *pos_board, int *score)
         random_number = -random_number;
     }
     *score = ((mgScore * mgPhase + egScore * egPhase) / 24) + random_number;
+}
+
+
+void quiesce_best_move_list(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count, int* best_moves, int best_moves_ind){
+    *count += 1;
+    int stand_pat;
+    eval(pos_board, &stand_pat);
+    if( stand_pat >= beta ){
+        *score = beta;
+        return;
+    }
+    if (alpha < stand_pat){
+        alpha = stand_pat;
+    }
+    signed char moves[2000];
+    short move_count = 0;
+    find_all_captures(pos_board, moves, &move_count);
+    for(int ind = 0; ind < move_count; ind+=5){
+        int score_next = 0;
+        make_move(pos_board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
+        quiesce_best_move_list(pos_board, -beta, -alpha, &score_next, count, best_moves, best_moves_ind);
+        undo_last_move(pos_board);
+        if(-score_next >= beta){
+            *score =  beta;
+            return;
+        }
+        if(-score_next > alpha){
+            alpha = -score_next;
+        }
+
+    }
+    *score = alpha;
 }

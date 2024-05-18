@@ -23,4 +23,7 @@ void sort_moves(struct ChessBoard *board, char *moves, short move_count, int *so
 void alpha_beta_basic_other_eval(struct ChessBoard *board, int depth,int original_depth, int alpha, int beta, int *score);
 
 void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score,  int *count);
+
+void alpha_beta_basic_best_move_list(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *count, int *best_moves, int best_move_ind);
+
 #endif

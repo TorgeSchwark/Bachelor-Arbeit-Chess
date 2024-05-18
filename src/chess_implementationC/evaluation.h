@@ -22,7 +22,7 @@
 #define WHITE  0
 #define BLACK  1
 
-#define RANDOMNESS 30
+#define RANDOMNESS 20
 #define WHITE_PAWN      (2 * PAWN + WHITE)
 #define BLACK_PAWN      (2 * PAWN + BLACK)
 #define WHITE_KNIGHT    (2 * KNIGHT + WHITE)
@@ -52,5 +52,7 @@ int piece_white(signed char ind, struct ChessBoard *pos_board);
 void eval_without_extra(struct ChessBoard *pos_board, int *score);
 
 void quiesce(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count);
+
+void quiesce_best_move_list(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count, int* best_moves, int best_moves_ind);
 
 #endif

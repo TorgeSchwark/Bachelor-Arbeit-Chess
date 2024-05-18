@@ -22,13 +22,14 @@ def compare_engines_thread(chess_board_instance, games_amount=5000):
 
 def compare_engines(games_amount=100):
     print("hey")
-    games_amount= 10000
+    games_amount= 2000
     chess_board_instance = ChessBoard()
     chess_lib.setup_normals(ctypes.byref(chess_board_instance))
     chess_lib.create_chess(ctypes.byref(chess_board_instance))
     
     players = [0,0]
     for i in range(games_amount):
+        print(i)
         result = play_game_engines(ctypes.byref(chess_board_instance))
         if(result[0] == 0):
             players[0] += result[1]
@@ -47,21 +48,21 @@ def play_game_engines(chess_board_instance):
         
         score2 = ctypes.c_int(0)
         count2 = ctypes.c_int(0)
-        chess_lib.alpha_beta_basic(chess_board_instance,ctypes.c_int(2), ctypes.c_int(2), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count2))
+        chess_lib.advanced_apha_beta_engine(chess_board_instance,ctypes.c_int(3), ctypes.c_int(3), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count2))
         make_move(score2.value, chess_board_instance)
         
-
         matt = ctypes.c_float(0)
         chess_lib.is_check_mate(chess_board_instance, ctypes.byref(matt))
         
         if matt.value != 0:
             return (0, matt.value)
       
-        score2 = ctypes.c_int(0)
-        count2 = ctypes.c_int(0)
-        chess_lib.alpha_beta_basic_other_eval(chess_board_instance ,ctypes.c_int(2), ctypes.c_int(2), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
-        make_move(score2.value, chess_board_instance)
-
+    
+        score1 = ctypes.c_int(0)
+        count1 = ctypes.c_int(0)
+        chess_lib.alpha_beta_basic_NN(chess_board_instance ,ctypes.c_int(3), ctypes.c_int(3), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score1), ctypes.byref(count1))
+        make_move(score1.value, chess_board_instance)
+    
         matt = ctypes.c_float(0)
 
         chess_lib.is_check_mate(chess_board_instance, ctypes.byref(matt))

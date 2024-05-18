@@ -126,11 +126,12 @@ class PlayGameView(View):
         self.make_move([], move)
 
     def get_elo(self):
-        find_out_elo_thread(20, 20, 2400, 2500)
+        find_out_elo_thread(10, 10, 1900, 2600)
 
     def neg_max_engine(self):
         score2 = ctypes.c_int(0)
-        chess_lib.alpha_beta_basic_NN(ctypes.byref(self.chess_board_instance),ctypes.c_int(5), ctypes.c_int(5), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2))
+        count = ctypes.c_int(0)
+        chess_lib.alpha_beta_basic_NN(ctypes.byref(self.chess_board_instance),ctypes.c_int(5), ctypes.c_int(5), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count))
         self.make_move([],score2.value)
 
 
