@@ -3,11 +3,33 @@ import tensorflow as tf
 from matplotlib import pyplot as plt
 from tensorflow.python.client import device_lib 
 from train_variables import *
-from data_parser import data_generator_threaded
+from data_parser import data_generator_threaded, data_generator_kd, select_data_kd
 from setup_models_variable import *
 from setup_models import *
 from multiprocessing import Pool
 import datetime
+
+def test_train_kd(model_path, model, lr):
+
+    train_gen = data_generator_kd(BATCH_SIZE)
+    val_gen = data_generator_kd(BATCH_SIZE)
+
+    opt = tf.keras.optimizers.Adam(learning_rate=lr)
+
+    model.compile(loss='mse', optimizer=opt, metrics=["mse", "mae"])
+    model.summary()
+
+    history = model.fit(
+        train_gen,
+        steps_per_epoch=STEPS_PER_EPOCH,
+        validation_steps=VALIDATION_STEPS,
+        epochs=EPOCHS,
+        validation_data=val_gen,
+        callbacks=[],  
+        shuffle=True,
+        verbose='auto'
+    )
+
 
 def train(model_path, arch_name, model, lr, from_checkpoint=False):
     """ the main train method defining the callbacks and starding the data_generators and finaly the training """
@@ -19,7 +41,6 @@ def train(model_path, arch_name, model, lr, from_checkpoint=False):
     val_gen = data_generator_threaded(batch_size, False, pool_val)
 
     opt = tf.keras.optimizers.Adam(learning_rate=lr)
-    log_dir = os.path.join(model_path, "logs/fit", arch_name)
 
     tensorboard_callback =tf.keras.callbacks.TensorBoard(
         log_dir=log_dir,
@@ -83,6 +104,10 @@ def train(model_path, arch_name, model, lr, from_checkpoint=False):
     pool_val.close()
     pool_val.join()
 
+def test_kd():
+    print(select_data_kd())
+    model = setup_model_kd()
+    test_train_kd("models/test", model,  0.0008)
 
 def loop_train_two():
     #no_split_setup()
@@ -169,4 +194,4 @@ def run():
     
 
 if __name__== "__main__":
-    run()
+    test_kd()

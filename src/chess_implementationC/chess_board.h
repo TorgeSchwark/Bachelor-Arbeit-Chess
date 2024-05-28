@@ -54,6 +54,12 @@ struct ChessBoard
     bool castling[MAX_PIECES];
 };
 
+void board_to_halfkp(struct ChessBoard *board, bool* input);
+
+void board_to_simple(struct ChessBoard *board, bool* input);
+
+int piece_type_half_kp(struct ChessBoard *board,signed char *piece_ind);
+
 void set_size(struct ChessBoard *board, int size);
 
 void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset,unsigned char img);

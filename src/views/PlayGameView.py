@@ -12,7 +12,7 @@ from supervised_engines.fill_db import to_str
 from engines.negmax import alpha_beta_basic, test
 from testing.play_game_testing import play_game_test
 from engines.mcts import monte_carlo_tree_search
-from supervised_engines.fill_db import fill_dbs_by_stock, thread_call
+from supervised_engines.fill_db import fill_dbs_by_stock, thread_call, fill_dbs_by_stock_KD
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
@@ -102,7 +102,7 @@ class PlayGameView(View):
         self.draw_pieces_on_position()
     
     def fill_db_button(self):
-        thread_call()
+        fill_dbs_by_stock_KD(1)
 
     def compare_engines(self):
         compare_engines_thread(self.chess_board_instance, self)
@@ -136,11 +136,15 @@ class PlayGameView(View):
 
 
     def draw_moves_on_board(self):
+        chess_lib.find_all_captures(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
+        self.moves_list = struct.unpack(f'{self.move_count.value}b', self.legal_moves_c.raw[:self.move_count.value])
         for ind in range(self.move_count.value//5):
             if (self.moves_list[ind*5+2] + self.moves_list[ind*5+3]) % 2 == 1:
                 self.rectangles[(self.moves_list[ind*5+2],self.moves_list[ind*5+3])].configure(bg=DARKRED)
             else:
                 self.rectangles[(self.moves_list[ind*5+2],self.moves_list[ind*5+3])].configure(bg=LIGHTRED)
+        chess_lib.find_all_moves(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
+        self.moves_list = struct.unpack(f'{self.move_count.value}b', self.legal_moves_c.raw[:self.move_count.value])
             
 
     def make_move(self, move, ind): 
@@ -152,7 +156,7 @@ class PlayGameView(View):
         self.moves_list = struct.unpack(f'{self.move_count.value}b', self.legal_moves_c.raw[:self.move_count.value])
         
         self.reset_color()
-        #self.draw_moves_on_board()
+        self.draw_moves_on_board()
         self.draw_pieces_on_position()
 
     def draw_board(self):

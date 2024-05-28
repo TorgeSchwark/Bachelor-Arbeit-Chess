@@ -432,33 +432,3 @@ void eval_without_extra(struct ChessBoard *pos_board, int *score)
 }
 
 
-void quiesce_best_move_list(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count, int* best_moves, int best_moves_ind){
-    *count += 1;
-    int stand_pat;
-    eval(pos_board, &stand_pat);
-    if( stand_pat >= beta ){
-        *score = beta;
-        return;
-    }
-    if (alpha < stand_pat){
-        alpha = stand_pat;
-    }
-    signed char moves[2000];
-    short move_count = 0;
-    find_all_captures(pos_board, moves, &move_count);
-    for(int ind = 0; ind < move_count; ind+=5){
-        int score_next = 0;
-        make_move(pos_board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
-        quiesce_best_move_list(pos_board, -beta, -alpha, &score_next, count, best_moves, best_moves_ind);
-        undo_last_move(pos_board);
-        if(-score_next >= beta){
-            *score =  beta;
-            return;
-        }
-        if(-score_next > alpha){
-            alpha = -score_next;
-        }
-
-    }
-    *score = alpha;
-}

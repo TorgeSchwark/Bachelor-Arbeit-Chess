@@ -13,6 +13,7 @@ def select_data(batch_size, min_rowid, max_rowid):
     """ generates batch_size random indices in the range between min_rowid and max_rowid and queries those rows from the database """
     conn = sqlite3.connect(DATA_PATH)
     cursor = conn.cursor()
+    
     random_rowids = [random.randint(min_rowid, max_rowid) for _ in range(batch_size)]
 
     placeholders = ','.join(['?'] * len(random_rowids))
@@ -46,6 +47,36 @@ def data_generator_threaded(batch_size, is_train, pool, num_threads_train=15, nu
         results = pool.starmap(select_data, args_list)
         for result in results:
             yield result
+
+def select_data_kd(path=DATA_PATH_KD, data_size=0, batch_size=BATCH_SIZE):
+    conn = sqlite3.connect(path)
+    cursor = conn.cursor()
+    data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
+    
+    # Generiere zufällige Zeilen-IDs
+    random_rowids = [random.randint(1, data_size) for _ in range(batch_size)]
+    
+    placeholders = ','.join(['?'] * len(random_rowids))
+    query = f"SELECT board, value FROM ChessData WHERE ROWID IN ({placeholders})"
+    cursor.execute(query, random_rowids)
+    
+    data = cursor.fetchall()
+    conn.close()
+    
+    # Konvertiere die abgerufenen Byte-Arrays in numpy-Arrays vom Typ bool
+    bool_arrays = np.array([np.frombuffer(row[0], dtype=bool) for row in data])
+    selected_labels = np.array([row[1] for row in data])  # Kein Einbetten in ein 3D-Array
+    
+    return bool_arrays, selected_labels
+
+def data_generator_kd(batch_size):
+    path = DATA_PATH_KD
+    conn = sqlite3.connect(path)
+    data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
+    while True:
+        yield select_data_kd(path, data_size)
+
+
 
 
 def test_dataloader_per_second(num_seconds):

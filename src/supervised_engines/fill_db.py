@@ -15,6 +15,12 @@ entries_per_thread = 1
 
 DB_SF = ".\src\supervised_engines\stockfish_depth16_DB.db"
 DB_AB = ".\src\supervised_engines\lpha_beta_DB.db"
+DB_SIMPLE = ".\src\supervised_engines\simple.db"
+DB_HALFKP = ".\src\supervised_engines\half_kp.db"
+
+SIZE_X = 64
+SIZE_Y = 6
+SIZE_Z = 2
 
 def thread_call():
     """ Calls the funktion to fill the database on multiple threads """
@@ -39,13 +45,103 @@ def thread_task_with_retry():
             print(traceback.format_exc()) 
             time.sleep(1)
             continue
+
+def fill_dbs_by_stock_KD(amount):
+    """ Fills the two databases one with positions and evaluations of SF the positions are created via chosing one of the top SF moves"""
+    create_database_kd()
+    conn_simple = sqlite3.connect(DB_SIMPLE)
+    cursor_simple = conn_simple.cursor()
+
+    conn_kd = sqlite3.connect(DB_HALFKP)
+    cursor_kd = conn_kd.cursor()
+
+    stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-windows-x86-64.exe")
+    stockfish.set_depth(16)
+    #setup the chessBoard
+    
+    board = ChessBoard()
+    chess_lib.setup_normals(ctypes.byref(board))
+    chess_lib.create_chess(ctypes.byref(board)) 
+    chess_lib.init_tables()
+    fen = get_fen_string(board)
+    matt = ctypes.c_float(0)
+    #chess_lib.printChessBoard(ctypes.byref(board))
+
+    # List to store the values to be inserted
+    sf_values = []
+    boards_simple = []
+    boards_kd = []
+    depths = []
+
+    while amount > 0:
+        #print("amount", amount)
+        chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt)) 
+        count = 0
+        randomnes = 5
+        
+        while matt.value == 0:
+            count += 1
+            fen = get_fen_string(board)
+           
+            if True:
+                
+                stockfish.set_fen_position(fen)
+                sf_val = stockfish.get_evaluation()['value']
+                sf_values.append(sf_val)
+                board_simple = (ctypes.c_bool * (SIZE_X*SIZE_Y*SIZE_Z))(*([False] * (SIZE_X*SIZE_Y*SIZE_Z)))
+                chess_lib.board_to_simple(ctypes.byref(board), board_simple)
+
+                board_kd = (ctypes.c_bool * (64*64*10))(*([False] * (64*64*10)))
+                chess_lib.board_to_halfkp(ctypes.byref(board), board_kd)
+
+                depths.append(board.move_count)
+                boards_simple.append(bytearray(board_simple))
+                boards_kd.append(bytearray(board_kd))
+
+                moves = (ctypes.c_byte * 2024)()
+                move_count = ctypes.c_short(0)
+                chess_lib.find_all_moves(ctypes.byref(board), moves, ctypes.byref(move_count))
+
+                moves_dict = stockfish.get_top_moves(randomnes)
+                
+                move_ind = random.randint(0,len(moves_dict)-1)
+
+                move = moves_dict[move_ind]['Move']
+                ind = find_real_move(move, board, move_count, moves)
+                chess_lib.make_move(ctypes.byref(board), moves[ind],  moves[ind+1],  moves[ind+2],  moves[ind+3],  moves[ind+4])
+               
+                chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt))
+                
+            else:
+                print(fen)
+                break
+    
+        chess_lib.undo_game(ctypes.byref(board))
+        amount -= 1
+    
+    # Use executemany to insert multiple values at once
+    try:
+        cursor_simple.executemany('''
+            INSERT INTO ChessData (board, value, depth)
+            VALUES (?, ?, ?)
+        ''', zip(boards_simple, sf_values, depths))
+
+        cursor_kd.executemany('''
+            INSERT INTO ChessData (board, value, depth)
+            VALUES (?, ?, ?)
+        ''', zip(boards_kd, sf_values, depths))
+
+        conn_simple.commit()
+        conn_kd.commit()
+
+    except Exception as e:
+        print("Fehler beim Einfügen in die Datenbank:", e)
         
 
 def fill_dbs_by_stock(amount):
     """ Fills the two databases one with positions and evaluations from the AB engine one with the evaluations of SF the positions are created via chosing one of the top SF moves"""
     
-    # conn_ab = sqlite3.connect(DB_AB)
-    # cursor_ab = conn_ab.cursor()
+    
     conn_sf = sqlite3.connect(DB_SF)
     cursor_sf = conn_sf.cursor()
 
@@ -134,7 +230,7 @@ def fill_dbs_by_stock(amount):
 def fill_dbs_random(amount):
     """ Fills the two databases one with positions and evaluations from the AB engine one with the evaluations of SF the positions are created via random play"""
     
-    conn_ab = sqlite3.connect(DB_AB)
+    conn_ab = sqlite3.connect(DB)
     cursor_ab = conn_ab.cursor()
 
     conn_sf = sqlite3.connect(DB_SF)
@@ -312,10 +408,10 @@ def find_real_move(move, board, move_count, moves):
     
 
 def create_database():
-    db_file = DB_SF
-    db_file2 = DB_AB
+    db_file = DB_SIMPLE
+    db_file2 = DB_HALFKP
     # Verbindung zur SQLite-Datenbank herstellen oder eine neue erstellen
-    if not os.path.exists(DB_SF):
+    if not os.path.exists(DB_SIMPLE):
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
 
@@ -327,7 +423,7 @@ def create_database():
                 depth INTEGER
             )
         ''')
-    if not os.path.exists(DB_AB):
+    if not os.path.exists(DB_HALFKP):
         conn = sqlite3.connect(db_file2)
         cursor = conn.cursor()
 
@@ -335,6 +431,36 @@ def create_database():
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS ChessData (
                 board TEXT,
+                value REAL,
+                depth INTEGER
+            )
+        ''')
+
+
+def create_database_kd():
+    db_file = DB_SIMPLE
+    db_file2 = DB_HALFKP
+    # Verbindung zur SQLite-Datenbank herstellen oder eine neue erstellen
+    if not os.path.exists(DB_SIMPLE):
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+
+        # Tabelle erstellen, falls sie noch nicht existiert
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS ChessData (
+                board BLOB,
+                value REAL,
+                depth INTEGER
+            )
+        ''')
+    if not os.path.exists(DB_HALFKP):
+        conn = sqlite3.connect(db_file2)
+        cursor = conn.cursor()
+
+        # Tabelle erstellen, falls sie noch nicht existiert
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS ChessData (
+                board BLOB,
                 value REAL,
                 depth INTEGER
             )

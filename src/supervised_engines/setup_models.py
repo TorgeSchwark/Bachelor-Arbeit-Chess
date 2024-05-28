@@ -3,6 +3,26 @@ from train_variables import *
 
 # sets up some test models for training
 
+def setup_model_kd():
+    input = tf.keras.layers.Input(shape=(KD_INPUT ), name='input')  # Flaches Array
+    white_input = input[:, :(KD_INPUT * NUM_INPUT_PARAMETERS // 2)]
+    black_input = input[:, (KD_INPUT * NUM_INPUT_PARAMETERS // 2):]
+
+    
+    mlp_white = tf.keras.layers.SparseDense(256, activation='relu')(white_input)
+    mlp_black = tf.keras.layers.SparseDense(256, activation='relu')(black_input)
+    
+    combined = tf.keras.layers.Concatenate()([mlp_white, mlp_black])
+    
+    mlp = tf.keras.layers.Dense(32, activation='relu')(combined)
+    mlp = tf.keras.layers.Dense(32, activation='relu')(mlp)
+    mlp = tf.keras.layers.Dense(1, activation='relu')(mlp)
+
+    model = tf.keras.models.Model(input, mlp)
+    return model
+
+
+
 def setup_model_conv_mlp_big():
     input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS), name='input')
 

@@ -460,6 +460,73 @@ void board_to_fen(struct ChessBoard *board, char *fen){
 
 }
 
+int piece_type_half_kp(struct ChessBoard *board,signed char *piece_ind){
+    if(board->white_pawn[*piece_ind]){
+        return 0;
+    }else if(board->white_piece_jump_moves[*piece_ind][0] == 17 && !board->king[*piece_ind]){
+        return 1;
+    }else if(board->white_piece_jump_moves[*piece_ind][0] == 17){
+        return 5;
+    }else if(board->white_piece_move_directions[*piece_ind][0] == 25 ){
+        return 3;
+    }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && (abs(board->white_piece_move_directions[*piece_ind][1]) == abs(board->white_piece_move_directions[*piece_ind][2]))){
+        return 4;
+    }else{
+        return 2;
+    }
+}
+
+void board_to_simple(struct ChessBoard *board, bool* input){
+    int s;
+    int p;
+    int size_x = 64;
+    int size_y = 6;
+    int size_z = 2;
+    for (unsigned char ind = 0; ind < board->piece_count; ind++){
+        if( board->white_piece_alive[ind]){
+            s = (board->white_piece_pos[ind<<1]+(board->white_piece_pos[(ind<<1)+1]<<3));
+            p = piece_type_half_kp(board, &ind);
+            input[s*(size_y*size_z)+p*size_z+1] = true;
+        }
+        if( board->black_piece_alive[ind]){
+            s = (board->black_piece_pos[ind<<1]+(board->black_piece_pos[(ind<<1)+1]<<3));
+            p = piece_type_half_kp(board, &ind);
+            input[s*(size_y*size_z)+p*size_z] = true;
+        }
+
+    }
+}
+
+void board_to_halfkp(struct ChessBoard *board, bool* input){
+    int p_idx_w;
+    int halfkp_idx_w;
+    int p_idx_b;
+    int halfkp_idx_b;
+    int white_king_square = (board->white_piece_pos[board->king_pos<<1]+(board->white_piece_pos[(board->king_pos<<1)+1]<<3));
+    int black_king_square = (board->black_piece_pos[board->king_pos<<1]+(board->black_piece_pos[(board->king_pos<<1)+1]<<3));
+
+    for (unsigned char ind = 0; ind < board->piece_count; ind++){
+        if(piece_type_half_kp(board, &ind) != 5){
+            if( board->white_piece_alive[ind]){
+                p_idx_w = (piece_type_half_kp(board, &ind) << 1) + 1;
+                halfkp_idx_w = (board->white_piece_pos[ind<<1]+(board->white_piece_pos[(ind<<1)+1]<<3)) + ((p_idx_w + white_king_square*10)<<6);
+                if (input[halfkp_idx_w] == true){
+                    printf("error w \n");
+                }
+                input[halfkp_idx_w] = true;
+            }
+            if( board->black_piece_alive[ind]){
+                p_idx_b = (piece_type_half_kp(board, &ind) << 1) + 0;
+                halfkp_idx_b = (board->black_piece_pos[ind<<1]+(board->black_piece_pos[(ind<<1)+1]<<3)) + ((p_idx_b + black_king_square*10)<<6);
+                if (input[halfkp_idx_b] == true){
+                    printf("error b \n");
+                }
+                input[halfkp_idx_b] = true;
+            }
+        }
+    }
+}
+
 void board_to_NN_input(struct ChessBoard *board, int* input){
     int count = 0;
     int piece_ind = 0;
