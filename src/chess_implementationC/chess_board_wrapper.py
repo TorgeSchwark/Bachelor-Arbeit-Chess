@@ -46,5 +46,5 @@ class ChessBoard(ctypes.Structure):
         ("castling", ctypes.c_bool * MAX_PIECES)
     ]
 
-chess_lib = ctypes.CDLL("./src/chess_implementationC/chess_library.so")
+chess_lib = ctypes.CDLL("/home/torge/Bachelor-Arbeit-Chess/src/chess_implementationC/chess_library.so")
 

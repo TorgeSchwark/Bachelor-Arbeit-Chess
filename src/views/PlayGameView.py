@@ -12,7 +12,7 @@ from supervised_engines.fill_db import to_str
 from engines.negmax import alpha_beta_basic, test
 from testing.play_game_testing import play_game_test
 from engines.mcts import monte_carlo_tree_search
-from supervised_engines.fill_db import fill_dbs_by_stock, thread_call, fill_dbs_by_stock_KD
+from supervised_engines.fill_db import fill_dbs_by_stock, fill_dbs_by_stock_KD
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
@@ -27,7 +27,7 @@ import struct
 from stockfish import Stockfish
 from engines.get_engine_elo import find_out_elo_thread
 
-stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-windows-x86-64.exe")
+stockfish = Stockfish(path="/home/torge/Bachelor-Arbeit-Chess/src/chess_implementationC/Stockfish/stockfish/stockfish-ubuntu-x86-64-avx2")
 stockfish.set_elo_rating(1300)
 
 class PlayGameView(View):

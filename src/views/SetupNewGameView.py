@@ -3,7 +3,6 @@ import math
 import ctypes
 
 import customtkinter as ctk
-from tkinter import *
 from PIL import Image
 
 from views.view_variables import *
@@ -441,7 +440,7 @@ class SetupNewGameView(View):
             for child in children:
                 child.destroy()
         self.image_frame = 0
-        folder_path = "src/views/images/Chess_pieces/White_pieces/"
+        folder_path = "/home/torge/Bachelor-Arbeit-Chess/src/views/images/Chess_pieces/White_pieces/"
         num_columns = 4
         row = 0
         col = 0

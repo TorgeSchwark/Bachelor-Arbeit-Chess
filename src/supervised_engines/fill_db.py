@@ -6,7 +6,7 @@ import sqlite3
 import json 
 import os
 import sqlite3
-import threading
+# import threading
 import time
 import traceback
 
@@ -22,18 +22,18 @@ SIZE_X = 64
 SIZE_Y = 6
 SIZE_Z = 2
 
-def thread_call():
-    """ Calls the funktion to fill the database on multiple threads """
-    create_database()
-    threads = []
-    for _ in range(num_threads):
-        thread = threading.Thread(target=thread_task_with_retry)
-        thread.start()
-        threads.append(thread)
+# def thread_call():
+#     """ Calls the funktion to fill the database on multiple threads """
+#     create_database()
+#     threads = []
+#     for _ in range(num_threads):
+#         thread = threading.Thread(target=thread_task_with_retry)
+#         thread.start()
+#         threads.append(thread)
 
-    for thread in threads:
-        thread.join()
-    print("Alle Threads haben ihre Arbeit abgeschlossen.")
+#     for thread in threads:
+#         thread.join()
+#     print("Alle Threads haben ihre Arbeit abgeschlossen.")
 
 def thread_task_with_retry():
     """ starts to fill the Database on multiple threads if a thread dies starts again"""

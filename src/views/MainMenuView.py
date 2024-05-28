@@ -1,6 +1,5 @@
 import customtkinter as ctk
 import os
-from tkinter import *
 from PIL import Image, ImageTk
 from views.View import View
 

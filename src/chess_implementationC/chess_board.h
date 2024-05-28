@@ -82,4 +82,8 @@ void printChessBoard(struct ChessBoard *board);
 
 void copyBoard(struct ChessBoard *board, struct ChessBoard *copies);
 
+int piece_type_nnue(struct ChessBoard *board,signed char *piece_ind, int color);
+
+void board_to_nnue(struct ChessBoard *board, int* pieces, int* squares);
+
 #endif // CHESS_BOARD_H

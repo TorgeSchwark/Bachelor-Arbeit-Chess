@@ -18,6 +18,6 @@ WHITE = "#F5F5F5"
 BLACK = "#555555"
 REAL_BLACK = "black"
 
-BLACK_PIECES_PATH = "src/views/images/Chess_pieces/Black_pieces/"
-WHITE_PIECES_PATH = "src/views/images/Chess_pieces/White_pieces/"
+BLACK_PIECES_PATH = "/home/torge/Bachelor-Arbeit-Chess/src/views/images/Chess_pieces/Black_pieces/"
+WHITE_PIECES_PATH = "/home/torge/Bachelor-Arbeit-Chess/src/views/images/Chess_pieces/White_pieces/"
 

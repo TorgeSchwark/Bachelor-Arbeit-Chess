@@ -7,10 +7,10 @@ import tensorflow as tf
 import numpy as np
 import time
 
-model_path = "models/lstm/logs/fit/lr0.001,patience20/best_model.h5"
+model_path = "/home/torge/Bachelor-Arbeit-Chess/models/lstm/logs/fit/lr0.001,patience20/best_model.h5"
 
-loaded_model = tf.keras.models.load_model(model_path)
-
+#loaded_model = tf.keras.models.load_model(model_path)
+loaded_model = None
 positions = []
 def test(board_pointer, depth, original_depth, alpha, beta, score, count):
     alpha_beta_basic(board_pointer, depth, original_depth, alpha, beta, score, count)

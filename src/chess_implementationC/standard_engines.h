@@ -7,6 +7,7 @@
 #include "make_moves.h"
 #include "evaluation.h"
 #include "test_engin.h"
+#include "../NNUE/nnue_eval.h"
 
 /* this is a standard implementation of the negmax algorithm */
 void neg_max(struct ChessBoard *board, int depth, int original_depth, int *score, int *count);

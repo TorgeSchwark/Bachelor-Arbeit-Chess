@@ -117,7 +117,7 @@ void set_size(struct ChessBoard *board, int size){
 
 // Funktion to print a ChessBoard-Object
 void printChessBoard(struct ChessBoard *board) {
-    printf("color_to_move", board->color_to_move);
+    printf("color_to_move %d", board->color_to_move);
     printf("size: %u\n", board->size);
     printf("has_king: %s\n", board->has_king ? "true" : "false");
     printf("king_pos: %d\n", board->king_pos);
@@ -247,7 +247,6 @@ void printChessBoard(struct ChessBoard *board) {
     }
     printf("\n");
 }
-
 
 /* Determains the number a piece i represented by in the database. */
 void get_piece_type_for_db(struct ChessBoard *board,int *piece_ind, signed char color){
@@ -476,6 +475,23 @@ int piece_type_half_kp(struct ChessBoard *board,signed char *piece_ind){
     }
 }
 
+int piece_type_nnue(struct ChessBoard *board,signed char *piece_ind, int color){
+    if(board->white_pawn[*piece_ind]){
+        return 12-((color==1)*6);
+    }else if(board->white_piece_jump_moves[*piece_ind][0] == 17 && !board->king[*piece_ind]){
+        return 11-((color==1)*6);
+    }else if(board->white_piece_jump_moves[*piece_ind][0] == 17){
+        return 7-((color==1)*6);
+    }else if(board->white_piece_move_directions[*piece_ind][0] == 25 ){
+        return 8-((color==1)*6);
+    }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && (abs(board->white_piece_move_directions[*piece_ind][1]) == abs(board->white_piece_move_directions[*piece_ind][2]))){
+        return 10-((color==1)*6);
+    }else{
+        return 9-((color==1)*6);
+    }
+    
+}
+
 void board_to_simple(struct ChessBoard *board, bool* input){
     int s;
     int p;
@@ -496,6 +512,33 @@ void board_to_simple(struct ChessBoard *board, bool* input){
 
     }
 }
+
+void board_to_nnue(struct ChessBoard *board, int* pieces, int* squares){
+    int count = 2;
+    pieces[0] = 1;
+    pieces[1] = 7;
+    squares[0] = 7-board->white_piece_pos[(board->king_pos<<1)]+ (board->white_piece_pos[(board->king_pos<<1)+1]<<3);
+    squares[1] = 7-board->black_piece_pos[(board->king_pos<<1)]+ (board->black_piece_pos[(board->king_pos<<1)+1]<<3);
+    for (unsigned char ind = 0; ind < board->piece_count; ind++){
+        if(piece_type_half_kp(board, &ind) != 5){
+            if( board->white_piece_alive[ind]){
+                pieces[count] = piece_type_nnue(board, &ind, 1);
+                squares[count] = 7-board->white_piece_pos[(ind<<1)]+ (board->white_piece_pos[(ind<<1)+1]<<3);
+                count += 1;
+            }
+            if( board->black_piece_alive[ind]){
+                pieces[count] = piece_type_nnue(board, &ind, 0);
+                squares[count] = 7-board->black_piece_pos[(ind<<1)]+ (board->black_piece_pos[(ind<<1)+1]<<3);
+                count += 1;
+            }
+        }
+    }
+    pieces[count] = 0;
+    squares[count] = 0;
+}
+
+
+
 
 void board_to_halfkp(struct ChessBoard *board, bool* input){
     int p_idx_w;
@@ -610,6 +653,7 @@ void board_to_NN_input(struct ChessBoard *board, int* input){
     // }
     // printf(" \n count: %d", count);
 }
+
 
 /* Copies the data from one ChessBoard into a second one. Slow operation!*/
 void copyBoard(struct ChessBoard *board, struct ChessBoard *copies){
@@ -783,6 +827,7 @@ void setup_normals(struct ChessBoard *board){
     board->non_pawn_pieces[0] = 1;
     board->has_king = false;
     board->piece_count = 0;
+    
     for(int i = 0; i < MAX_PIECES; i++){
         board->white_piece_img[i] = 0;
         board->black_piece_img[i] = 0;
@@ -834,15 +879,4 @@ void create_chess(struct ChessBoard *board){
     add_queen(board);
     add_knight(board);
     add_bishop(board);
-}
-
-/* small test in main() */
-int main() {
-
-    struct ChessBoard board;
-
-    create_chess(&board);
-    printChessBoard(&board);
-
-    return 0;
 }

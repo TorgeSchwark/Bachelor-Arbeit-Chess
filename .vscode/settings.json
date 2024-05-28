@@ -30,6 +30,14 @@
         "xmemory": "c",
         "find_captures.h": "c",
         "stdio.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "test_call.h": "c",
+        "__tree": "c",
+        "set": "c",
+        "*.inc": "c",
+        "__bit_reference": "c",
+        "map": "c",
+        "unordered_map": "c",
+        "unordered_set": "c"
     }
 }
