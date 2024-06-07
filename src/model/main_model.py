@@ -2,7 +2,7 @@ import os
 import pickle
 import re
 
-DATA_PATH = "/home/torge/Bachelor-Arbeit-Chess/src/model/games"
+DATA_PATH = "./src/model/games"
 
 class Model():
     """ the model to manage the pickle "database" """
