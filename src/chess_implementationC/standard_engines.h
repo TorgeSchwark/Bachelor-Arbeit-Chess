@@ -23,8 +23,23 @@ void sort_moves(struct ChessBoard *board, char *moves, short move_count, int *so
 
 void alpha_beta_basic_other_eval(struct ChessBoard *board, int depth,int original_depth, int alpha, int beta, int *score);
 
-void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score,  int *count);
+void alpha_beta_basic_quiesce(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score,  int *count);
 
 void alpha_beta_basic_best_move_list(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *count, int *best_moves, int best_move_ind);
 
+void trying_nnues(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *count);
+
+void sort_moves_nnue(struct ChessBoard *board, char *moves, short move_count, int *sorted_ind, bool acurate, int *count);
+
+void eval_by_nnue(struct ChessBoard *board, int *score);
+
+void quicksort(int arr[], int low, int high, int sorted_ind[]);
+
+int partition(int arr[], int low, int high, int sorted_ind[]);
+
+void swap(int *a, int *b);
+
+void sort_moves_faster(struct ChessBoard *board, char *moves, short move_count, int *sorted_ind, bool acurate, int *count);
+
+void alpha_beta_basic_quiesce_without_sort(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *count);
 #endif

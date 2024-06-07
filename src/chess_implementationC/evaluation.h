@@ -53,6 +53,8 @@ void eval_without_extra(struct ChessBoard *pos_board, int *score);
 
 void quiesce(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count);
 
-void quiesce_best_move_list(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count, int* best_moves, int best_moves_ind);
+void quiesce_without_sort(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count);
+
+void sort_atack_moves_MVV_LVA(struct ChessBoard *board, signed char *moves, short moves_count, int *sorted_ind);
 
 #endif

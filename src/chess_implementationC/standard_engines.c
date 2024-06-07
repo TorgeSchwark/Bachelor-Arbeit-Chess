@@ -89,7 +89,7 @@ void advanced_apha_beta_engine(struct ChessBoard *board, int depth,int original_
     //     sort_moves(board, moves, move_count, sorted_ind, true, count);
     // }
     // else 
-    if(depth >= original_depth-2){
+    if(depth >= original_depth-6){
         sort_moves(board, moves, move_count, sorted_ind, false, count);
     }
     if(depth == original_depth){
@@ -99,7 +99,7 @@ void advanced_apha_beta_engine(struct ChessBoard *board, int depth,int original_
         if(depth == original_depth && !legal[sorted_ind[i]]){
             continue;
         }
-        if(depth >= original_depth-2){
+        if(depth >= original_depth-6){
             ind = sorted_ind[i]*5;
         }else{
             ind = i*5;
@@ -202,7 +202,7 @@ void alpha_beta_basic_other_eval(struct ChessBoard *board, int depth, int origin
 }
 
 // alpha beta with sort and quiesce 
-void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *count){
+void alpha_beta_basic_quiesce(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *count){
     *count += 1;
     if(depth == 0){
         return quiesce(board, alpha, beta, score, count);
@@ -217,7 +217,7 @@ void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth
     int ind = 0;
     int sorted_ind[200];
     find_all_moves(board, moves, &move_count);
-    if(depth >= original_depth-4){
+    if(depth >= original_depth-6){
         sort_moves(board, moves, move_count, sorted_ind, false, count);
     }
     if(depth == original_depth){
@@ -227,13 +227,13 @@ void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth
         if(depth == original_depth && !legal[sorted_ind[i]]){
             continue;
         }
-        if(depth >= original_depth-4){
+        if(depth >= original_depth-6){
             ind = sorted_ind[i]*5;
         }else{
             ind = i*5;
         }
         make_move(board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
-        alpha_beta_basic_NN(board, depth-1, original_depth, -beta, -maxWert, &score_next, count);
+        alpha_beta_basic_quiesce(board, depth-1, original_depth, -beta, -maxWert, &score_next, count);
         undo_last_move(board);
         if(-score_next > maxWert){
             maxWert = -score_next;
@@ -250,3 +250,170 @@ void alpha_beta_basic_NN(struct ChessBoard *board, int depth, int original_depth
     }
 }
 
+void alpha_beta_basic_quiesce_without_sort(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *count){
+    *count += 1;
+    if(depth == 0){
+        return quiesce_without_sort(board, alpha, beta, score, count);
+    }
+    
+    int maxWert = alpha;
+    signed char moves[2000];
+    short move_count = 0;
+    int best_move = 0;
+    int score_next = 0;
+    bool legal[200];
+    int ind = 0;
+    int sorted_ind[200];
+    find_all_moves(board, moves, &move_count);
+    if(depth >= original_depth-6){
+        sort_moves(board, moves, move_count, sorted_ind, false, count);
+    }
+    if(depth == original_depth){
+        legal_moves(board, move_count, moves, legal);
+    }
+    for(int i = 0; i < move_count/5; i++){
+        if(depth == original_depth && !legal[sorted_ind[i]]){
+            continue;
+        }
+        if(depth >= original_depth-6){
+            ind = sorted_ind[i]*5;
+        }else{
+            ind = i*5;
+        }
+        make_move(board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
+        alpha_beta_basic_quiesce(board, depth-1, original_depth, -beta, -maxWert, &score_next, count);
+        undo_last_move(board);
+        if(-score_next > maxWert){
+            maxWert = -score_next;
+            best_move = ind;
+            if (maxWert >= beta){
+                break;
+            }
+        }
+    }
+    if (depth != original_depth){
+        *score = maxWert;
+    }else{
+        *score = best_move;
+    }
+}
+
+void eval_by_nnue(struct ChessBoard *board, int*score){
+    srand((unsigned int)clock()); 
+    int random_number = rand() % 20;
+    int random_sin = rand()%2;
+    if( random_sin){
+        random_number = -random_number;
+    }
+    int pieces[33];
+    int squares[33];
+    board_to_nnue(board, pieces, squares);
+    *score = evaluate_nnue((board->color_to_move==-1), pieces, squares)+ random_number;
+    if(board->color_to_move == 1){
+        if(board->white_piece_alive[board->king_pos] && !board->black_piece_alive[board->king_pos]){
+            *score = 99999;
+        }else if(!board->white_piece_alive[board->king_pos] && board->black_piece_alive[board->king_pos]){
+            *score = -99999;
+        }else if(!board->white_piece_alive[board->king_pos] && !board->black_piece_alive[board->king_pos]){
+            *score = 0;
+        }
+    }else{
+        if(board->white_piece_alive[board->king_pos] && !board->black_piece_alive[board->king_pos]){
+            *score = -99999;
+        }else if(!board->white_piece_alive[board->king_pos] && board->black_piece_alive[board->king_pos]){
+            *score = 99999;
+        }else if(!board->white_piece_alive[board->king_pos] && !board->black_piece_alive[board->king_pos]){
+            *score = 0;
+        }
+    }
+    // printf("%d \n", *score);
+}
+
+// alpha beta with sort and quiesce 
+void trying_nnues(struct ChessBoard *board, int depth, int original_depth, int alpha, int beta, int *score, int *count){
+    *count += 1;
+    if(depth == 0){
+        return eval_by_nnue(board, score);
+    }
+    int maxWert = alpha;
+    signed char moves[2000];
+    short move_count = 0;
+    int best_move = 0;
+    int score_next = 0;
+    bool legal[200];
+    int ind = 0;
+    int sorted_ind[200];
+    find_all_moves(board, moves, &move_count);
+    if(depth >= original_depth-4){
+        sort_moves(board, moves, move_count, sorted_ind, false, count);
+    }
+    else if(depth >= original_depth-2){
+        sort_moves(board, moves, move_count, sorted_ind, true, count);
+    }
+    if(depth == original_depth){
+        legal_moves(board, move_count, moves, legal);
+    }
+    for(int i = 0; i < move_count/5; i++){
+        if(depth == original_depth && !legal[sorted_ind[i]]){
+            continue;
+        }
+        if(depth >= original_depth-4){
+            ind = sorted_ind[i]*5;
+        }else{
+            ind = i*5;
+        }
+        make_move(board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
+        trying_nnues(board, depth-1, original_depth, -beta, -maxWert, &score_next, count);
+        undo_last_move(board);
+        if(-score_next > maxWert){
+            maxWert = -score_next;
+            best_move = ind;
+            if (maxWert >= beta){
+                break;
+            }
+        }
+    }
+    if (depth != original_depth){
+        *score = maxWert;
+    }else{
+        *score = best_move;
+    }
+}
+
+void sort_moves_nnue(struct ChessBoard *board, char *moves, short move_count, int *sorted_ind, bool acurate, int *count){
+    int evals[200];
+    if(!acurate){
+        for(int ind = 0; ind < move_count; ind+= 5){
+            int score = 0;
+            make_move(board,  moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
+            eval_by_nnue(board, &score);
+            evals[ind/5] = -score;
+            undo_last_move(board);
+        }
+    }
+    else{
+        for(int ind = 0; ind < move_count; ind+= 5){
+            int score = 0;
+            make_move(board,  moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
+            eval_by_nnue(board, &score);
+            evals[ind/5] = -score;
+            undo_last_move(board);
+        }
+    }
+
+    for (int i = 0; i <  move_count/5; i++) {
+        sorted_ind[i] = i;
+    }
+
+    for(int i = 0; i < move_count/5; i++){
+        int min_idx = i;
+        for(int j = i+1; j < move_count/5; j++){
+            if (evals[sorted_ind[j]] > evals[sorted_ind[min_idx]]){
+                min_idx = j;
+            }
+        }
+        int temp = sorted_ind[min_idx];
+        sorted_ind[min_idx] = sorted_ind[i];
+        sorted_ind[i] = temp;
+    }
+}

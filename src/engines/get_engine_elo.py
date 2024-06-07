@@ -29,7 +29,7 @@ def find_out_elo_thread(game_amount, num_threads, min_elo, max_elo):
     return
 
 def enine_vs_stockfish(elo):
-    stockfish = Stockfish(path=".\src\chess_implementationC\Stockfish\stockfish-windows-x86-64.exe")
+    stockfish = Stockfish(path="/home/torge/Bachelor-Arbeit-Chess/src/chess_implementationC/Stockfish/stockfish/stockfish-ubuntu-x86-64-avx2")
     stockfish.set_elo_rating(elo)
     chess_lib.init_tables() #importand!
     chess_board_instance = ChessBoard()
@@ -66,30 +66,10 @@ def enine_vs_stockfish(elo):
 def carry_out_engine(chess_board_instance, avgs):
     score2 = ctypes.c_int(0)
     
-    count_advanced = ctypes.c_int(0)
-    count_alpha_beta_basic = ctypes.c_int(0)
-    count_neg_max = ctypes.c_int(0)
     count_quisque = ctypes.c_int(0)
 
-    # chess_lib.advanced_apha_beta_engine(ctypes.byref(chess_board_instance),ctypes.c_int(4), ctypes.c_int(4), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count_advanced))
-    # score2 = ctypes.c_int(0)
-    # chess_lib.alpha_beta_basic(ctypes.byref(chess_board_instance),ctypes.c_int(4), ctypes.c_int(4), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count_alpha_beta_basic))
-    # score2 = ctypes.c_int(0)
-    # chess_lib.neg_max(ctypes.byref(chess_board_instance),ctypes.c_int(4), ctypes.c_int(4), ctypes.byref(score2), ctypes.byref(count_neg_max))
     score2 = ctypes.c_int(0)
-    chess_lib.alpha_beta_basic_NN(ctypes.byref(chess_board_instance),ctypes.c_int(5), ctypes.c_int(5), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count_quisque))
-
-    avgs[0][0] = avgs[0][0] * avgs[0][1]/(avgs[0][1]+1) + count_advanced.value * 1/(avgs[0][1]+1)
-    avgs[0][1] += 1
-
-    avgs[1][0] = avgs[1][0] * avgs[1][1]/(avgs[1][1]+1) + count_alpha_beta_basic.value * 1/(avgs[1][1]+1)
-    avgs[1][1] += 1
-
-    avgs[2][0] = avgs[2][0] * avgs[2][1]/(avgs[2][1]+1) + count_neg_max.value * 1/(avgs[2][1]+1)
-    avgs[2][1] += 1
-
-    avgs[3][0] = avgs[3][0] * avgs[3][1]/(avgs[3][1]+1) + count_quisque.value * 1/(avgs[3][1]+1)
-    avgs[3][1] += 1
+    chess_lib.alpha_beta_basic_quiesce(ctypes.byref(chess_board_instance),ctypes.c_int(6), ctypes.c_int(6), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count_quisque))
 
     moves = (ctypes.c_byte * 2048)()
     move_count = ctypes.c_short(0)

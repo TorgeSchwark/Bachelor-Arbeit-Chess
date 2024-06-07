@@ -7,7 +7,7 @@ Some illegal add_pieces are still possible e.g a pawn should only move one piece
 */
 void add_piece(struct ChessBoard *board, int *move_directions, int *jump_moves, int *position, bool boarder_x, bool boarder_y, bool pawn, bool king, bool castling, int offset, unsigned char img){
     int len_start_pos = position[0]; 
-    if ((king && board->has_king) || king && len_start_pos > 3){
+    if ((king && board->has_king) || (king && len_start_pos > 3)){
         printf("game already has a king and can only have one king");
     }else if(castling && !(board->has_king || king)){
         printf("add king before adding a castling piece");
@@ -315,20 +315,6 @@ void get_piece_type(struct ChessBoard *board,signed char *piece_ind, signed char
     }
 }
 
-/* Not implemented yet converts a fen_string to a ChessBoard struct */
-void fen_to_board(struct ChessBoard *board, char *fen, int fen_end){
-
-    unsigned char row_count = 0;
-    for(int ind = 0; ind < fen_end; ind++){
-
-        if(fen[ind] == '/'){
-            row_count = 0;
-        }
-        
-
-    }
-
-}
 
 /* converts the current position into fen notation for stockfish evaluation */
 void board_to_fen(struct ChessBoard *board, char *fen){
@@ -476,20 +462,35 @@ int piece_type_half_kp(struct ChessBoard *board,signed char *piece_ind){
 }
 
 int piece_type_nnue(struct ChessBoard *board,signed char *piece_ind, int color){
-    if(board->white_pawn[*piece_ind]){
-        return 12-((color==1)*6);
-    }else if(board->white_piece_jump_moves[*piece_ind][0] == 17 && !board->king[*piece_ind]){
-        return 11-((color==1)*6);
-    }else if(board->white_piece_jump_moves[*piece_ind][0] == 17){
-        return 7-((color==1)*6);
-    }else if(board->white_piece_move_directions[*piece_ind][0] == 25 ){
-        return 8-((color==1)*6);
-    }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && (abs(board->white_piece_move_directions[*piece_ind][1]) == abs(board->white_piece_move_directions[*piece_ind][2]))){
-        return 10-((color==1)*6);
+     if(color == 1){
+        if(board->white_pawn[*piece_ind]){
+            return 6;
+        }else if(board->white_piece_jump_moves[*piece_ind][0] == 17 && board->king[*piece_ind] == false){
+            return 5;
+        }else if(board->white_piece_jump_moves[*piece_ind][0] == 17){
+            return 1;
+        }else if(board->white_piece_move_directions[*piece_ind][0]  == 25 ){
+            return 2;
+        }else if(board->white_piece_move_directions[*piece_ind][0] == 13 && (abs(board->white_piece_move_directions[*piece_ind][1]) == abs(board->white_piece_move_directions[*piece_ind][2]))){
+            return 4;
+        }else{
+            return 3;
+        }
     }else{
-        return 9-((color==1)*6);
+        if(board->black_pawn[*piece_ind]){
+            return 12;
+        }else if(board->black_piece_jump_moves[*piece_ind][0] == 17 && board->king[*piece_ind] == false){
+            return 11;
+        }else if(board->black_piece_jump_moves[*piece_ind][0] == 17){
+            return 7;
+        }else if(board->black_piece_move_directions[*piece_ind][0]  == 25){
+            return 8;
+        }else if(board->black_piece_move_directions[*piece_ind][0] == 13 && (abs(board->black_piece_move_directions[*piece_ind][1]) == abs(board->black_piece_move_directions[*piece_ind][2]))) {
+            return 10;
+        }else{
+            return 9;
+        }
     }
-    
 }
 
 void board_to_simple(struct ChessBoard *board, bool* input){
@@ -498,7 +499,7 @@ void board_to_simple(struct ChessBoard *board, bool* input){
     int size_x = 64;
     int size_y = 6;
     int size_z = 2;
-    for (unsigned char ind = 0; ind < board->piece_count; ind++){
+    for (signed char ind = 0; ind < board->piece_count; ind++){
         if( board->white_piece_alive[ind]){
             s = (board->white_piece_pos[ind<<1]+(board->white_piece_pos[(ind<<1)+1]<<3));
             p = piece_type_half_kp(board, &ind);
@@ -519,8 +520,8 @@ void board_to_nnue(struct ChessBoard *board, int* pieces, int* squares){
     pieces[1] = 7;
     squares[0] = 7-board->white_piece_pos[(board->king_pos<<1)]+ (board->white_piece_pos[(board->king_pos<<1)+1]<<3);
     squares[1] = 7-board->black_piece_pos[(board->king_pos<<1)]+ (board->black_piece_pos[(board->king_pos<<1)+1]<<3);
-    for (unsigned char ind = 0; ind < board->piece_count; ind++){
-        if(piece_type_half_kp(board, &ind) != 5){
+    for (signed char ind = 0; ind < board->piece_count; ind++){
+        if(piece_type_nnue(board, &ind, 1) != 1){
             if( board->white_piece_alive[ind]){
                 pieces[count] = piece_type_nnue(board, &ind, 1);
                 squares[count] = 7-board->white_piece_pos[(ind<<1)]+ (board->white_piece_pos[(ind<<1)+1]<<3);
@@ -548,7 +549,7 @@ void board_to_halfkp(struct ChessBoard *board, bool* input){
     int white_king_square = (board->white_piece_pos[board->king_pos<<1]+(board->white_piece_pos[(board->king_pos<<1)+1]<<3));
     int black_king_square = (board->black_piece_pos[board->king_pos<<1]+(board->black_piece_pos[(board->king_pos<<1)+1]<<3));
 
-    for (unsigned char ind = 0; ind < board->piece_count; ind++){
+    for (signed char ind = 0; ind < board->piece_count; ind++){
         if(piece_type_half_kp(board, &ind) != 5){
             if( board->white_piece_alive[ind]){
                 p_idx_w = (piece_type_half_kp(board, &ind) << 1) + 1;

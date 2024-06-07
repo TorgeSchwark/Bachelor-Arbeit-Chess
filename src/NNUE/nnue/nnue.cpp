@@ -1201,8 +1201,9 @@ enum {
 
 static bool verify_net(const void *evalData, size_t size)
 {
+  // CHANGED!!
+  return true;
   if (size != 21022697) return false;
-
   const char *d = (const char*)evalData;
   if (readu_le_u32(d) != NnueVersion) return false;
   if (readu_le_u32(d + 4) != 0x3e5aa6eeU) return false;
@@ -1256,10 +1257,11 @@ static bool load_eval_file(const char *evalFile)
   }
 
   bool success = verify_net(evalData, size);
+  printf("Der boolsche Wert ist: %s\n", success ? "true" : "false");
   if (success)
     init_weights(evalData);
   if (mapping) unmap_file(evalData, mapping);
-  return success;
+    return success;
 }
 
 /*

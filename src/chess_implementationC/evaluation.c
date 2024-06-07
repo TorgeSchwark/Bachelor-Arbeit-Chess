@@ -234,12 +234,80 @@ bool direct_repetition(struct ChessBoard *board){
 
 }
 
+int piece_value(struct ChessBoard *board,signed char piece_board_ind){
+     if(piece_board_ind > 0){
+        piece_board_ind = piece_board_ind-1;
+        if(board->white_pawn[piece_board_ind]){
+            return 1;
+        }else if(board->white_piece_jump_moves[piece_board_ind][0] == 17 && board->king[piece_board_ind] == false){
+            return 2;
+        }else if(board->white_piece_jump_moves[piece_board_ind][0] == 17){
+            return 5;
+        }else if(board->white_piece_move_directions[piece_board_ind][0] == 25 ){
+            return 4;
+        }else if(board->white_piece_move_directions[piece_board_ind][0] == 13 && (abs(board->white_piece_move_directions[piece_board_ind][1]) == abs(board->white_piece_move_directions[piece_board_ind][2]))){
+            return 2;
+        }else{
+            return 3;
+        }
+    }else{
+        piece_board_ind = (-piece_board_ind)-1;
+        if(board->black_pawn[piece_board_ind]){
+            return 1;
+        }else if(board->black_piece_jump_moves[piece_board_ind][0] == 17 && board->king[piece_board_ind] == false){
+            return 2;
+        }else if(board->black_piece_jump_moves[piece_board_ind][0] == 17){
+            return 5;
+        }else if(board->black_piece_move_directions[piece_board_ind][0] == 25){
+            return 4;
+        }else if(board->black_piece_move_directions[piece_board_ind][0] == 13 && (abs(board->black_piece_move_directions[piece_board_ind][1]) == abs(board->black_piece_move_directions[piece_board_ind][2]))) {
+            return 2;
+        }else{
+            return 3;
+        }
+    }
+}
+
+
+void sort_atack_moves_MVV_LVA(struct ChessBoard *board, signed char *moves, short moves_count, int *sorted_ind) {
+    int vv[200];
+    int av[200];
+    
+    // Initialisieren der Werte-Arrays
+    for (int ind = 0; ind < moves_count; ind += 5) {
+        vv[ind / 5] = piece_value(board, board->board[moves[ind + 2]][moves[ind + 3]]);
+        av[ind / 5] = piece_value(board, board->board[moves[ind]][moves[ind + 1]]);
+    }
+    
+    // Initialisieren der Indizes
+    for (int i = 0; i < moves_count / 5; i++) {
+        sorted_ind[i] = i;
+    }
+    
+    // Sortieren der Indizes nach VV und AV (MVV-LVA)
+    for (int i = 0; i < moves_count / 5 - 1; i++) {
+        for (int j = i + 1; j < moves_count / 5; j++) {
+            if ((vv[sorted_ind[j]] > vv[sorted_ind[i]]) || 
+                (vv[sorted_ind[j]] == vv[sorted_ind[i]] && av[sorted_ind[j]] < av[sorted_ind[i]])) {
+                // Vertauschen der Indizes
+                int temp = sorted_ind[i];
+                sorted_ind[i] = sorted_ind[j];
+                sorted_ind[j] = temp;
+            }
+        }
+    }
+    for(int i = 0; i < moves_count/5; i++){
+        printf(" %d-%d", vv[sorted_ind[i]], av[sorted_ind[i]]);
+    }
+    printf("\n");
+}
+
 void quiesce(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count){
     //printf("%d %d \n", beta, alpha);
     *count += 1;
     int stand_pat = 0;
     eval(pos_board, &stand_pat);
-    
+    //printf("stand_pat %d\n", stand_pat);
     if( stand_pat >= beta ){
         *score = beta;
         return;
@@ -250,6 +318,48 @@ void quiesce(struct ChessBoard *pos_board, int alpha, int beta, int *score, int 
     signed char moves[2000];
     short move_count = 0;
     find_all_captures(pos_board, moves, &move_count);
+    int sorted_ind[200];
+    int ind;
+    sort_atack_moves_MVV_LVA(pos_board, moves, move_count, sorted_ind);
+    //printf("%d %d \n", move_count, pos_board->color_to_move);
+    for(int i = 0; i < move_count/5; i++){
+        printf(" %d ", sorted_ind[i]);
+    }
+    printf("\n");
+    for(int i = 0; i < move_count/5; i++){
+        ind = sorted_ind[i]*5;
+        int score_next = 0;
+        make_move(pos_board, moves[ind], moves[ind+1], moves[ind+2], moves[ind+3], moves[ind+4]);
+        quiesce(pos_board, -beta, -alpha, &score_next, count);
+        undo_last_move(pos_board);
+        if(-score_next >= beta){
+            *score = beta;
+            return;
+        }
+        if(-score_next > alpha){
+            alpha = -score_next;
+        }
+    }
+    *score = alpha;
+}
+
+void quiesce_without_sort(struct ChessBoard *pos_board, int alpha, int beta, int *score, int *count){
+    //printf("%d %d \n", beta, alpha);
+    *count += 1;
+    int stand_pat = 0;
+    eval(pos_board, &stand_pat);
+    //printf("stand_pat %d\n", stand_pat);
+    if( stand_pat >= beta ){
+        *score = beta;
+        return;
+    }
+    if (alpha < stand_pat){
+        alpha = stand_pat;
+    }
+    signed char moves[2000];
+    short move_count = 0;
+    find_all_captures(pos_board, moves, &move_count);
+    int sorted_ind[200];
     //printf("%d %d \n", move_count, pos_board->color_to_move);
     for(int ind = 0; ind < move_count; ind+=5){
         int score_next = 0;
@@ -264,9 +374,6 @@ void quiesce(struct ChessBoard *pos_board, int alpha, int beta, int *score, int 
             alpha = -score_next;
         }
     }
-    // if(alpha != stand_pat){
-    //     printf("makes a difference %d %d", alpha, stand_pat);
-    // }
     *score = alpha;
 }
 

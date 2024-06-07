@@ -35,7 +35,12 @@ class PlayGameView(View):
 
     
     def __init__(self, master, controller):
+        path = "/home/torge/Bachelor-Arbeit-Chess/src/NNUE/nn-8a08400ed089.nnue"
+        cpath= ctypes.c_char_p(path.encode('utf-8'))
+        chess_lib.init_nnue(cpath)
         chess_lib.init_tables()
+        
+
         self.legal_moves_c = (ctypes.c_char * 2048)()
         self.move_count = ctypes.c_short(0)
         self.moves_list = struct.unpack(f'{self.move_count.value}b', self.legal_moves_c.raw[:self.move_count.value])
@@ -51,6 +56,10 @@ class PlayGameView(View):
         chess_lib.eval(ctypes.byref(self.chess_board_instance),ctypes.byref(test))
 
         print("hier", test.value)
+
+        test_score = ctypes.c_int(0)
+        chess_lib.eval_by_nnue(ctypes.byref(self.chess_board_instance),ctypes.byref(test_score))
+        print(test_score.value)
 
         self.place_main_objects()
 
@@ -86,7 +95,7 @@ class PlayGameView(View):
         self.compare_engine = ctk.CTkButton(master=self.settings_frame, text="compare_engine", command=self.compare_engines)
         self.compare_engine.pack(expand=False, padx=20, pady=5)
 
-        self.play_game = ctk.CTkButton(master=self.settings_frame, text="play_game", command=self.get_elo)
+        self.play_game = ctk.CTkButton(master=self.settings_frame, text="get_elo", command=self.get_elo)
         self.play_game.pack(expand=False, padx=20, pady=5)
 
         self.fill_db_button = ctk.CTkButton(master=self.settings_frame, text="fill db", command=self.fill_db_button)
@@ -126,12 +135,21 @@ class PlayGameView(View):
         self.make_move([], move)
 
     def get_elo(self):
-        find_out_elo_thread(10, 10, 1900, 2600)
+        find_out_elo_thread(100, 20, 2500, 2800)
 
     def neg_max_engine(self):
+        score1 = ctypes.c_int(0)
+        count1 = ctypes.c_int(0)
+        start1 = time.time()
+        chess_lib.alpha_beta_basic_quiesce(ctypes.byref(self.chess_board_instance),ctypes.c_int(5), ctypes.c_int(5), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score1), ctypes.byref(count1))
+        end1 = time.time()
         score2 = ctypes.c_int(0)
-        count = ctypes.c_int(0)
-        chess_lib.alpha_beta_basic_NN(ctypes.byref(self.chess_board_instance),ctypes.c_int(5), ctypes.c_int(5), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count))
+        count2 = ctypes.c_int(0)
+        start2 = time.time()
+        chess_lib.alpha_beta_basic_quiesce_without_sort(ctypes.byref(self.chess_board_instance),ctypes.c_int(5), ctypes.c_int(5), ctypes.c_int(-999999), ctypes.c_int(999999), ctypes.byref(score2), ctypes.byref(count2))
+        end2 = time.time()
+        print(end1-start1, end2-start2)
+        print(count1.value,count2.value)
         self.make_move([],score2.value)
 
 
@@ -154,7 +172,9 @@ class PlayGameView(View):
             chess_lib.make_move(ctypes.byref(self.chess_board_instance), ctypes.c_byte(self.moves_list[ind]),ctypes.c_byte(self.moves_list[ind+1]), ctypes.c_byte(self.moves_list[ind+2]),ctypes.c_byte(self.moves_list[ind+3]),ctypes.c_byte(self.moves_list[ind+4]))
         chess_lib.find_all_moves(ctypes.byref(self.chess_board_instance),self.legal_moves_c, ctypes.byref(self.move_count))
         self.moves_list = struct.unpack(f'{self.move_count.value}b', self.legal_moves_c.raw[:self.move_count.value])
-        
+        test_score = ctypes.c_int(0)
+        chess_lib.eval_by_nnue(ctypes.byref(self.chess_board_instance),ctypes.byref(test_score))
+        print(test_score.value)
         self.reset_color()
         self.draw_moves_on_board()
         self.draw_pieces_on_position()
