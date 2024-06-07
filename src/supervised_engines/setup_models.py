@@ -4,13 +4,13 @@ from train_variables import *
 # sets up some test models for training
 
 def setup_model_kd():
-    input = tf.keras.layers.Input(shape=(KD_INPUT ), name='input')  # Flaches Array
+    input = tf.keras.layers.Input(shape=(KD_INPUT ), sparse=True, name='input')  # Flaches Array
     white_input = input[:, :(KD_INPUT * NUM_INPUT_PARAMETERS // 2)]
     black_input = input[:, (KD_INPUT * NUM_INPUT_PARAMETERS // 2):]
 
     
-    mlp_white = tf.keras.layers.SparseDense(256, activation='relu')(white_input)
-    mlp_black = tf.keras.layers.SparseDense(256, activation='relu')(black_input)
+    mlp_white = tf.keras.layers.Dense(256, activation='relu')(white_input)
+    mlp_black = tf.keras.layers.Dense(256, activation='relu')(black_input)
     
     combined = tf.keras.layers.Concatenate()([mlp_white, mlp_black])
     

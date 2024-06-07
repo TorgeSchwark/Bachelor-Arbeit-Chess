@@ -8,6 +8,7 @@ from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
 import time
 import sqlite3
+import tensorflow as tf
 
 def select_data(batch_size, min_rowid, max_rowid):
     """ generates batch_size random indices in the range between min_rowid and max_rowid and queries those rows from the database """
@@ -53,7 +54,6 @@ def select_data_kd(path=DATA_PATH_KD, data_size=0, batch_size=BATCH_SIZE):
     cursor = conn.cursor()
     data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
     
-    # Generiere zufällige Zeilen-IDs
     random_rowids = [random.randint(1, data_size) for _ in range(batch_size)]
     
     placeholders = ','.join(['?'] * len(random_rowids))
@@ -63,18 +63,14 @@ def select_data_kd(path=DATA_PATH_KD, data_size=0, batch_size=BATCH_SIZE):
     data = cursor.fetchall()
     conn.close()
     
-    # Konvertiere die abgerufenen Byte-Arrays in numpy-Arrays vom Typ bool
-    bool_arrays = np.array([np.frombuffer(row[0], dtype=bool) for row in data])
-    selected_labels = np.array([row[1] for row in data])  # Kein Einbetten in ein 3D-Array
+    bool_arrays = np.array([tf.sparse.from_dense(np.frombuffer(row[0], dtype=bool)) for row in data])
+    selected_labels = np.array([row[1] for row in data])
     
     return bool_arrays, selected_labels
 
 def data_generator_kd(batch_size):
-    path = DATA_PATH_KD
-    conn = sqlite3.connect(path)
-    data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
     while True:
-        yield select_data_kd(path, data_size)
+        yield select_data_kd(data_size=batch_size)
 
 
 

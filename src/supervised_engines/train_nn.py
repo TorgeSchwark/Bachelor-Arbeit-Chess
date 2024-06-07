@@ -8,6 +8,7 @@ from setup_models_variable import *
 from setup_models import *
 from multiprocessing import Pool
 import datetime
+from sparse_model import *
 
 def test_train_kd(model_path, model, lr):
 
@@ -36,7 +37,7 @@ def train(model_path, arch_name, model, lr, from_checkpoint=False):
     batch_size = BATCH_SIZE
     pool_train = Pool(10)
     pool_val = Pool(10)
-
+    log_dir="models/test"
     train_gen = data_generator_threaded(batch_size, True, pool_train) 
     val_gen = data_generator_threaded(batch_size, False, pool_val)
 
@@ -184,7 +185,6 @@ def train_setup_model_conv_mlp_big():
     model = setup_model_conv_mlp_big()
     for i in lr:
         train("models/conv_mlp_big", "lr"+str(i)+",patience20", model, i)
-
 
 def run():
     physical_devices = tf.config.list_physical_devices('GPU')
