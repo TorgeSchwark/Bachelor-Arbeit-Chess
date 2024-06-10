@@ -1,0 +1,9 @@
+name: test-env-bachelor
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.5
+  - anaconda
+  - pip
+  - pip:
+    - -r file:/home/stu236894/Desktop/Bachelor-Arbeit-Chess/requirements.txts

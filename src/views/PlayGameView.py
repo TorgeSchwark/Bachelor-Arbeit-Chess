@@ -12,7 +12,7 @@ from supervised_engines.fill_db import to_str
 from engines.negmax import alpha_beta_basic, test
 from testing.play_game_testing import play_game_test
 from engines.mcts import monte_carlo_tree_search
-from supervised_engines.fill_db import fill_dbs_by_stock, fill_dbs_by_stock_KD
+from supervised_engines.fill_db import fill_dbs_by_stock, fill_dbs_by_stock_KD, thread_call
 from views.View import View
 import customtkinter as ctk
 from views.view_variables import *
@@ -26,8 +26,9 @@ from testing.play_setup import play_game
 import struct
 from stockfish import Stockfish
 from engines.get_engine_elo import find_out_elo_thread
+from supervised_engines.nn_engine import nn_engine_ab
 
-stockfish = Stockfish(path="/home/torge/Bachelor-Arbeit-Chess/src/chess_implementationC/Stockfish/stockfish/stockfish-ubuntu-x86-64-avx2")
+stockfish = Stockfish(path="./src/chess_implementationC/Stockfish/stockfish/stockfish-ubuntu-x86-64-avx2")
 stockfish.set_elo_rating(1300)
 
 class PlayGameView(View):
@@ -86,7 +87,7 @@ class PlayGameView(View):
         self.main_menu_button = ctk.CTkButton(master=self.settings_frame, text="Back to Menu", command=self.controller.main_menu)
         self.main_menu_button.pack(expand=False, padx=20, pady=5)
 
-        self.mcts = ctk.CTkButton(master=self.settings_frame, text="MCTS", command=self.mcts_engine)
+        self.mcts = ctk.CTkButton(master=self.settings_frame, text="MCTS", command=self.NN_engine)
         self.mcts.pack(expand=False, padx=20, pady=5)
 
         self.super_engine = ctk.CTkButton(master=self.settings_frame, text="supervised_engine", command=self.supervised_engine)
@@ -111,7 +112,7 @@ class PlayGameView(View):
         self.draw_pieces_on_position()
     
     def fill_db_button(self):
-        fill_dbs_by_stock_KD(1)
+        thread_call()
 
     def compare_engines(self):
         compare_engines_thread(self.chess_board_instance, self)
@@ -125,13 +126,14 @@ class PlayGameView(View):
         count = [0]
         start = time.time()
         move = test(ctypes.byref(self.chess_board_instance), 3, 3, -99999, 99999, score, count)
+        
         end = time.time()
         
         print("hier", score[0]," ", end-start, " for ", count[0], " moves")
         self.make_move([], score[0])
 
-    def mcts_engine(self):
-        move =  monte_carlo_tree_search(self.chess_board_instance)
+    def NN_engine(self):
+        move =  nn_engine_ab(ctypes.byref(self.chess_board_instance), 2, 2, -999999, 999999)
         self.make_move([], move)
 
     def get_elo(self):

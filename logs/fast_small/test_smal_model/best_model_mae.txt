@@ -1,0 +1,1 @@
+Validation MAE of the best model: 248.13058471679688, MSE: 115806.125

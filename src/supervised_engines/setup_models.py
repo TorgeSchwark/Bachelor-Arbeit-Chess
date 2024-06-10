@@ -4,13 +4,12 @@ from train_variables import *
 # sets up some test models for training
 
 def setup_model_kd():
-    input = tf.keras.layers.Input(shape=(KD_INPUT ), name='input')  # Flaches Array
+    input = tf.keras.layers.Input(shape=(KD_INPUT,), name='input')  # Flaches Array
     white_input = input[:, :(KD_INPUT * NUM_INPUT_PARAMETERS // 2)]
     black_input = input[:, (KD_INPUT * NUM_INPUT_PARAMETERS // 2):]
 
-    
-    mlp_white = tf.keras.layers.SparseDense(256, activation='relu')(white_input)
-    mlp_black = tf.keras.layers.SparseDense(256, activation='relu')(black_input)
+    mlp_white = tf.keras.layers.Dense(256, activation='relu')(white_input)
+    mlp_black = tf.keras.layers.Dense(256, activation='relu')(black_input)
     
     combined = tf.keras.layers.Concatenate()([mlp_white, mlp_black])
     
@@ -21,7 +20,18 @@ def setup_model_kd():
     model = tf.keras.models.Model(input, mlp)
     return model
 
+def test_model_small():
+  input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST,), name='input')
+  mlp_board_input = input[:, :64] 
 
+  mlp_1 = tf.keras.layers.Dense(2000, activation='relu')(mlp_board_input)
+  mlp_1 = tf.keras.layers.Dense(500, activation='relu')(mlp_1)
+  mlp_1 = tf.keras.layers.Dense(200, activation='relu')(mlp_1)
+  mlp_1 = tf.keras.layers.Dense(SEQ_LEN_FUTURE , activation='linear')(mlp_1)
+
+  model = tf.keras.models.Model(input, mlp_1)
+
+  return model
 
 def setup_model_conv_mlp_big():
     input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST, NUM_INPUT_PARAMETERS), name='input')

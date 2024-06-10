@@ -4,3 +4,6 @@ pillow
 numba
 Stockfish
 tensorflow
+pandas
+matplotlib
+# todo:: training env mit gpu support aufsetzen

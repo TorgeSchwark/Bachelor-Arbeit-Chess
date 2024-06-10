@@ -48,13 +48,17 @@ def data_generator_threaded(batch_size, is_train, pool, num_threads_train=15, nu
         for result in results:
             yield result
 
-def select_data_kd(path=DATA_PATH_KD, data_size=0, batch_size=BATCH_SIZE):
+def select_data_kd(validation, path=DATA_PATH_KD, data_size=0, batch_size=BATCH_SIZE):
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
     data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
     
     # Generiere zufällige Zeilen-IDs
-    random_rowids = [random.randint(1, data_size) for _ in range(batch_size)]
+    if validation:
+        random_rowids = [random.randint(1, int(data_size*0.3)) for _ in range(batch_size)]
+    else:
+        random_rowids = [random.randint(int(data_size*0.3), data_size) for _ in range(batch_size)]
+
     
     placeholders = ','.join(['?'] * len(random_rowids))
     query = f"SELECT board, value FROM ChessData WHERE ROWID IN ({placeholders})"
@@ -69,12 +73,12 @@ def select_data_kd(path=DATA_PATH_KD, data_size=0, batch_size=BATCH_SIZE):
     
     return bool_arrays, selected_labels
 
-def data_generator_kd(batch_size):
+def data_generator_kd(batch_size, validation):
     path = DATA_PATH_KD
     conn = sqlite3.connect(path)
     data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
     while True:
-        yield select_data_kd(path, data_size)
+        yield select_data_kd(validation, path, data_size)
 
 
 

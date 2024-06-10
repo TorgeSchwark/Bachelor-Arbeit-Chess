@@ -20,5 +20,5 @@ SIZE_Y = 64
 SIZE_Z = 10
 
 #DATA_PATH = ".\src\supervised_engines\stockfish_DB.db"
-DATA_PATH = ".\src\supervised_engines\stockfish_depth16_DB.db"
-DATA_PATH_KD = ".\src\supervised_engines\half_kp.db"
+DATA_PATH = "./stockfish_depth9_DB.db"
+DATA_PATH_KD = "half_kp.db"
