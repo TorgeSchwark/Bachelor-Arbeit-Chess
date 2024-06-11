@@ -6,7 +6,7 @@ from chess_implementationC.chess_board_wrapper import ChessBoard, chess_lib
 from supervised_engines.fill_db import to_str
 
 model_path = "/home/stu236894/Desktop/Bachelor-Arbeit-Chess/logs/fast_small/test_smal_model/best_model.keras"
-loaded_model = tf.keras.models.load_model(model_path)
+loaded_model = 0#= tf.keras.models.load_model(model_path)
 
 def nn_engine_ab(board, depth, original_depth, alpha, beta):
     

@@ -11,7 +11,7 @@ import threading
 import time
 import traceback
 
-num_threads = 32
+num_threads = 20
 entries_per_thread = 2
 
 DB_SF = "stockfish_depth9_DB.db"
@@ -56,7 +56,7 @@ def fill_dbs_by_stock(amount):
     conn_sf = sqlite3.connect(DB_SF)
     cursor_sf = conn_sf.cursor()
 
-    stockfish = Stockfish(path="/home/stu236894/Desktop/Bachelor-Arbeit-Chess/src/chess_implementationC/Stockfish/stockfish/stockfish-ubuntu-x86-64-avx2")
+    stockfish = Stockfish(path="./src/chess_implementationC/Stockfish/stockfish/stockfish-ubuntu-x86-64-avx2")
     stockfish.set_depth(9)
     #setup the chessBoard
     create_database()
