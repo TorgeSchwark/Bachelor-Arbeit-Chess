@@ -424,12 +424,15 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     if(board->fifty_move_rule[board->move_count] / 10 >= 1){
         fen[fen_ind] = num_to_num[board->fifty_move_rule[board->move_count] / 10];
         fen_ind += 1;
+        
     }
+
     fen[fen_ind] = num_to_num[board->fifty_move_rule[board->move_count] % 10];
     fen_ind += 1;
 
     fen[fen_ind] = ' ';
     fen_ind += 1;
+
 
     unsigned char num_to_save = (board->move_count+2)/2;
     if(num_to_save / 100  > 0){
@@ -510,7 +513,6 @@ void board_to_simple(struct ChessBoard *board, bool* input){
             p = piece_type_half_kp(board, &ind);
             input[s*(size_y*size_z)+p*size_z] = true;
         }
-
     }
 }
 

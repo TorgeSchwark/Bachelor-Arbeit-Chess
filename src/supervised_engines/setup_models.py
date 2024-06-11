@@ -24,9 +24,9 @@ def test_model_small():
   input = tf.keras.layers.Input(shape=(SEQ_LEN_PAST,), name='input')
   mlp_board_input = input[:, :64] 
 
-  mlp_1 = tf.keras.layers.Dense(2000, activation='relu')(mlp_board_input)
-  mlp_1 = tf.keras.layers.Dense(500, activation='relu')(mlp_1)
-  mlp_1 = tf.keras.layers.Dense(200, activation='relu')(mlp_1)
+  mlp_1 = tf.keras.layers.Dense(500, activation='relu')(mlp_board_input)
+  mlp_1 = tf.keras.layers.Dense(32, activation='relu')(mlp_1)
+  mlp_1 = tf.keras.layers.Dense(32, activation='relu')(mlp_1)
   mlp_1 = tf.keras.layers.Dense(SEQ_LEN_FUTURE , activation='linear')(mlp_1)
 
   model = tf.keras.models.Model(input, mlp_1)

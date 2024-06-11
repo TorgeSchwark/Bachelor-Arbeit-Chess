@@ -1,4 +1,6 @@
-name: test-env-bachelor
+# environment.yaml
+
+name: test-env-bachelor2
 channels:
   - conda-forge
 dependencies:
@@ -6,4 +8,4 @@ dependencies:
   - anaconda
   - pip
   - pip:
-    - -r file:/home/stu236894/Desktop/Bachelor-Arbeit-Chess/requirements.txts
+    - -r file:/home/stu236894/Desktop/Bachelor-Arbeit-Chess/requirements.txt

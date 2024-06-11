@@ -27,7 +27,7 @@ def select_data(batch_size, min_rowid, max_rowid):
     selected_labels = np.array([[[row[1]]] for row in data])
     return selected_inputs, selected_labels
 
-def data_generator_threaded(batch_size, is_train, pool, num_threads_train=15, num_threads_val=5):
+def data_generator_threaded(batch_size, is_train, pool, num_threads_train=20, num_threads_val=15):
     """ querries the data from the database therefore utilizes all threads in the pool """
     path = DATA_PATH
     conn = sqlite3.connect(path)
@@ -52,7 +52,7 @@ def select_data_kd(validation, path=DATA_PATH_KD, data_size=0, batch_size=BATCH_
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
     data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
-    
+    print(data_size)
     # Generiere zufällige Zeilen-IDs
     if validation:
         random_rowids = [random.randint(1, int(data_size*0.3)) for _ in range(batch_size)]
