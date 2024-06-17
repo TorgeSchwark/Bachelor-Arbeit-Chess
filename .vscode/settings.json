@@ -38,6 +38,12 @@
         "__bit_reference": "c",
         "map": "c",
         "unordered_map": "c",
-        "unordered_set": "c"
+        "unordered_set": "c",
+        "string_view": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "queue": "cpp",
+        "random": "cpp",
+        "string": "cpp"
     }
 }

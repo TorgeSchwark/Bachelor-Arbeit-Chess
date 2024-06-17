@@ -1,3 +1,4 @@
+#include "test.h"
 #include <iostream>
 #include <iomanip> // Für std::setprecision
 #include <cmath>   // Für std::fabs
@@ -14,80 +15,30 @@
 // p_idx = piece_type * 2 + piece_color
 // halfkp_idx = piece_square + (p_idx + king_square * 10) * 64
 
-enum Color {
- WHITE = 1,
- BLACK = 0,
-};
-
-const int M = 256;
-const int N = 40960;
 // Struct to represent a linear layer in a neural network
-struct LinearLayer {
-    int inputDimension;
-    int outputDimension;
-    float* biases;
-    float** weights; // zweidimensionales Array für Gewichtungen
 
-    // Constructor to initialize the layer with random biases and weights
-    LinearLayer(int inDim, int outDim) : inputDimension(inDim), outputDimension(outDim) {
-        biases = new float[outDim];
-        weights = new float*[outDim];
-
-        // Initialize biases with random values between -1 and 1
-        for (int i = 0; i < outDim; ++i) {
-            biases[i] = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f;
-        }
-
-        // Initialize weights with random values between -1 and 1
-        for (int i = 0; i < outDim; ++i) {
-            weights[i] = new float[inDim];
-            for (int j = 0; j < inDim; ++j) {
-                weights[i][j] = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f;
-            }
-        }
+void call_refresh_accumulator(int* active_features, int size, NNUE* nnue, NnueAccumulator* acc, int color_to_move) {
+    // Konvertiere das int-Array in einen std::vector<int>
+    std::vector<int> active_features_vector(active_features, active_features + size);
+    
+    if (color_to_move == 1) {
+        refresh_accumulator(nnue->layer_0, *acc, active_features_vector, WHITE);
+    } else {
+        refresh_accumulator(nnue->layer_0, *acc, active_features_vector, BLACK);
     }
-
-    // Destructor to release dynamically allocated memory
-    ~LinearLayer() {
-        delete[] biases;
-        for (int i = 0; i < outputDimension; ++i) {
-            delete[] weights[i];
-        }
-        delete[] weights;
-    }
-};
-
-void call_update_accumulator_on_move(int from_x, int from_y, int to_x, int to_y){
-    // this should call update accumulator and update the active features corresponding to the move
-    return;
 }
 
-void king_moved(int from_x, int from_y, int to_x, int to_y){
-     // this should call refresh accumolator and change all features for the side
-    return;
+void update_accumulator(int *added_features, int size_add, int* removed_features, int size_removed, NNUE * nnue, NnueAccumulator* acc, int color_to_move){
 
+    std::vector<int> added_features_vector(added_features, added_features + size_add);
+    std::vector<int> removed_features_vector(removed_features, removed_features + size_removed);
+  
+    if(color_to_move == 1) {
+        update_accumulator(nnue->layer_0, *acc, added_features_vector, removed_features_vector, WHITE);
+    } else {
+        update_accumulator(nnue->layer_0, *acc, added_features_vector, removed_features_vector, BLACK);
+    }
 }
-
-struct NnueAccumulator {
-    float v[2][M];
-    // we count the updates since last refresh for each side since updates can introduce error we can than refresh every x updates
-    int updates[2];
-    // Konstruktor zum Initialisieren mit null
-    NnueAccumulator() {
-        for (int i = 0; i < 2; ++i) {
-            for (int j = 0; j < M; ++j) {
-                v[i][j] = 0.0f;
-            }
-        }
-        updates[0] = 0;
-        updates[1] = 0;
-    }
-
-    float* operator[](Color perspective) {
-        return v[perspective];
-    }
-};
-
 
 void refresh_accumulator(
     const LinearLayer&      layer,            // this will always be L_0
@@ -231,40 +182,17 @@ void testComputeLayer() {
 
     refresh_accumulator(layer0, acc, test, WHITE);
 
-    ComputeLayer(acc.v[0], outputLayer1, layer1, with_ReLU);
-    // Berechne den zweiten Layer
-    ComputeLayer(outputLayer1, outputLayer2, layer2, with_ReLU);
-    // Berechne den dritten Layer
-    ComputeLayer(outputLayer2, outputLayer3, layer3, with_ReLU);
-
-    for (int i = 0; i < dimOutput3; ++i) {
-        std::cout << outputLayer3[i] << " ";
-    }
-
     update_accumulator(layer0, acc, test, test, WHITE);
 
-    ComputeLayer(acc.v[0], outputLayer1, layer1, with_ReLU);
-    // Berechne den zweiten Layer
-    ComputeLayer(outputLayer1, outputLayer2, layer2, with_ReLU);
-    // Berechne den dritten Layer
-    ComputeLayer(outputLayer2, outputLayer3, layer3, with_ReLU);
-
-    for (int i = 0; i < dimOutput3; ++i) {
-        std::cout << outputLayer3[i] << " ";
-    }
-    
     // Initialisiere Eingabeschicht mit zufälligen Werten zwischen 0 und 1
     for (int i = 0; i < dimInput; ++i) {
         inputLayer[i] = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
     }
 
-    // Setze mit_ReLU auf true, um zu testen, ob die ReLU-Funktion korrekt funktioniert
-    
-
     auto start = std::chrono::high_resolution_clock::now();
 
     // Berechne den ersten Layer
-    for( int i  = 0; i < 10000000; i++){
+    for( int i  = 0; i < 300000; i++){
         ComputeLayer(inputLayer, outputLayer1, layer1, with_ReLU);
 
         // Berechne den zweiten Layer
