@@ -421,13 +421,12 @@ void board_to_fen(struct ChessBoard *board, char *fen){
     fen[fen_ind] = ' ';
     fen_ind += 1;
 
-    if(board->fifty_move_rule[board->move_count] / 10 >= 1){
-        fen[fen_ind] = num_to_num[board->fifty_move_rule[board->move_count] / 10];
+    if(board->fifty_move_rule[board->move_count-1] / 10 >= 1){
+        fen[fen_ind] = num_to_num[board->fifty_move_rule[board->move_count-1] / 10];
         fen_ind += 1;
-        
     }
 
-    fen[fen_ind] = num_to_num[board->fifty_move_rule[board->move_count] % 10];
+    fen[fen_ind] = num_to_num[board->fifty_move_rule[board->move_count-1] % 10];
     fen_ind += 1;
 
     fen[fen_ind] = ' ';

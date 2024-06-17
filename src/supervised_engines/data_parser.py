@@ -27,7 +27,7 @@ def select_data(batch_size, min_rowid, max_rowid):
     selected_labels = np.array([[[row[1]]] for row in data])
     return selected_inputs, selected_labels
 
-def data_generator_threaded(batch_size, is_train, pool, num_threads_train=20, num_threads_val=15):
+def data_generator_threaded(batch_size, is_train, pool, num_threads_train=20, num_threads_val=12):
     """ querries the data from the database therefore utilizes all threads in the pool """
     path = DATA_PATH
     conn = sqlite3.connect(path)
@@ -79,9 +79,6 @@ def data_generator_kd(batch_size, validation):
     data_size = pd.read_sql_query("SELECT COUNT(*) FROM ChessData", conn).iloc[0, 0]
     while True:
         yield select_data_kd(validation, path, data_size)
-
-
-
 
 def test_dataloader_per_second(num_seconds):
     """ tests the speed of the Dataloader for num_seconds of time returns the speed in rows per second """

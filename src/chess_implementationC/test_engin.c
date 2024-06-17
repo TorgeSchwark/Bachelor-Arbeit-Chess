@@ -63,13 +63,13 @@ bool three_fold_repetition(struct ChessBoard *board){
     signed char all_moves[2000];
     short current_move_count = 0;
     current_move_count = board->move_count;
-    char current_fen[200];
+    char current_fen[500];
     board_to_fen(board, current_fen);
     copy_moves_and_board(board, current_board, all_moves);
     int same_positions = 0;
     while(board->move_count > 0){
         undo_last_move(board);
-        signed char compare_fen[200];
+        signed char compare_fen[500];
         board_to_fen(board, compare_fen);
         int spaces = 0;
         int compare_ind = 0;
@@ -175,7 +175,6 @@ void test_engine(struct ChessBoard *board, int depth){
 
 /* counts the amount of legal moves for every move upto a certain depth */
 void count_for_each_move(struct ChessBoard *board, int depth, long long *counts){
-    char chess_not[] = "hgfedcba";
     signed char moves[2000];
     signed char debug_moves[2000];
     short move_count_debug = 0;

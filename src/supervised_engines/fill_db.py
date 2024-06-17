@@ -11,7 +11,7 @@ import threading
 import time
 import traceback
 
-num_threads = 20
+num_threads = 32
 entries_per_thread = 2
 
 DB_SF = "stockfish_depth9_DB.db"
@@ -76,11 +76,9 @@ def fill_dbs_by_stock(amount):
     
     while amount > 0:
         chess_lib.is_check_mate(ctypes.byref(board), ctypes.byref(matt)) 
-        count = 0
         randomnes = 5
         
         while matt.value == 0:
-            count += 1
             fen = get_fen_string(board)
             
             if True:
@@ -112,7 +110,7 @@ def fill_dbs_by_stock(amount):
         chess_lib.undo_game(ctypes.byref(board))
         amount -= 1
     
-    # Use executemany to insert multiple values at once
+        # Use executemany to insert multiple values at once
     try:
         cursor_sf.executemany('''
             INSERT INTO ChessData (board, value, depth)
@@ -120,16 +118,25 @@ def fill_dbs_by_stock(amount):
         ''', zip(boards, sf_values, depths))
 
         cursor_simple.executemany('''
-             INSERT INTO ChessData (board, value, depth)
-             VALUES (?, ?, ?)
-         ''', zip(simple_input, sf_values, depths))
+            INSERT INTO ChessData (board, value, depth)
+            VALUES (?, ?, ?)
+        ''', zip(simple_input, sf_values, depths))
 
         conn_sf.commit()
         conn_simple.commit()
 
+        # Zählen der Zeilen in der ChessData-Tabelle in der sf-Datenbank
+        cursor_sf.execute('SELECT COUNT(*) FROM ChessData')
+        sf_count = cursor_sf.fetchone()[0]
+        print(f"Anzahl der Zeilen in der sf-Datenbank: {sf_count}")
+
+        # Zählen der Zeilen in der ChessData-Tabelle in der simple-Datenbank
+        cursor_simple.execute('SELECT COUNT(*) FROM ChessData')
+        simple_count = cursor_simple.fetchone()[0]
+        print(f"Anzahl der Zeilen in der simple-Datenbank: {simple_count}")
+
     except Exception as e:
         print("Fehler beim Einfügen in die Datenbank:", e)
-
 def get_fen_string(board):
     
     fen_buffer = ctypes.create_string_buffer(556)

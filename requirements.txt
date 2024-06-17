@@ -6,4 +6,5 @@ Stockfish
 tensorflow-gpu
 pandas
 matplotlib
+keras-tuner
 # todo:: training env mit gpu support aufsetzen

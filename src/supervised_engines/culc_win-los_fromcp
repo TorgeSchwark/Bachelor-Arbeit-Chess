@@ -1,0 +1,8 @@
+
+import math
+
+def calculate_value(cp):
+    return 1 / (1 + 10 ** (-cp / 4))
+
+
+print(calculate_value(1.60))
