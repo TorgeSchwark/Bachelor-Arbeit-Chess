@@ -3,8 +3,11 @@ customtkinter
 pillow
 numba
 Stockfish
-tensorflow-gpu
+tensorflow
 pandas
 matplotlib
 keras-tuner
+chess
+torch
+
 # todo:: training env mit gpu support aufsetzen

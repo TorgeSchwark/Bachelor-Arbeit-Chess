@@ -539,9 +539,6 @@ void board_to_nnue(struct ChessBoard *board, int* pieces, int* squares){
     squares[count] = 0;
 }
 
-
-
-
 void board_to_halfkp(struct ChessBoard *board, bool* input){
     int p_idx_w;
     int halfkp_idx_w;
